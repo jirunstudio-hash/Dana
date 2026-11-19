@@ -86,7 +86,7 @@
       display: none;
     }
 
-    /* CSS Native Cadangan (Agar Tetap Sempurna Walau CDN Tailwind Diblokir/Offline) */
+    /* CSS Native Cadangan */
     .settings-header {
       background-color: #118EE9;
       color: #FFFFFF;
@@ -223,7 +223,6 @@
       z-index: 10;
     }
 
-    /* Area Konten Utama Struk Full Layar HP */
     .receipt-body-wrap {
       flex: 1 1 auto;
       min-height: 0;
@@ -346,31 +345,27 @@
     webkit-playsinline
   ></audio>
 
-  <!-- Elemen Audio WAV Bawaan (44.1kHz PCM Lokal - Pasti Bunyi di Semua HP) -->
-  <audio
-    id="fallbackAudio"
-    preload="auto"
-    playsinline
-    webkit-playsinline
-  ></audio>
+  <!-- Elemen Audio Blob WAV Cadangan + Pembuka Mode Silent iOS -->
+  <audio id="fallbackAudio" preload="auto" playsinline webkit-playsinline></audio>
+  <audio id="silentUnlockAudio" preload="auto" playsinline webkit-playsinline></audio>
 
   <!-- LAYAR 1: PENGATURAN TRANSAKSI -->
   <section id="screenSettings" class="device-frame">
     <!-- Header Pengaturan -->
     <div class="settings-header">
-      <div class="flex items-center gap-2.5 min-w-0" style="display:flex;align-items:center;gap:10px;min-width:0;">
-        <div class="w-7 h-7 rounded-full bg-white flex items-center justify-center flex-shrink-0" style="width:28px;height:28px;border-radius:9999px;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <div style="display:flex;align-items:center;gap:10px;min-width:0;">
+        <div style="width:28px;height:28px;border-radius:9999px;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
           <svg width="18" height="18" viewBox="0 0 40 40" fill="none">
             <circle cx="20" cy="20" r="20" fill="#118EE9"/>
             <path d="M10.5 16.2C13.8 14.3 17.2 14.3 20.5 16.2C23.8 18.1 27.2 18.1 29.5 16.4V23.8C27.2 25.5 23.8 25.5 20.5 23.6C17.2 21.7 13.8 21.7 10.5 23.6V16.2Z" fill="#FFFFFF"/>
           </svg>
         </div>
-        <div class="min-w-0" style="min-width:0;">
-          <h1 class="text-sm font-bold leading-tight truncate" style="margin:0;font-size:14px;font-weight:700;">Kirim Uang DANA</h1>
-          <p class="text-[10px] text-white/85 truncate" style="margin:0;font-size:10px;opacity:0.9;">Atur detail sebelum kirim bukti transaksi</p>
+        <div style="min-width:0;">
+          <h1 style="margin:0;font-size:14px;font-weight:700;line-height:1.25;">Kirim Uang DANA</h1>
+          <p style="margin:0;font-size:10px;opacity:0.9;">Atur detail sebelum kirim bukti transaksi</p>
         </div>
       </div>
-      <span id="deviceSizeBadge" class="text-[10px] font-semibold bg-white/20 px-2 py-0.5 rounded-full flex-shrink-0" style="font-size:10px;font-weight:600;background:rgba(255,255,255,0.2);padding:2px 8px;border-radius:9999px;flex-shrink:0;">Full HP</span>
+      <span id="deviceSizeBadge" style="font-size:10px;font-weight:600;background:rgba(255,255,255,0.2);padding:2px 8px;border-radius:9999px;flex-shrink:0;">Full HP</span>
     </div>
 
     <!-- Area Form Scrollable Halus -->
@@ -378,10 +373,10 @@
       <div class="settings-card">
         <!-- Nama Penerima -->
         <div>
-          <div class="flex justify-between items-center mb-1" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-            <label for="inputName" class="text-xs font-semibold text-slate-700" style="font-size:12px;font-weight:600;color:#334155;">Nama Penerima</label>
-            <label class="flex items-center gap-1 text-[11px] text-slate-500 cursor-pointer select-none" style="display:flex;align-items:center;gap:4px;font-size:11px;color:#64748B;">
-              <input type="checkbox" id="maskNameCheck" class="rounded text-[#118EE9]" />
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+            <label for="inputName" style="font-size:12px;font-weight:600;color:#334155;">Nama Penerima</label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:#64748B;cursor:pointer;">
+              <input type="checkbox" id="maskNameCheck" />
               Sensor (••••)
             </label>
           </div>
@@ -397,7 +392,7 @@
         <!-- Nomor HP Penerima & ID DANA -->
         <div class="grid-2">
           <div>
-            <label for="inputPhone" class="block text-xs font-semibold text-slate-700 mb-1" style="display:block;font-size:12px;font-weight:600;color:#334155;margin-bottom:4px;">No. HP Penerima</label>
+            <label for="inputPhone" style="display:block;font-size:12px;font-weight:600;color:#334155;margin-bottom:4px;">No. HP Penerima</label>
             <input
               type="tel"
               id="inputPhone"
@@ -408,10 +403,10 @@
             />
           </div>
           <div>
-            <div class="flex justify-between items-center mb-1 gap-1" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;gap:4px;">
-              <label for="inputIdDana" class="text-xs font-semibold text-slate-700 truncate" style="font-size:12px;font-weight:600;color:#334155;">ID DANA</label>
-              <label class="flex items-center gap-1 text-[10.5px] text-slate-500 cursor-pointer select-none flex-shrink-0" style="display:flex;align-items:center;gap:3px;font-size:10.5px;color:#64748B;">
-                <input type="checkbox" id="maskIdDanaCheck" class="rounded text-[#118EE9]" />
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;gap:4px;">
+              <label for="inputIdDana" style="font-size:12px;font-weight:600;color:#334155;">ID DANA</label>
+              <label style="display:flex;align-items:center;gap:3px;font-size:10.5px;color:#64748B;cursor:pointer;">
+                <input type="checkbox" id="maskIdDanaCheck" />
                 Sensor
               </label>
             </div>
@@ -428,9 +423,9 @@
 
         <!-- Nominal Transfer -->
         <div>
-          <label for="inputAmount" class="block text-xs font-semibold text-slate-700 mb-1" style="display:block;font-size:12px;font-weight:600;color:#334155;margin-bottom:4px;">Nominal Transfer (Rp)</label>
-          <div class="relative" style="position:relative;">
-            <span class="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-sm" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-weight:700;color:#94A3B8;font-size:14px;">Rp</span>
+          <label for="inputAmount" style="display:block;font-size:12px;font-weight:600;color:#334155;margin-bottom:4px;">Nominal Transfer (Rp)</label>
+          <div style="position:relative;">
+            <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-weight:700;color:#94A3B8;font-size:14px;">Rp</span>
             <input
               type="text"
               id="inputAmount"
@@ -454,13 +449,13 @@
 
         <!-- Waktu Perangkat -->
         <div style="padding-top:8px;border-top:1px solid #F1F5F9;">
-          <div class="flex items-center justify-between gap-2" style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-            <div class="min-w-0">
-              <span class="block text-xs font-semibold text-slate-700" style="display:block;font-size:12px;font-weight:600;color:#334155;">Tanggal & Jam</span>
-              <span id="settingsClockPreview" class="text-[11px] font-medium text-[#118EE9] tabular-nums" style="font-size:11px;font-weight:500;color:#118EE9;">19 Nov 2026 • 23:25</span>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+            <div style="min-width:0;">
+              <span style="display:block;font-size:12px;font-weight:600;color:#334155;">Tanggal & Jam</span>
+              <span id="settingsClockPreview" class="tabular-nums" style="font-size:11px;font-weight:500;color:#118EE9;">19 Nov 2026 • 23:25</span>
             </div>
-            <label class="flex items-center gap-1.5 text-xs font-medium text-slate-600 cursor-pointer select-none flex-shrink-0" style="display:flex;align-items:center;gap:6px;font-size:12px;color:#475569;">
-              <input type="checkbox" id="autoTimeCheck" checked onchange="toggleTimeMode()" class="rounded text-[#118EE9]" />
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#475569;cursor:pointer;">
+              <input type="checkbox" id="autoTimeCheck" checked onchange="toggleTimeMode()" />
               Otomatis HP
             </label>
           </div>
@@ -470,9 +465,9 @@
           </div>
         </div>
 
-        <!-- Indikator Status Audio & Tombol Test Suara Boost 200% -->
+        <!-- Indikator Status Audio & Tombol Test Suara -->
         <div style="padding-top:8px;border-top:1px solid #F1F5F9;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;">
-          <div class="min-w-0 flex-1" style="min-width:0;flex:1 1 0%;">
+          <div style="min-width:0;flex:1 1 0%;">
             <div style="display:flex;align-items:center;gap:6px;">
               <span style="font-size:10.5px;font-weight:600;color:#475569;">Suara Notif</span>
               <select
@@ -493,7 +488,7 @@
           <button
             type="button"
             id="btnTestAudio"
-            onclick="handleTestAudioClick(event)"
+            onclick="handleTestAudioClick()"
             class="btn-test-audio"
           >
             🔊 Test Suara 200%
@@ -507,7 +502,7 @@
       <button
         type="button"
         id="btnKirim"
-        onclick="handleSendClick(event)"
+        onclick="handleSendClick()"
       >
         <span>KIRIM</span>
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -523,7 +518,7 @@
     <!-- Top Header Biru -->
     <header class="dana-header-top">
       <div style="display:flex;align-items:center;gap:12px;">
-        <button type="button" onclick="backToSettings(event)" style="padding:4px;margin-left:-4px;color:#FFFFFF;background:transparent;border:none;cursor:pointer;display:flex;align-items:center;" title="Kembali ke Pengaturan">
+        <button type="button" onclick="backToSettings()" style="padding:4px;margin-left:-4px;color:#FFFFFF;background:transparent;border:none;cursor:pointer;display:flex;align-items:center;" title="Kembali ke Pengaturan">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="15 18 9 12 15 6"></polyline>
           </svg>
@@ -598,7 +593,7 @@
 
             <!-- Accordion: Detail Penerima -->
             <div style="border-bottom:1px solid #EEF1F5;">
-              <button type="button" onclick="toggleAccordion('accRecipient', event)" style="width:100%;padding:clamp(7px,1.1dvh,10px) 0;display:flex;align-items:center;justify-content:space-between;text-align:left;background:transparent;border:none;cursor:pointer;">
+              <button type="button" onclick="toggleAccordion('accRecipient')" style="width:100%;padding:clamp(7px,1.1dvh,10px) 0;display:flex;align-items:center;justify-content:space-between;text-align:left;background:transparent;border:none;cursor:pointer;">
                 <span style="font-size:12px;font-weight:600;color:#1A1A1A;">Detail Penerima</span>
                 <svg id="icon-accRecipient" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9AA5B4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.1s;">
                   <polyline points="6 9 12 15 18 9"></polyline>
@@ -618,7 +613,7 @@
 
             <!-- Accordion: Detail Transaksi -->
             <div>
-              <button type="button" onclick="toggleAccordion('accTx', event)" style="width:100%;padding-top:clamp(7px,1.1dvh,10px);display:flex;align-items:center;justify-content:space-between;text-align:left;background:transparent;border:none;cursor:pointer;">
+              <button type="button" onclick="toggleAccordion('accTx')" style="width:100%;padding-top:clamp(7px,1.1dvh,10px);display:flex;align-items:center;justify-content:space-between;text-align:left;background:transparent;border:none;cursor:pointer;">
                 <span style="font-size:12px;font-weight:600;color:#1A1A1A;">Detail Transaksi</span>
                 <svg id="icon-accTx" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9AA5B4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.1s;">
                   <polyline points="6 9 12 15 18 9"></polyline>
@@ -684,7 +679,7 @@
 
       <!-- Bagian Bawah: Tombol BAGIKAN & Footer Legalitas -->
       <div style="position:relative;z-index:10;flex-shrink:0;">
-        <button type="button" onclick="handleShareClick(event)" class="btn-outline-dana" style="padding:clamp(8px,1.2dvh,11px) 12px;">
+        <button type="button" onclick="handleShareClick()" class="btn-outline-dana" style="padding:clamp(8px,1.2dvh,11px) 12px;">
           BAGIKAN
         </button>
 
@@ -714,7 +709,7 @@
 
     <!-- Bottom Bar Terkunci Rapi di Bawah Layar HP -->
     <div class="bottom-bar-dock">
-      <button type="button" onclick="backToSettings(event)" class="btn-outline-dana" style="padding:clamp(8px,1.2dvh,11px) 12px;display:flex;align-items:center;justify-content:center;gap:8px;">
+      <button type="button" onclick="backToSettings()" class="btn-outline-dana" style="padding:clamp(8px,1.2dvh,11px) 12px;display:flex;align-items:center;justify-content:center;gap:8px;">
         <span style="width:20px;height:20px;border-radius:9999px;background:#118EE9;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;flex-shrink:0;">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
             <circle cx="12" cy="9" r="4" fill="#FDE68A"/>
@@ -732,7 +727,6 @@
     const MONTHS_ID = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
     const MP3_URL = 'https://a.top4top.io/m_3975h1p771.mp3';
 
-    // Sinkronkan tinggi aktual layar HP secara real-time agar tombol KIRIM selalu terlihat
     function syncViewportHeight() {
       const h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
       document.documentElement.style.setProperty('--app-height', `${h}px`);
@@ -744,82 +738,78 @@
       window.visualViewport.addEventListener('resize', syncViewportHeight);
     }
 
-    // Buat audio WAV 44.1kHz PCM 16-bit lokal super kencang (kompatibel di semua HP, tanpa internet/CORS)
-    function createLoudChimeWavDataUrl() {
-      const sampleRate = 44100;
-      const duration = 0.78;
-      const numSamples = Math.floor(sampleRate * duration);
-      const buffer = new ArrayBuffer(44 + numSamples * 2);
-      const view = new DataView(buffer);
-
-      function writeStr(offset, str) {
-        for (let i = 0; i < str.length; i++) {
-          view.setUint8(offset + i, str.charCodeAt(i));
-        }
-      }
+    // Buat Blob WAV 16-bit PCM (untuk fallback & unmute iOS)
+    function buildWavUrl(isSilent) {
+      const sr = isSilent ? 22050 : 44100;
+      const dur = isSilent ? 0.06 : 0.85;
+      const len = Math.floor(sr * dur);
+      const buf = new ArrayBuffer(44 + len * 2);
+      const v = new DataView(buf);
+      const writeStr = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
 
       writeStr(0, 'RIFF');
-      view.setUint32(4, 36 + numSamples * 2, true);
+      v.setUint32(4, 36 + len * 2, true);
       writeStr(8, 'WAVE');
       writeStr(12, 'fmt ');
-      view.setUint32(16, 16, true);
-      view.setUint16(20, 1, true);
-      view.setUint16(22, 1, true);
-      view.setUint32(24, sampleRate, true);
-      view.setUint32(28, sampleRate * 2, true);
-      view.setUint16(32, 2, true);
-      view.setUint16(34, 16, true);
+      v.setUint32(16, 16, true);
+      v.setUint16(20, 1, true);
+      v.setUint16(22, 1, true);
+      v.setUint32(24, sr, true);
+      v.setUint32(28, sr * 2, true);
+      v.setUint16(32, 2, true);
+      v.setUint16(34, 16, true);
       writeStr(36, 'data');
-      view.setUint32(40, numSamples * 2, true);
+      v.setUint32(40, len * 2, true);
 
-      for (let i = 0; i < numSamples; i++) {
-        const t = i / sampleRate;
-        let sig = 0;
-
-        // Nada 1 (C6)
-        if (t < 0.30) {
-          const env1 = Math.min(1, t / 0.004) * Math.exp(-t * 9.0);
-          sig += env1 * (
-            0.85 * Math.sin(2 * Math.PI * 1046.5 * t) +
-            0.38 * Math.sin(2 * Math.PI * 2093.0 * t) +
-            0.18 * Math.sin(2 * Math.PI * 3139.5 * t)
-          );
+      if (!isSilent) {
+        const notes = [
+          { start: 0.00, freq: 1046.50, decay: 11.0 },
+          { start: 0.08, freq: 1318.51, decay: 11.0 },
+          { start: 0.16, freq: 1567.98, decay: 9.5 },
+          { start: 0.24, freq: 2093.00, decay: 4.8 }
+        ];
+        for (let i = 0; i < len; i++) {
+          const t = i / sr;
+          let sig = 0;
+          for (let n = 0; n < notes.length; n++) {
+            const note = notes[n];
+            if (t >= note.start) {
+              const dt = t - note.start;
+              const env = Math.min(1, dt / 0.004) * Math.exp(-dt * note.decay);
+              sig += env * (
+                0.75 * Math.sin(2 * Math.PI * note.freq * dt) +
+                0.32 * Math.sin(2 * Math.PI * note.freq * 2 * dt)
+              );
+            }
+          }
+          const maximized = Math.tanh(sig * 3.2);
+          v.setInt16(44 + i * 2, Math.max(-32767, Math.min(32767, Math.round(maximized * 32767))), true);
         }
-
-        // Nada 2 (G6 nyaring & kencang)
-        if (t >= 0.105) {
-          const t2 = t - 0.105;
-          const env2 = Math.min(1, t2 / 0.004) * Math.exp(-t2 * 4.8);
-          sig += env2 * (
-            0.95 * Math.sin(2 * Math.PI * 1567.98 * t2) +
-            0.45 * Math.sin(2 * Math.PI * 3135.96 * t2) +
-            0.22 * Math.sin(2 * Math.PI * 4703.94 * t2)
-          );
-        }
-
-        // Soft-limiter penuh 0dBFS agar keras maksimal
-        const maximized = Math.tanh(sig * 3.4);
-        const pcm = Math.max(-32767, Math.min(32767, Math.round(maximized * 32767)));
-        view.setInt16(44 + i * 2, pcm, true);
       }
 
-      const bytes = new Uint8Array(buffer);
-      let binary = '';
-      const chunkSize = 8192;
-      for (let i = 0; i < bytes.length; i += chunkSize) {
-        binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkSize));
+      if (typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function') {
+        try {
+          return URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }));
+        } catch (e) {}
       }
-      return 'data:audio/wav;base64,' + btoa(binary);
+      const bytes = new Uint8Array(buf);
+      let bin = '';
+      for (let i = 0; i < bytes.length; i += 8192) {
+        bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 8192));
+      }
+      return 'data:audio/wav;base64,' + btoa(bin);
     }
 
-    const localWavDataUrl = createLoudChimeWavDataUrl();
     const audioEl = document.getElementById('notifAudio');
     const fallbackAudioEl = document.getElementById('fallbackAudio');
+    const silentUnlockEl = document.getElementById('silentUnlockAudio');
 
-    fallbackAudioEl.src = localWavDataUrl;
+    fallbackAudioEl.src = buildWavUrl(false);
     fallbackAudioEl.volume = 1.0;
-    fallbackAudioEl.muted = false;
+    silentUnlockEl.src = buildWavUrl(true);
+    silentUnlockEl.volume = 1.0;
     try { fallbackAudioEl.load(); } catch (e) {}
+    try { silentUnlockEl.load(); } catch (e) {}
 
     audioEl.preload = 'auto';
     audioEl.playsInline = true;
@@ -830,6 +820,7 @@
     let gainNode = null;
     let compressorNode = null;
     let decodedMp3Buffer = null;
+    let directChimeBuffer = null;
     let activeBufferSource = null;
     let isDecodingMp3 = false;
     let corsDecodeFailed = false;
@@ -860,7 +851,7 @@
       }
     }
 
-    audioEl.addEventListener('canplay', () => {
+    audioEl.addEventListener('canplaythrough', () => {
       mp3ReadyState = 'ready';
       setAudioStatus(
         decodedMp3Buffer ? `MP3: Siap (Boost ${getBoostPercentLabel()})` : 'MP3: Siap (top4top.io)',
@@ -876,7 +867,7 @@
     audioEl.addEventListener('error', () => {
       mp3ReadyState = 'error';
       if (!decodedMp3Buffer) {
-        setAudioStatus('MP3 diblokir HP -> Suara bawaan aktif', '#D97706');
+        setAudioStatus('Suara bawaan aktif (MP3 eksternal diblokir)', '#D97706');
       }
     });
 
@@ -895,9 +886,9 @@
 
         if (!compressorNode) {
           compressorNode = audioCtx.createDynamicsCompressor();
-          compressorNode.threshold.setValueAtTime(-3, audioCtx.currentTime);
-          compressorNode.knee.setValueAtTime(6, audioCtx.currentTime);
-          compressorNode.ratio.setValueAtTime(8, audioCtx.currentTime);
+          compressorNode.threshold.setValueAtTime(-2, audioCtx.currentTime);
+          compressorNode.knee.setValueAtTime(4, audioCtx.currentTime);
+          compressorNode.ratio.setValueAtTime(10, audioCtx.currentTime);
           compressorNode.attack.setValueAtTime(0.002, audioCtx.currentTime);
           compressorNode.release.setValueAtTime(0.08, audioCtx.currentTime);
           compressorNode.connect(audioCtx.destination);
@@ -915,6 +906,40 @@
       } catch (e) {
         return false;
       }
+    }
+
+    // Buat Float32 AudioBuffer langsung di AudioContext (0ms, tanpa jaringan/data-URI)
+    function buildDirectFloat32Buffer(ctx) {
+      const sr = ctx.sampleRate || 44100;
+      const duration = 0.85;
+      const len = Math.floor(sr * duration);
+      const buf = ctx.createBuffer(1, len, sr);
+      const data = buf.getChannelData(0);
+
+      const notes = [
+        { start: 0.00, freq: 1046.50, decay: 11.0 },
+        { start: 0.08, freq: 1318.51, decay: 11.0 },
+        { start: 0.16, freq: 1567.98, decay: 9.5 },
+        { start: 0.24, freq: 2093.00, decay: 4.8 }
+      ];
+
+      for (let i = 0; i < len; i++) {
+        const t = i / sr;
+        let sig = 0;
+        for (let n = 0; n < notes.length; n++) {
+          const note = notes[n];
+          if (t >= note.start) {
+            const dt = t - note.start;
+            const env = Math.min(1, dt / 0.004) * Math.exp(-dt * note.decay);
+            sig += env * (
+              0.75 * Math.sin(2 * Math.PI * note.freq * dt) +
+              0.32 * Math.sin(2 * Math.PI * note.freq * 2 * dt)
+            );
+          }
+        }
+        data[i] = Math.tanh(sig * 2.2);
+      }
+      return buf;
     }
 
     async function fetchAndDecodeMp3() {
@@ -947,105 +972,89 @@
       }
     }
 
-    // Oscillator cadangan langsung via Web Audio (jika elemen <audio> gagal)
-    function playDirectAudioCtxChime() {
+    // Aktifkan jalur audio iOS Safari (termasuk saat sakelar samping Silent aktif)
+    function wakeUpIosMediaSession() {
       try {
-        if (!ensureAudioCtxSync()) return;
-        const schedule = () => {
-          const now = audioCtx.currentTime;
-          const tone = (freq, offset, dur) => {
-            const osc = audioCtx.createOscillator();
-            const g = audioCtx.createGain();
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(freq, now + offset);
-            g.gain.setValueAtTime(0.001, now + offset);
-            g.gain.exponentialRampToValueAtTime(1.0, now + offset + 0.01);
-            g.gain.exponentialRampToValueAtTime(0.001, now + offset + dur);
-            osc.connect(g);
-            g.connect(gainNode || audioCtx.destination);
-            osc.start(now + offset);
-            osc.stop(now + offset + dur + 0.02);
-          };
-          tone(1046.5, 0.0, 0.24);
-          tone(1567.98, 0.105, 0.42);
-        };
+        silentUnlockEl.muted = false;
+        silentUnlockEl.volume = 1.0;
+        if (silentUnlockEl.currentTime > 0) silentUnlockEl.currentTime = 0;
+        const p = silentUnlockEl.play();
+        if (p && p.catch) p.catch(() => {});
+      } catch (e) {}
+    }
 
-        if (audioCtx.state === 'suspended') {
-          audioCtx.resume().then(schedule).catch(() => {});
+    function playFallbackBlobWav(sourceLabel) {
+      try {
+        fallbackAudioEl.muted = false;
+        fallbackAudioEl.volume = 1.0;
+        if (fallbackAudioEl.readyState >= 1 && fallbackAudioEl.currentTime > 0) {
+          fallbackAudioEl.currentTime = 0;
+        }
+        const p = fallbackAudioEl.play();
+        if (p && typeof p.then === 'function') {
+          p.then(() => {
+            setAudioStatus(`Suara Aktif (${sourceLabel})`, '#059669');
+          }).catch(() => {});
         } else {
-          schedule();
+          setAudioStatus(`Suara Aktif (${sourceLabel})`, '#059669');
         }
       } catch (e) {}
     }
 
-    // Putar WAV bawaan 100% Sinkron di dalam klik HP (Anti-blokir & tanpa setTimeout!)
-    function playLocalWavSync(sourceLabel) {
-      fallbackAudioEl.muted = false;
-      fallbackAudioEl.volume = 1.0;
-      try {
-        if (fallbackAudioEl.readyState >= 1 && fallbackAudioEl.currentTime > 0) {
-          fallbackAudioEl.currentTime = 0;
-        }
-      } catch (e) {}
-
-      try {
-        const p = fallbackAudioEl.play();
-        if (p && typeof p.then === 'function') {
-          p.then(() => {
-            setAudioStatus(`Bunyi Keras Bawaan (${sourceLabel})`, '#059669');
-          }).catch(() => {
-            playDirectAudioCtxChime();
-            setAudioStatus(`Bunyi Notif WebAudio (${sourceLabel})`, '#059669');
-          });
-        } else {
-          setAudioStatus(`Bunyi Keras Bawaan (${sourceLabel})`, '#059669');
-        }
-      } catch (e) {
-        playDirectAudioCtxChime();
-        setAudioStatus(`Bunyi Notif WebAudio (${sourceLabel})`, '#059669');
+    function playDirectWebAudioChime(sourceLabel) {
+      if (ensureAudioCtxSync()) {
+        try {
+          stopBoostBuffer();
+          if (!directChimeBuffer) {
+            directChimeBuffer = buildDirectFloat32Buffer(audioCtx);
+          }
+          const src = audioCtx.createBufferSource();
+          src.buffer = directChimeBuffer;
+          src.connect(gainNode);
+          activeBufferSource = src;
+          src.onended = () => {
+            if (activeBufferSource === src) activeBufferSource = null;
+          };
+          // Panggil start(0) secara sinkron di dalam klik agar lolos blokir autoplay semua HP!
+          src.start(0);
+          setAudioStatus(`Suara Keras ${getBoostPercentLabel()} (${sourceLabel})`, '#059669');
+          return;
+        } catch (e) {}
       }
+      playFallbackBlobWav(sourceLabel);
     }
 
     function triggerMp3Sound(sourceLabel = 'KIRIM') {
       stopBoostBuffer();
       ensureAudioCtxSync();
+      wakeUpIosMediaSession();
 
       if (!decodedMp3Buffer && !corsDecodeFailed) {
         fetchAndDecodeMp3();
       }
 
-      // 1. Jika MP3 eksternal sudah ter-decode -> putar via Web Audio Boost 200%/300%
+      // 1. Jika MP3 eksternal sudah ter-decode -> putar dengan boost 200%/300%
       if (audioCtx && gainNode && decodedMp3Buffer) {
         try {
-          const runBoosted = () => {
-            const src = audioCtx.createBufferSource();
-            src.buffer = decodedMp3Buffer;
-            src.connect(gainNode);
-            src.onended = () => {
-              if (activeBufferSource === src) activeBufferSource = null;
-            };
-            activeBufferSource = src;
-            src.start(0);
-            setAudioStatus(`MP3: Berbunyi ${getBoostPercentLabel()} (${sourceLabel})`, '#118EE9');
+          const src = audioCtx.createBufferSource();
+          src.buffer = decodedMp3Buffer;
+          src.connect(gainNode);
+          src.onended = () => {
+            if (activeBufferSource === src) activeBufferSource = null;
           };
-
-          if (audioCtx.state === 'suspended') {
-            audioCtx.resume().then(runBoosted).catch(() => playLocalWavSync(sourceLabel));
-          } else {
-            runBoosted();
-          }
+          activeBufferSource = src;
+          src.start(0);
+          setAudioStatus(`MP3: Berbunyi ${getBoostPercentLabel()} (${sourceLabel})`, '#118EE9');
           return;
         } catch (e) {}
       }
 
-      // 2. Jika MP3 eksternal sudah siap dibuffer (readyState >= 2) -> putar langsung sinkron
-      if (audioEl.readyState >= 2 && !audioEl.error && mp3ReadyState !== 'error') {
+      // 2. Jika MP3 eksternal sudah benar-benar siap (readyState >= 3) -> putar langsung
+      if (audioEl.readyState >= 3 && !audioEl.error && mp3ReadyState !== 'error') {
         audioEl.muted = false;
         audioEl.volume = 1.0;
         try {
-          if (audioEl.currentTime > 0) {
-            audioEl.currentTime = 0;
-          }
+          if (audioEl.currentTime > 0) audioEl.currentTime = 0;
         } catch (e) {}
 
         try {
@@ -1054,30 +1063,26 @@
             p.then(() => {
               setAudioStatus(`MP3: Berbunyi Full (${sourceLabel})`, '#059669');
             }).catch(() => {
-              playDirectAudioCtxChime();
-              setAudioStatus(`Bunyi Notif (${sourceLabel})`, '#059669');
+              playDirectWebAudioChime(sourceLabel);
             });
           }
           return;
         } catch (e) {}
       }
 
-      // 3. Jika MP3 eksternal diblokir di HP atau belum siap -> putar WAV lokal SINKRON sekarang juga!
-      playLocalWavSync(sourceLabel);
+      // 3. Jika MP3 belum siap atau diblokir -> bunyikan suara Web Audio Float32 secara SINKRON (0ms)
+      playDirectWebAudioChime(sourceLabel);
 
-      // Coba muat MP3 di latar belakang jika belum error (siapa tahu jaringan hanya lambat)
       if (mp3ReadyState !== 'error') {
         try { audioEl.load(); } catch (e) {}
       }
     }
 
-    function handleTestAudioClick(e) {
-      if (e) e.preventDefault();
+    function handleTestAudioClick() {
       triggerMp3Sound('TEST');
     }
 
-    function handleShareClick(e) {
-      if (e) e.preventDefault();
+    function handleShareClick() {
       triggerMp3Sound('BAGIKAN');
     }
 
@@ -1205,8 +1210,7 @@
       document.getElementById('accTxCode').textContent = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}1012148001001668${randDigits.slice(0, 8)}`;
     }
 
-    function toggleAccordion(id, e) {
-      if (e) e.preventDefault();
+    function toggleAccordion(id) {
       const panel = document.getElementById(id);
       const icon = document.getElementById(`icon-${id}`);
       if (!panel) return;
@@ -1220,8 +1224,7 @@
       }
     }
 
-    function handleSendClick(e) {
-      if (e) e.preventDefault();
+    function handleSendClick() {
       triggerMp3Sound('KIRIM');
       applySettingsToReceipt();
       document.getElementById('screenSettings').classList.add('hidden');
@@ -1229,8 +1232,7 @@
       syncViewportHeight();
     }
 
-    function backToSettings(e) {
-      if (e) e.preventDefault();
+    function backToSettings() {
       document.getElementById('screenReceipt').classList.add('hidden');
       document.getElementById('screenSettings').classList.remove('hidden');
       syncViewportHeight();
