@@ -336,14 +336,15 @@
 </head>
 <body>
 
-  <!-- Elemen Audio MP3 Eksternal -->
-  <audio
-    id="notifAudio"
-    src="https://a.top4top.io/m_3975h1p771.mp3"
+  <!-- Pemutar Media MP4 Utama (Menggunakan <video playsinline> transparan agar kompatibel penuh dengan file .mp4 di semua HP) -->
+  <video
+    id="notifMedia"
+    src="https://b.top4top.io/m_3975xed1e1.mp4"
     preload="auto"
     playsinline
     webkit-playsinline
-  ></audio>
+    style="position:fixed;top:-10px;left:-10px;width:2px;height:2px;opacity:0.001;pointer-events:none;z-index:-1;"
+  ></video>
 
   <!-- Elemen Audio Blob WAV Cadangan + Pembuka Mode Silent iOS -->
   <audio id="fallbackAudio" preload="auto" playsinline webkit-playsinline></audio>
@@ -469,7 +470,7 @@
         <div style="padding-top:8px;border-top:1px solid #F1F5F9;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;">
           <div style="min-width:0;flex:1 1 0%;">
             <div style="display:flex;align-items:center;gap:6px;">
-              <span style="font-size:10.5px;font-weight:600;color:#475569;">Suara Notif</span>
+              <span style="font-size:10.5px;font-weight:600;color:#475569;">Suara MP4</span>
               <select
                 id="volumeBoostSelect"
                 onchange="updateBoostLevel()"
@@ -482,7 +483,7 @@
               </select>
             </div>
             <div id="audioStatusText" style="font-size:11px;font-weight:500;color:#059669;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-              Suara: Siap (Ketuk Test untuk bunyi)
+              Suara: Siap (Ketuk Test untuk putar MP4)
             </div>
           </div>
           <button
@@ -725,7 +726,7 @@
 
   <script>
     const MONTHS_ID = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-    const MP3_URL = 'https://a.top4top.io/m_3975h1p771.mp3';
+    const MEDIA_URL = 'https://b.top4top.io/m_3975xed1e1.mp4';
 
     function syncViewportHeight() {
       const h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
@@ -738,7 +739,6 @@
       window.visualViewport.addEventListener('resize', syncViewportHeight);
     }
 
-    // Buat Blob WAV 16-bit PCM (untuk fallback & unmute iOS)
     function buildWavUrl(isSilent) {
       const sr = isSilent ? 22050 : 44100;
       const dur = isSilent ? 0.06 : 0.85;
@@ -800,7 +800,7 @@
       return 'data:audio/wav;base64,' + btoa(bin);
     }
 
-    const audioEl = document.getElementById('notifAudio');
+    const mediaEl = document.getElementById('notifMedia');
     const fallbackAudioEl = document.getElementById('fallbackAudio');
     const silentUnlockEl = document.getElementById('silentUnlockAudio');
 
@@ -811,21 +811,24 @@
     try { fallbackAudioEl.load(); } catch (e) {}
     try { silentUnlockEl.load(); } catch (e) {}
 
-    audioEl.preload = 'auto';
-    audioEl.playsInline = true;
-    audioEl.muted = false;
-    audioEl.volume = 1.0;
+    mediaEl.preload = 'auto';
+    mediaEl.playsInline = true;
+    mediaEl.muted = false;
+    mediaEl.volume = 1.0;
 
     let audioCtx = null;
     let gainNode = null;
     let compressorNode = null;
-    let decodedMp3Buffer = null;
+    let cachedRawBytes = null;
+    let decodedMediaBuffer = null;
     let directChimeBuffer = null;
     let activeBufferSource = null;
-    let isDecodingMp3 = false;
+    let isFetchingCors = false;
+    let isDecodingMedia = false;
     let corsDecodeFailed = false;
-    let mp3ReadyState = 'loading';
+    let mediaReadyState = 'loading';
     let currentBoostGain = 2.0; // Default 200%
+    let mediaWatchdog = null;
 
     function setAudioStatus(text, colorHex) {
       const el = document.getElementById('audioStatusText');
@@ -851,23 +854,38 @@
       }
     }
 
-    audioEl.addEventListener('canplaythrough', () => {
-      mp3ReadyState = 'ready';
+    function clearMediaWatchdog() {
+      if (mediaWatchdog) {
+        clearTimeout(mediaWatchdog);
+        mediaWatchdog = null;
+      }
+    }
+
+    mediaEl.addEventListener('canplay', () => {
+      mediaReadyState = 'ready';
       setAudioStatus(
-        decodedMp3Buffer ? `MP3: Siap (Boost ${getBoostPercentLabel()})` : 'MP3: Siap (top4top.io)',
+        decodedMediaBuffer ? `MP4: Siap (Boost ${getBoostPercentLabel()})` : 'MP4: Siap diputar (top4top.io)',
         '#059669'
       );
     });
 
-    audioEl.addEventListener('playing', () => {
-      mp3ReadyState = 'ready';
-      setAudioStatus('MP3: Sedang berbunyi (Full)!', '#118EE9');
+    mediaEl.addEventListener('playing', () => {
+      clearMediaWatchdog();
+      mediaReadyState = 'ready';
+      setAudioStatus('MP4: Sedang berbunyi (Full)!', '#118EE9');
     });
 
-    audioEl.addEventListener('error', () => {
-      mp3ReadyState = 'error';
-      if (!decodedMp3Buffer) {
-        setAudioStatus('Suara bawaan aktif (MP3 eksternal diblokir)', '#D97706');
+    mediaEl.addEventListener('ended', () => {
+      clearMediaWatchdog();
+      if (mediaReadyState === 'ready') {
+        setAudioStatus('MP4: Siap diputar (top4top.io)', '#059669');
+      }
+    });
+
+    mediaEl.addEventListener('error', () => {
+      mediaReadyState = 'error';
+      if (!decodedMediaBuffer) {
+        setAudioStatus('MP4 diblokir HP -> Suara cadangan siap', '#D97706');
       }
     });
 
@@ -902,13 +920,52 @@
           gainNode.gain.setValueAtTime(currentBoostGain, audioCtx.currentTime);
         }
 
+        // Jika bytes MP4 sudah terunduh sebelumnya, langsung decode sekarang
+        if (cachedRawBytes && !decodedMediaBuffer && !isDecodingMedia) {
+          decodeCachedBytes();
+        }
+
         return true;
       } catch (e) {
         return false;
       }
     }
 
-    // Buat Float32 AudioBuffer langsung di AudioContext (0ms, tanpa jaringan/data-URI)
+    function decodeCachedBytes() {
+      if (!audioCtx || !cachedRawBytes || decodedMediaBuffer || isDecodingMedia) return;
+      isDecodingMedia = true;
+      audioCtx.decodeAudioData(cachedRawBytes.slice(0))
+        .then((buf) => {
+          decodedMediaBuffer = buf;
+          mediaReadyState = 'ready';
+          setAudioStatus(`MP4: Siap (Boost ${getBoostPercentLabel()})`, '#059669');
+        })
+        .catch(() => {
+          corsDecodeFailed = true;
+        })
+        .finally(() => {
+          isDecodingMedia = false;
+        });
+    }
+
+    // Unduh bytes MP4 di latar belakang sejak halaman dibuka agar siap untuk Boost 200%/300%
+    async function prefetchMediaBytes() {
+      if (cachedRawBytes || isFetchingCors || corsDecodeFailed) return;
+      isFetchingCors = true;
+      try {
+        const resp = await fetch(MEDIA_URL, { mode: 'cors', referrerPolicy: 'no-referrer' });
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        cachedRawBytes = await resp.arrayBuffer();
+        if (audioCtx) {
+          decodeCachedBytes();
+        }
+      } catch (err) {
+        corsDecodeFailed = true;
+      } finally {
+        isFetchingCors = false;
+      }
+    }
+
     function buildDirectFloat32Buffer(ctx) {
       const sr = ctx.sampleRate || 44100;
       const duration = 0.85;
@@ -942,26 +999,6 @@
       return buf;
     }
 
-    async function fetchAndDecodeMp3() {
-      if (decodedMp3Buffer || isDecodingMp3 || corsDecodeFailed) return;
-      if (!ensureAudioCtxSync()) return;
-
-      isDecodingMp3 = true;
-      try {
-        const resp = await fetch(MP3_URL, { mode: 'cors', referrerPolicy: 'no-referrer' });
-        if (!resp.ok) throw new Error('HTTP ' + resp.status);
-        const arrBuf = await resp.arrayBuffer();
-        decodedMp3Buffer = await audioCtx.decodeAudioData(arrBuf);
-        mp3ReadyState = 'ready';
-        setAudioStatus(`MP3: Siap (Boost ${getBoostPercentLabel()})`, '#059669');
-      } catch (err) {
-        corsDecodeFailed = true;
-        decodedMp3Buffer = null;
-      } finally {
-        isDecodingMp3 = false;
-      }
-    }
-
     function stopBoostBuffer() {
       if (activeBufferSource) {
         try {
@@ -972,7 +1009,6 @@
       }
     }
 
-    // Aktifkan jalur audio iOS Safari (termasuk saat sakelar samping Silent aktif)
     function wakeUpIosMediaSession() {
       try {
         silentUnlockEl.muted = false;
@@ -993,10 +1029,10 @@
         const p = fallbackAudioEl.play();
         if (p && typeof p.then === 'function') {
           p.then(() => {
-            setAudioStatus(`Suara Aktif (${sourceLabel})`, '#059669');
+            setAudioStatus(`Suara Cadangan Aktif (${sourceLabel})`, '#059669');
           }).catch(() => {});
         } else {
-          setAudioStatus(`Suara Aktif (${sourceLabel})`, '#059669');
+          setAudioStatus(`Suara Cadangan Aktif (${sourceLabel})`, '#059669');
         }
       } catch (e) {}
     }
@@ -1015,7 +1051,6 @@
           src.onended = () => {
             if (activeBufferSource === src) activeBufferSource = null;
           };
-          // Panggil start(0) secara sinkron di dalam klik agar lolos blokir autoplay semua HP!
           src.start(0);
           setAudioStatus(`Suara Keras ${getBoostPercentLabel()} (${sourceLabel})`, '#059669');
           return;
@@ -1025,57 +1060,65 @@
     }
 
     function triggerMp3Sound(sourceLabel = 'KIRIM') {
+      clearMediaWatchdog();
       stopBoostBuffer();
       ensureAudioCtxSync();
       wakeUpIosMediaSession();
 
-      if (!decodedMp3Buffer && !corsDecodeFailed) {
-        fetchAndDecodeMp3();
-      }
-
-      // 1. Jika MP3 eksternal sudah ter-decode -> putar dengan boost 200%/300%
-      if (audioCtx && gainNode && decodedMp3Buffer) {
+      // 1. Prioritas tertinggi: Putar audio MP4 yang sudah ter-decode dengan Boost 200%/300%
+      if (audioCtx && gainNode && decodedMediaBuffer) {
         try {
           const src = audioCtx.createBufferSource();
-          src.buffer = decodedMp3Buffer;
+          src.buffer = decodedMediaBuffer;
           src.connect(gainNode);
           src.onended = () => {
             if (activeBufferSource === src) activeBufferSource = null;
           };
           activeBufferSource = src;
           src.start(0);
-          setAudioStatus(`MP3: Berbunyi ${getBoostPercentLabel()} (${sourceLabel})`, '#118EE9');
+          setAudioStatus(`MP4: Berbunyi ${getBoostPercentLabel()} (${sourceLabel})`, '#118EE9');
           return;
         } catch (e) {}
       }
 
-      // 2. Jika MP3 eksternal sudah benar-benar siap (readyState >= 3) -> putar langsung
-      if (audioEl.readyState >= 3 && !audioEl.error && mp3ReadyState !== 'error') {
-        audioEl.muted = false;
-        audioEl.volume = 1.0;
+      // 2. Jika link MP4 belum error -> langsung panggil play() secara SINKRON di klik HP (memaksa HP mengunduh & memutar MP4!)
+      if (!mediaEl.error && mediaReadyState !== 'error') {
+        mediaEl.muted = false;
+        mediaEl.volume = 1.0;
         try {
-          if (audioEl.currentTime > 0) audioEl.currentTime = 0;
+          if (mediaEl.readyState >= 1 && mediaEl.currentTime > 0) {
+            mediaEl.currentTime = 0;
+          }
         } catch (e) {}
 
+        setAudioStatus(`Memutar MP4 (${sourceLabel})...`, '#118EE9');
+
+        // Jika jaringan HP memblokir top4top.io / lambat > 2.6 detik, otomatis bunyikan suara cadangan keras
+        mediaWatchdog = setTimeout(() => {
+          if (mediaEl.paused || mediaEl.readyState < 2) {
+            playDirectWebAudioChime(sourceLabel);
+          }
+        }, 2600);
+
         try {
-          const p = audioEl.play();
+          const p = mediaEl.play();
           if (p && typeof p.then === 'function') {
             p.then(() => {
-              setAudioStatus(`MP3: Berbunyi Full (${sourceLabel})`, '#059669');
+              clearMediaWatchdog();
+              setAudioStatus(`MP4: Berbunyi Full (${sourceLabel})`, '#059669');
             }).catch(() => {
+              clearMediaWatchdog();
               playDirectWebAudioChime(sourceLabel);
             });
           }
           return;
-        } catch (e) {}
+        } catch (e) {
+          clearMediaWatchdog();
+        }
       }
 
-      // 3. Jika MP3 belum siap atau diblokir -> bunyikan suara Web Audio Float32 secara SINKRON (0ms)
+      // 3. Jika link MP4 diblokir di HP -> bunyikan suara Web Audio Float32 secara sinkron (0ms)
       playDirectWebAudioChime(sourceLabel);
-
-      if (mp3ReadyState !== 'error') {
-        try { audioEl.load(); } catch (e) {}
-      }
     }
 
     function handleTestAudioClick() {
@@ -1241,7 +1284,8 @@
 
     // Inisialisasi awal
     syncViewportHeight();
-    try { audioEl.load(); } catch (e) {}
+    prefetchMediaBytes();
+    try { mediaEl.load(); } catch (e) {}
     refreshClockPreview();
     setInterval(() => {
       if (document.getElementById('autoTimeCheck').checked) {
