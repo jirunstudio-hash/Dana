@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>Detail Transaksi - DANA</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -26,60 +26,110 @@
       -webkit-font-smoothing: antialiased;
     }
 
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
     button, input, select, label {
       touch-action: manipulation;
     }
 
-    /* Container 9:16 Presisi Layar HP Tanpa Scroll */
-    .screen-9-16 {
+    /* Container Adaptif Mengikuti Layar Perangkat */
+    .device-frame {
       width: 100%;
       height: 100dvh;
-      max-width: calc(100dvh * 9 / 16);
-      margin: 0 auto;
       position: relative;
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      box-shadow: 0 12px 40px rgba(15, 23, 42, 0.16);
+      background-color: #F5F6F8;
     }
 
-    @media (max-width: 520px) {
-      .screen-9-16 {
-        max-width: 100%;
-        box-shadow: none;
+    .device-frame.hidden {
+      display: none !important;
+    }
+
+    /* Tablet & Desktop: Proporsional di tengah layar */
+    @media (min-width: 540px) {
+      body {
+        padding: clamp(0px, 2dvh, 16px);
+      }
+      .device-frame {
+        width: min(100%, 440px);
+        height: min(100%, 880px);
+        max-height: 100dvh;
+        border-radius: 20px;
+        box-shadow: 0 16px 48px rgba(15, 23, 42, 0.18);
       }
     }
 
-    /* Header Biru DANA */
-    .dana-header {
+    /* Layar Pendek / Mode Landscape HP */
+    @media (max-height: 540px) and (min-width: 540px) {
+      body {
+        padding: 0;
+      }
+      .device-frame {
+        width: min(100%, 480px);
+        height: 100dvh;
+        border-radius: 0;
+      }
+    }
+
+    /* Sembunyikan scrollbar namun tetap bisa di-scroll jika layar kecil */
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* Header Biru DANA dengan Safe Area Atas */
+    .dana-header-top {
       background-color: #118EE9;
-      height: clamp(74px, 11.2dvh, 94px);
-      padding: clamp(10px, 1.5dvh, 14px) 14px 0 14px;
+      padding: max(12px, env(safe-area-inset-top)) 14px 10px 14px;
       color: #FFFFFF;
       flex-shrink: 0;
       position: relative;
-      z-index: 1;
+      z-index: 10;
     }
 
-    /* Area Konten Utama yang Pas dalam 1 Layar */
+    /* Area Konten Utama Struk (Menyesuaikan Tinggi Layar) */
     .receipt-body-wrap {
       flex: 1;
       min-height: 0;
-      margin-top: calc(-1 * clamp(36px, 5.5dvh, 46px));
-      padding: 0 11px clamp(52px, 7.5dvh, 62px) 11px;
+      padding: 0 clamp(10px, 3vw, 14px) clamp(8px, 1.4dvh, 14px) clamp(10px, 3vw, 14px);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
+      gap: clamp(8px, 1.4dvh, 14px);
       position: relative;
       z-index: 2;
-      overflow: hidden;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
-    /* Kartu Struk Putih - Sisi Lurus Mulus Tanpa Lekukan Samping */
+    /* Pita Biru Lanjutan Header di Belakang Bagian Atas Kartu Struk */
+    .receipt-body-wrap::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: clamp(36px, 5.5dvh, 48px);
+      background-color: #118EE9;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* Kartu Struk Putih */
     .receipt-card {
       background-color: #FFFFFF;
       border-radius: 10px 10px 0 0;
       position: relative;
+      z-index: 2;
       overflow: hidden;
       border-top: 1px solid #E5E9F0;
       border-left: 1px solid #E5E9F0;
@@ -111,7 +161,7 @@
     .total-pay-box {
       background-color: #EFF6FC;
       border-radius: 6px;
-      padding: clamp(5px, 0.9dvh, 8px) 11px;
+      padding: clamp(6px, 1dvh, 9px) 11px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -130,24 +180,23 @@
       background-repeat: repeat-x;
     }
 
-    /* Bottom Bar BUTUH BANTUAN? Terkunci di Bawah Layar 9:16 */
-    .bottom-bar-fixed {
-      position: fixed;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 100%;
-      max-width: min(412px, calc(100dvh * 9 / 16));
-      background-color: #FFFFFF;
-      border-top: 1px solid #E5E9F0;
-      padding: clamp(6px, 0.9dvh, 8px) 12px;
-      z-index: 20;
+    /* Banner Tengah */
+    .banner-card {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      justify-content: center;
+      flex-shrink: 0;
     }
 
-    @media (max-width: 520px) {
-      .bottom-bar-fixed {
-        max-width: 100%;
-      }
+    /* Bottom Bar BUTUH BANTUAN? Selalu Pas di Bawah Perangkat */
+    .bottom-bar-dock {
+      flex-shrink: 0;
+      width: 100%;
+      background-color: #FFFFFF;
+      border-top: 1px solid #E5E9F0;
+      padding: clamp(7px, 1dvh, 10px) 12px max(8px, env(safe-area-inset-bottom)) 12px;
+      z-index: 20;
     }
 
     .tabular-nums {
@@ -166,26 +215,26 @@
   ></audio>
 
   <!-- LAYAR 1: PENGATURAN TRANSAKSI -->
-  <section id="screenSettings" class="screen-9-16 bg-[#F5F6F8]">
+  <section id="screenSettings" class="device-frame">
     <!-- Header Pengaturan -->
-    <div class="bg-[#118EE9] px-3.5 py-3 text-white flex items-center justify-between flex-shrink-0">
-      <div class="flex items-center gap-2.5">
+    <div class="bg-[#118EE9] px-3.5 pb-3 text-white flex items-center justify-between flex-shrink-0" style="padding-top: max(12px, env(safe-area-inset-top));">
+      <div class="flex items-center gap-2.5 min-w-0">
         <div class="w-7 h-7 rounded-full bg-white flex items-center justify-center flex-shrink-0">
           <svg width="18" height="18" viewBox="0 0 40 40" fill="none">
             <circle cx="20" cy="20" r="20" fill="#118EE9"/>
             <path d="M10.5 16.2C13.8 14.3 17.2 14.3 20.5 16.2C23.8 18.1 27.2 18.1 29.5 16.4V23.8C27.2 25.5 23.8 25.5 20.5 23.6C17.2 21.7 13.8 21.7 10.5 23.6V16.2Z" fill="#FFFFFF"/>
           </svg>
         </div>
-        <div>
-          <h1 class="text-sm font-bold leading-tight">Kirim Uang DANA</h1>
-          <p class="text-[10px] text-white/85">Atur detail sebelum kirim bukti transaksi</p>
+        <div class="min-w-0">
+          <h1 class="text-sm font-bold leading-tight truncate">Kirim Uang DANA</h1>
+          <p class="text-[10px] text-white/85 truncate">Atur detail sebelum kirim bukti transaksi</p>
         </div>
       </div>
-      <span class="text-[10px] font-semibold bg-white/20 px-2 py-0.5 rounded-full">9:16</span>
+      <span id="deviceSizeBadge" class="text-[10px] font-semibold bg-white/20 px-2 py-0.5 rounded-full flex-shrink-0">Auto Fit</span>
     </div>
 
-    <!-- Form Input -->
-    <div class="flex-1 p-3 flex flex-col justify-between overflow-hidden">
+    <!-- Area Form Scrollable Halus untuk Semua Ukuran Layar -->
+    <div class="flex-1 min-h-0 overflow-y-auto no-scrollbar p-3">
       <div class="bg-white rounded-2xl border border-slate-200/90 p-3 space-y-2.5">
         <!-- Nama Penerima -->
         <div>
@@ -218,9 +267,9 @@
             />
           </div>
           <div>
-            <div class="flex justify-between items-center mb-1">
-              <label for="inputIdDana" class="text-xs font-semibold text-slate-700">ID DANA</label>
-              <label class="flex items-center gap-1 text-[10.5px] text-slate-500 cursor-pointer select-none">
+            <div class="flex justify-between items-center mb-1 gap-1">
+              <label for="inputIdDana" class="text-xs font-semibold text-slate-700 truncate">ID DANA</label>
+              <label class="flex items-center gap-1 text-[10.5px] text-slate-500 cursor-pointer select-none flex-shrink-0">
                 <input type="checkbox" id="maskIdDanaCheck" class="rounded text-[#118EE9]" />
                 Sensor
               </label>
@@ -251,23 +300,23 @@
             />
           </div>
           <div class="grid grid-cols-3 gap-1.5 mt-1.5">
-            <button type="button" onclick="setQuickAmount(20000)" class="py-1 bg-slate-100 hover:bg-blue-50 active:bg-blue-100 hover:text-[#118EE9] rounded-lg text-[11px] font-semibold text-slate-700">Rp20.000</button>
-            <button type="button" onclick="setQuickAmount(50000)" class="py-1 bg-slate-100 hover:bg-blue-50 active:bg-blue-100 hover:text-[#118EE9] rounded-lg text-[11px] font-semibold text-slate-700">Rp50.000</button>
-            <button type="button" onclick="setQuickAmount(100000)" class="py-1 bg-slate-100 hover:bg-blue-50 active:bg-blue-100 hover:text-[#118EE9] rounded-lg text-[11px] font-semibold text-slate-700">Rp100.000</button>
-            <button type="button" onclick="setQuickAmount(250000)" class="py-1 bg-slate-100 hover:bg-blue-50 active:bg-blue-100 hover:text-[#118EE9] rounded-lg text-[11px] font-semibold text-slate-700">Rp250.000</button>
-            <button type="button" onclick="setQuickAmount(500000)" class="py-1 bg-slate-100 hover:bg-blue-50 active:bg-blue-100 hover:text-[#118EE9] rounded-lg text-[11px] font-semibold text-slate-700">Rp500.000</button>
-            <button type="button" onclick="setQuickAmount(1000000)" class="py-1 bg-slate-100 hover:bg-blue-50 active:bg-blue-100 hover:text-[#118EE9] rounded-lg text-[11px] font-semibold text-slate-700">Rp1.000.000</button>
+            <button type="button" onclick="setQuickAmount(20000)" class="py-1.5 bg-slate-100 hover:bg-blue-50 active:bg-blue-100 hover:text-[#118EE9] rounded-lg text-[11px] font-semibold text-slate-700">Rp20.000</button>
+            <button type="button" onclick="setQuickAmount(50000)" class="py-1.5 bg-slate-100 hover:bg-blue-50 active:bg-blue-100 hover:text-[#118EE9] rounded-lg text-[11px] font-semibold text-slate-700">Rp50.000</button>
+            <button type="button" onclick="setQuickAmount(100000)" class="py-1.5 bg-slate-100 hover:bg-blue-50 active:bg-blue-100 hover:text-[#118EE9] rounded-lg text-[11px] font-semibold text-slate-700">Rp100.000</button>
+            <button type="button" onclick="setQuickAmount(250000)" class="py-1.5 bg-slate-100 hover:bg-blue-50 active:bg-blue-100 hover:text-[#118EE9] rounded-lg text-[11px] font-semibold text-slate-700">Rp250.000</button>
+            <button type="button" onclick="setQuickAmount(500000)" class="py-1.5 bg-slate-100 hover:bg-blue-50 active:bg-blue-100 hover:text-[#118EE9] rounded-lg text-[11px] font-semibold text-slate-700">Rp500.000</button>
+            <button type="button" onclick="setQuickAmount(1000000)" class="py-1.5 bg-slate-100 hover:bg-blue-50 active:bg-blue-100 hover:text-[#118EE9] rounded-lg text-[11px] font-semibold text-slate-700">Rp1.000.000</button>
           </div>
         </div>
 
         <!-- Waktu Perangkat -->
         <div class="pt-1.5 border-t border-slate-100">
-          <div class="flex items-center justify-between">
-            <div>
+          <div class="flex items-center justify-between gap-2">
+            <div class="min-w-0">
               <span class="block text-xs font-semibold text-slate-700">Tanggal & Jam</span>
               <span id="settingsClockPreview" class="text-[11px] font-medium text-[#118EE9] tabular-nums">19 Nov 2026 • 23:25</span>
             </div>
-            <label class="flex items-center gap-1.5 text-xs font-medium text-slate-600 cursor-pointer select-none">
+            <label class="flex items-center gap-1.5 text-xs font-medium text-slate-600 cursor-pointer select-none flex-shrink-0">
               <input type="checkbox" id="autoTimeCheck" checked onchange="toggleTimeMode()" class="rounded text-[#118EE9]" />
               Otomatis HP
             </label>
@@ -279,7 +328,7 @@
         </div>
 
         <!-- Indikator Status Audio MP3 & Tombol Test Suara Boost 200% -->
-        <div class="pt-1.5 border-t border-slate-100 flex items-center justify-between gap-2">
+        <div class="pt-1.5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-1.5">
               <span class="text-[10.5px] font-semibold text-slate-600">Suara MP3</span>
@@ -308,29 +357,29 @@
           </button>
         </div>
       </div>
+    </div>
 
-      <!-- Tombol KIRIM -->
-      <div class="pt-2">
-        <button
-          type="button"
-          id="btnKirim"
-          onclick="handleSendClick(event)"
-          class="w-full py-3 bg-[#118EE9] hover:bg-[#0D7CD0] active:scale-[0.98] text-white font-bold text-sm tracking-wider rounded-xl shadow-md flex items-center justify-center gap-2"
-        >
-          <span>KIRIM</span>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="22" y1="2" x2="11" y2="13"></line>
-            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-          </svg>
-        </button>
-      </div>
+    <!-- Tombol KIRIM Terkunci Rapi di Bawah Layar Pengaturan -->
+    <div class="flex-shrink-0 px-3 pt-1 bg-[#F5F6F8]" style="padding-bottom: max(12px, env(safe-area-inset-bottom));">
+      <button
+        type="button"
+        id="btnKirim"
+        onclick="handleSendClick(event)"
+        class="w-full py-3 bg-[#118EE9] hover:bg-[#0D7CD0] active:scale-[0.98] text-white font-bold text-sm tracking-wider rounded-xl shadow-md flex items-center justify-center gap-2"
+      >
+        <span>KIRIM</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+      </button>
     </div>
   </section>
 
-  <!-- LAYAR 2: DETAIL TRANSAKSI (9:16 FULL FIT TANPA SCROLL) -->
-  <section id="screenReceipt" class="screen-9-16 bg-[#F5F6F8] hidden">
+  <!-- LAYAR 2: DETAIL TRANSAKSI (ADAPTIF MENYESUAIKAN LAYAR PERANGKAT) -->
+  <section id="screenReceipt" class="device-frame hidden">
     <!-- Top Header Biru -->
-    <header class="dana-header">
+    <header class="dana-header-top">
       <div class="flex items-center gap-3">
         <button type="button" onclick="backToSettings(event)" class="p-1 -ml-1 text-white focus:outline-none" title="Kembali ke Pengaturan">
           <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
@@ -341,15 +390,15 @@
       </div>
     </header>
 
-    <!-- Konten Utama yang Pas dalam 1 Layar -->
-    <main class="receipt-body-wrap">
+    <!-- Konten Utama yang Mengisi & Menyesuaikan Layar -->
+    <main class="receipt-body-wrap no-scrollbar">
       <!-- Bagian Atas: Kartu Struk + Scallop -->
-      <div>
+      <div class="relative z-10">
         <div class="receipt-card">
           <div class="watermark-layer"></div>
 
           <!-- Logo DANA -->
-          <div class="relative z-10 pt-[clamp(11px,1.8dvh,18px)] pb-[clamp(7px,1.2dvh,12px)] px-4 flex flex-col items-center justify-center">
+          <div class="relative z-10 pt-[clamp(12px,1.8dvh,18px)] pb-[clamp(8px,1.2dvh,12px)] px-4 flex flex-col items-center justify-center">
             <div class="flex items-center gap-2">
               <svg width="29" height="29" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <circle cx="20" cy="20" r="20" fill="#118EE9"/>
@@ -360,16 +409,16 @@
           </div>
 
           <!-- Baris Tanggal & ID DANA -->
-          <div class="relative z-10 px-3.5 pb-1.5 flex items-center justify-between text-[10.5px] text-[#8A94A6] tabular-nums">
-            <span id="displayDateTime">19 Nov 2026 • 23:25</span>
-            <span id="displayIdDana">ID DANA 0858-4151-2418</span>
+          <div class="relative z-10 px-3.5 pb-1.5 flex items-center justify-between gap-2 text-[10.5px] text-[#8A94A6] tabular-nums">
+            <span id="displayDateTime" class="truncate">19 Nov 2026 • 23:25</span>
+            <span id="displayIdDana" class="truncate text-right">ID DANA 0858-4151-2418</span>
           </div>
 
           <!-- Garis Pembatas Lurus -->
           <div class="straight-divider"></div>
 
           <!-- Status & Rincian Transfer -->
-          <div class="relative z-10 px-3.5 pt-[clamp(7px,1.2dvh,11px)] pb-[clamp(5px,0.9dvh,9px)]">
+          <div class="relative z-10 px-3.5 pt-[clamp(8px,1.2dvh,12px)] pb-[clamp(6px,1dvh,10px)]">
             <!-- Status Transaksi Berhasil -->
             <div class="flex items-center gap-1.5 mb-1.5">
               <span class="w-3.5 h-3.5 rounded-full bg-[#10B981] flex items-center justify-center flex-shrink-0">
@@ -381,7 +430,7 @@
             </div>
 
             <!-- Kalimat Kirim Uang -->
-            <p id="displaySummaryText" class="text-[12px] font-semibold text-[#1A1A1A] leading-snug mb-2">
+            <p id="displaySummaryText" class="text-[12px] font-semibold text-[#1A1A1A] leading-snug mb-2 break-words">
               Kirim Uang Rp20.000 ke M Sulaiman - 085719028287
             </p>
 
@@ -407,27 +456,27 @@
 
             <!-- Accordion: Detail Penerima -->
             <div class="border-b border-[#EEF1F5]">
-              <button type="button" onclick="toggleAccordion('accRecipient', event)" class="w-full py-[clamp(5px,0.9dvh,8px)] flex items-center justify-between text-left focus:outline-none">
+              <button type="button" onclick="toggleAccordion('accRecipient', event)" class="w-full py-[clamp(6px,0.9dvh,9px)] flex items-center justify-between text-left focus:outline-none">
                 <span class="text-[11.5px] font-semibold text-[#1A1A1A]">Detail Penerima</span>
                 <svg id="icon-accRecipient" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9AA5B4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform duration-100">
                   <polyline points="6 9 12 15 18 9"></polyline>
                 </svg>
               </button>
               <div id="accRecipient" class="hidden pb-1.5 text-[10.5px] text-[#4A5568] space-y-0.5">
-                <div class="flex justify-between">
+                <div class="flex justify-between gap-2">
                   <span class="text-[#8A94A6]">Nama</span>
-                  <span id="accRecipientName" class="font-semibold text-[#1A1A1A]">M Sulaiman</span>
+                  <span id="accRecipientName" class="font-semibold text-[#1A1A1A] text-right">M Sulaiman</span>
                 </div>
-                <div class="flex justify-between">
+                <div class="flex justify-between gap-2">
                   <span class="text-[#8A94A6]">No. HP</span>
-                  <span id="accRecipientPhone" class="font-semibold text-[#1A1A1A] tabular-nums">085719028287</span>
+                  <span id="accRecipientPhone" class="font-semibold text-[#1A1A1A] tabular-nums text-right">085719028287</span>
                 </div>
               </div>
             </div>
 
             <!-- Accordion: Detail Transaksi -->
             <div>
-              <button type="button" onclick="toggleAccordion('accTx', event)" class="w-full pt-[clamp(5px,0.9dvh,8px)] flex items-center justify-between text-left focus:outline-none">
+              <button type="button" onclick="toggleAccordion('accTx', event)" class="w-full pt-[clamp(6px,0.9dvh,9px)] flex items-center justify-between text-left focus:outline-none">
                 <span class="text-[11.5px] font-semibold text-[#1A1A1A]">Detail Transaksi</span>
                 <svg id="icon-accTx" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9AA5B4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform duration-100">
                   <polyline points="6 9 12 15 18 9"></polyline>
@@ -435,7 +484,7 @@
               </button>
               <div id="accTx" class="hidden pt-1 text-[10px] text-[#4A5568] space-y-0.5">
                 <div class="flex justify-between gap-2">
-                  <span class="text-[#8A94A6]">ID Transaksi</span>
+                  <span class="text-[#8A94A6] flex-shrink-0">ID Transaksi</span>
                   <span id="accTxCode" class="font-medium text-[#1A1A1A] truncate tabular-nums">202611191012148001001668492014</span>
                 </div>
                 <div class="flex justify-between gap-2">
@@ -452,7 +501,7 @@
       </div>
 
       <!-- Bagian Tengah: Kartu Banner Bawah -->
-      <div class="banner-card">
+      <div class="banner-card my-auto">
         <div class="flex flex-col items-center">
           <div class="w-[138px] h-[110px] relative rounded-[2px] overflow-hidden flex flex-col justify-between p-2 text-center select-none" style="background: radial-gradient(circle at center, #520408 0%, #240103 80%, #140001 100%);">
             <div class="absolute top-1 right-1 flex items-center gap-0.5 z-10">
@@ -492,12 +541,12 @@
       </div>
 
       <!-- Bagian Bawah: Tombol BAGIKAN & Footer Legalitas -->
-      <div>
-        <button type="button" onclick="handleShareClick(event)" class="w-full py-[clamp(5px,0.9dvh,8px)] bg-white hover:bg-blue-50/50 active:bg-blue-50 border border-[#68B5EE] rounded-[6px] text-[#118EE9] text-[12px] font-semibold tracking-wide">
+      <div class="relative z-10 flex-shrink-0">
+        <button type="button" onclick="handleShareClick(event)" class="w-full py-[clamp(6px,1dvh,9px)] bg-white hover:bg-blue-50/50 active:bg-blue-50 border border-[#68B5EE] rounded-[6px] text-[#118EE9] text-[12px] font-semibold tracking-wide">
           BAGIKAN
         </button>
 
-        <footer class="mt-[clamp(5px,0.8dvh,8px)] text-center px-1">
+        <footer class="mt-[clamp(6px,0.9dvh,10px)] text-center px-1">
           <div class="flex items-center justify-center gap-1.5 mb-0.5">
             <span class="text-[9.5px] text-[#64748B]">Diamankan oleh</span>
             <div class="flex items-center gap-1 text-[#118EE9]">
@@ -521,9 +570,9 @@
       </div>
     </main>
 
-    <!-- Bottom Bar Terkunci di Bawah Layar 9:16 -->
-    <div class="bottom-bar-fixed">
-      <button type="button" onclick="backToSettings(event)" class="w-full py-[clamp(5px,0.9dvh,8px)] bg-white hover:bg-blue-50/40 border border-[#68B5EE] rounded-[6px] flex items-center justify-center gap-2 text-[#118EE9] text-[12px] font-semibold tracking-wide">
+    <!-- Bottom Bar Terkunci Rapi di Bawah Frame -->
+    <div class="bottom-bar-dock">
+      <button type="button" onclick="backToSettings(event)" class="w-full py-[clamp(6px,1dvh,9px)] bg-white hover:bg-blue-50/40 border border-[#68B5EE] rounded-[6px] flex items-center justify-center gap-2 text-[#118EE9] text-[12px] font-semibold tracking-wide">
         <span class="w-5 h-5 rounded-full bg-[#118EE9] flex items-center justify-center relative overflow-hidden">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
             <circle cx="12" cy="9" r="4" fill="#FDE68A"/>
@@ -556,8 +605,8 @@
     let activeBufferSource = null;
     let isDecodingMp3 = false;
     let corsDecodeFailed = false;
-    let mp3ReadyState = 'loading'; // 'loading' | 'ready' | 'error'
-    let currentBoostGain = 2.0;    // Default 200%
+    let mp3ReadyState = 'loading';
+    let currentBoostGain = 2.0; // Default 200%
 
     function setAudioStatus(text, colorClass) {
       const el = document.getElementById('audioStatusText');
@@ -624,7 +673,6 @@
       }
     });
 
-    // Siapkan Web Audio Boost Chain (Gain 200%/300% + Limiter Compressor agar suara besar & jernih tanpa pecah)
     function ensureBoostContext() {
       try {
         const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -662,7 +710,6 @@
       }
     }
 
-    // Ambil & decode MP3 via CORS supaya bisa di-boost sampai 200%-300% lewat Web Audio API
     async function fetchAndDecodeMp3() {
       if (decodedMp3Buffer || isDecodingMp3 || corsDecodeFailed) return;
       if (!ensureBoostContext()) return;
@@ -676,7 +723,6 @@
         mp3ReadyState = 'ready';
         setAudioStatus(`MP3: Siap (Boost ${getBoostPercentLabel()} Aktif)`, 'text-emerald-600');
       } catch (err) {
-        // Server tidak mengirim header CORS -> tetap aman karena audioEl tidak di-route ke Web Audio
         corsDecodeFailed = true;
         decodedMp3Buffer = null;
         if (mp3ReadyState === 'ready') {
@@ -743,7 +789,6 @@
         playPromise.then(() => {
           setAudioStatus(`MP3: Diputar via ${sourceLabel} (Vol 100%)`, 'text-emerald-600');
         }).catch(() => {
-          // Cadangan instance Audio baru langsung
           try {
             const direct = new Audio(MP3_URL);
             direct.volume = 1.0;
@@ -765,12 +810,10 @@
       stopCurrentlyPlaying();
       ensureBoostContext();
 
-      // Mulai fetch & decode MP3 di latar belakang jika belum selesai
       if (!decodedMp3Buffer && !corsDecodeFailed) {
         fetchAndDecodeMp3();
       }
 
-      // 1. Prioritas utama: Putar MP3 via Web Audio Boost (200% / 300%) jika buffer sudah siap
       if (audioCtx && gainNode && decodedMp3Buffer) {
         try {
           const runBoostedBuffer = () => {
@@ -792,16 +835,12 @@
             runBoostedBuffer();
           }
           return;
-        } catch (err) {
-          // Lanjut ke pemutar native
-        }
+        } catch (err) {}
       }
 
-      // 2. Fallback mulus: Putar langsung elemen <audio> MP3 di volume 100% penuh
       playNativeAudioElement(sourceLabel);
     }
 
-    // Unlock audio sejak sentuhan pertama di layar
     function unlockAudioOnFirstTouch() {
       ensureBoostContext();
       fetchAndDecodeMp3();
@@ -821,6 +860,22 @@
       if (e) e.preventDefault();
       triggerMp3Sound('BAGIKAN');
     }
+
+    // Deteksi info perangkat secara dinamis untuk badge header
+    function updateDeviceBadge() {
+      const badge = document.getElementById('deviceSizeBadge');
+      if (!badge) return;
+      const w = window.innerWidth;
+      if (w < 540) {
+        badge.textContent = 'Mobile Fit';
+      } else if (w < 900) {
+        badge.textContent = 'Tablet Fit';
+      } else {
+        badge.textContent = 'Desktop Fit';
+      }
+    }
+    window.addEventListener('resize', updateDeviceBadge);
+    updateDeviceBadge();
 
     // Format & Pengaturan Data Transaksi
     function formatRupiah(numStr) {
