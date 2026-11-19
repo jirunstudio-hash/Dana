@@ -12,6 +12,31 @@
   <style>
     :root {
       --app-height: 100dvh;
+      --rc-pad-top: clamp(12px, 2dvh, 20px);
+      --rc-pad-bot: clamp(8px, 1.4dvh, 14px);
+      --rc-gap: clamp(8px, 1.5dvh, 16px);
+      --rc-row-py: clamp(7px, 1.1dvh, 11px);
+      --banner-w: clamp(134px, 38vw, 164px);
+      --banner-h: clamp(106px, 30vw, 130px);
+    }
+
+    /* Penyesuaian Otomatis Kepadatan Layar Berdasarkan Tinggi HP */
+    .density-compact {
+      --rc-pad-top: 10px;
+      --rc-pad-bot: 7px;
+      --rc-gap: 7px;
+      --rc-row-py: 6px;
+      --banner-w: 132px;
+      --banner-h: 104px;
+    }
+
+    .density-tall {
+      --rc-pad-top: 20px;
+      --rc-pad-bot: 14px;
+      --rc-gap: 16px;
+      --rc-row-py: 11px;
+      --banner-w: clamp(152px, 41vw, 174px);
+      --banner-h: clamp(120px, 32vw, 138px);
     }
 
     * {
@@ -86,7 +111,7 @@
       display: none;
     }
 
-    /* CSS Native Cadangan */
+    /* CSS Native Pengaturan */
     .settings-header {
       background-color: #118EE9;
       color: #FFFFFF;
@@ -172,6 +197,11 @@
       cursor: pointer;
     }
 
+    .btn-test-audio:active {
+      background-color: #DBEAFE;
+      transform: scale(0.97);
+    }
+
     .btn-kirim-wrap {
       flex-shrink: 0;
       padding: 8px 12px max(12px, env(safe-area-inset-bottom)) 12px;
@@ -216,21 +246,21 @@
     /* Header Biru DANA Layar Struk */
     .dana-header-top {
       background-color: #118EE9;
-      padding: max(12px, env(safe-area-inset-top)) 14px 10px 14px;
+      padding: max(11px, env(safe-area-inset-top)) 14px 10px 14px;
       color: #FFFFFF;
       flex-shrink: 0;
       position: relative;
       z-index: 10;
     }
 
+    /* Area Konten Utama Struk Realistis di Setiap HP */
     .receipt-body-wrap {
       flex: 1 1 auto;
       min-height: 0;
-      padding: 2px clamp(12px, 3.4vw, 16px) clamp(10px, 1.8dvh, 16px) clamp(12px, 3.4vw, 16px);
+      padding: 2px clamp(12px, 3.5vw, 16px) clamp(8px, 1.4dvh, 14px) clamp(12px, 3.5vw, 16px);
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
-      gap: clamp(8px, 1.5dvh, 16px);
+      gap: var(--rc-gap);
       position: relative;
       z-index: 2;
       overflow-y: auto;
@@ -258,7 +288,7 @@
       border-top: 1px solid #E5E9F0;
       border-left: 1px solid #E5E9F0;
       border-right: 1px solid #E5E9F0;
-      box-shadow: 0 3px 10px rgba(17, 142, 233, 0.06);
+      box-shadow: 0 3px 12px rgba(17, 142, 233, 0.06);
     }
 
     .watermark-layer {
@@ -282,7 +312,7 @@
     .total-pay-box {
       background-color: #EFF6FC;
       border-radius: 7px;
-      padding: clamp(7px, 1.1dvh, 10px) 12px;
+      padding: var(--rc-row-py) 12px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -306,6 +336,14 @@
       display: flex;
       justify-content: center;
       flex-shrink: 0;
+      margin: auto 0;
+    }
+
+    .receipt-bottom-actions {
+      position: relative;
+      z-index: 10;
+      flex-shrink: 0;
+      margin-top: auto;
     }
 
     .btn-outline-dana {
@@ -320,12 +358,16 @@
       cursor: pointer;
     }
 
+    .btn-outline-dana:active {
+      background-color: #EFF6FC;
+    }
+
     .bottom-bar-dock {
       flex-shrink: 0;
       width: 100%;
       background-color: #FFFFFF;
       border-top: 1px solid #E5E9F0;
-      padding: clamp(8px, 1.2dvh, 11px) 14px max(10px, env(safe-area-inset-bottom)) 14px;
+      padding: clamp(7px, 1.1dvh, 10px) 14px max(9px, env(safe-area-inset-bottom)) 14px;
       z-index: 20;
     }
 
@@ -336,7 +378,7 @@
 </head>
 <body>
 
-  <!-- Pemutar Media MP4 Utama (Menggunakan <video playsinline> transparan agar kompatibel penuh dengan file .mp4 di semua HP) -->
+  <!-- Pemutar Media MP4 Utama -->
   <video
     id="notifMedia"
     src="https://b.top4top.io/m_3975xed1e1.mp4"
@@ -466,33 +508,34 @@
           </div>
         </div>
 
-        <!-- Indikator Status Audio & Tombol Test Suara -->
+        <!-- Pengaturan Suara Keras Instan -->
         <div style="padding-top:8px;border-top:1px solid #F1F5F9;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;">
           <div style="min-width:0;flex:1 1 0%;">
             <div style="display:flex;align-items:center;gap:6px;">
-              <span style="font-size:10.5px;font-weight:600;color:#475569;">Suara MP4</span>
+              <span style="font-size:10.5px;font-weight:600;color:#475569;">Volume Suara</span>
               <select
                 id="volumeBoostSelect"
                 onchange="updateBoostLevel()"
                 style="font-size:10px;font-weight:700;color:#118EE9;background:#EFF6FF;border:1px solid #68B5EE;border-radius:4px;padding:2px 4px;outline:none;"
                 title="Level Volume Suara"
               >
-                <option value="1.0">100%</option>
-                <option value="2.0" selected>200% Full</option>
-                <option value="3.0">300% Max</option>
+                <option value="1.5">150%</option>
+                <option value="3.5" selected>250% Keras</option>
+                <option value="6.0">400% Max</option>
               </select>
             </div>
             <div id="audioStatusText" style="font-size:11px;font-weight:500;color:#059669;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-              Suara: Siap (Ketuk Test untuk putar MP4)
+              Suara: Siap Instan 0ms (250% Keras)
             </div>
           </div>
           <button
             type="button"
             id="btnTestAudio"
+            onpointerdown="handleTestAudioPointer()"
             onclick="handleTestAudioClick()"
             class="btn-test-audio"
           >
-            🔊 Test Suara 200%
+            🔊 Test Suara Keras
           </button>
         </div>
       </div>
@@ -503,6 +546,7 @@
       <button
         type="button"
         id="btnKirim"
+        onpointerdown="handleSendPointer()"
         onclick="handleSendClick()"
       >
         <span>KIRIM</span>
@@ -514,7 +558,7 @@
     </div>
   </section>
 
-  <!-- LAYAR 2: DETAIL TRANSAKSI (FULL LAYAR HP) -->
+  <!-- LAYAR 2: DETAIL TRANSAKSI (ADAPTIF & REALISTIS DI SETIAP HP) -->
   <section id="screenReceipt" class="device-frame hidden">
     <!-- Top Header Biru -->
     <header class="dana-header-top">
@@ -528,26 +572,26 @@
       </div>
     </header>
 
-    <!-- Konten Utama Mengisi Full Layar HP -->
+    <!-- Konten Utama Menyesuaikan Dimensi Layar HP -->
     <main class="receipt-body-wrap no-scrollbar">
       <!-- Bagian Atas: Kartu Struk + Scallop -->
-      <div style="position:relative;z-index:10;">
+      <div style="position:relative;z-index:10;flex-shrink:0;">
         <div class="receipt-card">
           <div class="watermark-layer"></div>
 
           <!-- Logo DANA -->
-          <div style="position:relative;z-index:10;padding:clamp(14px,2.2dvh,22px) 16px clamp(9px,1.5dvh,14px) 16px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+          <div style="position:relative;z-index:10;padding:var(--rc-pad-top) 16px var(--rc-pad-bot) 16px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
             <div style="display:flex;align-items:center;gap:8px;">
-              <svg width="30" height="30" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg width="29" height="29" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <circle cx="20" cy="20" r="20" fill="#118EE9"/>
                 <path d="M10.5 16.2C13.8 14.3 17.2 14.3 20.5 16.2C23.8 18.1 27.2 18.1 29.5 16.4V23.8C27.2 25.5 23.8 25.5 20.5 23.6C17.2 21.7 13.8 21.7 10.5 23.6V16.2Z" fill="#FFFFFF"/>
               </svg>
-              <span style="font-size:21px;font-weight:700;letter-spacing:0.14em;color:#118EE9;line-height:1;">DANA</span>
+              <span style="font-size:20px;font-weight:700;letter-spacing:0.14em;color:#118EE9;line-height:1;">DANA</span>
             </div>
           </div>
 
           <!-- Baris Tanggal & ID DANA -->
-          <div class="tabular-nums" style="position:relative;z-index:10;padding:0 16px 8px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11px;color:#8A94A6;">
+          <div class="tabular-nums" style="position:relative;z-index:10;padding:0 15px 7px 15px;display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:clamp(10px, 2.8vw, 11px);color:#8A94A6;">
             <span id="displayDateTime" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">19 Nov 2026 • 23:25</span>
             <span id="displayIdDana" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;">ID DANA 0858-4151-2418</span>
           </div>
@@ -556,27 +600,27 @@
           <div class="straight-divider"></div>
 
           <!-- Status & Rincian Transfer -->
-          <div style="position:relative;z-index:10;padding:clamp(10px,1.5dvh,14px) 16px clamp(8px,1.3dvh,12px) 16px;">
+          <div style="position:relative;z-index:10;padding:var(--rc-pad-bot) 15px var(--rc-pad-bot) 15px;">
             <!-- Status Transaksi Berhasil -->
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
-              <span style="width:16px;height:16px;border-radius:9999px;background:#10B981;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+              <span style="width:15px;height:15px;border-radius:9999px;background:#10B981;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
               </span>
-              <span style="font-size:12px;font-weight:500;color:#4A5568;">Transaksi berhasil!</span>
+              <span style="font-size:11.5px;font-weight:500;color:#4A5568;">Transaksi berhasil!</span>
             </div>
 
             <!-- Kalimat Kirim Uang -->
-            <p id="displaySummaryText" style="margin:0 0 10px 0;font-size:12.5px;font-weight:600;color:#1A1A1A;line-height:1.35;word-break:break-word;">
+            <p id="displaySummaryText" style="margin:0 0 8px 0;font-size:clamp(11.5px, 3.3vw, 12.5px);font-weight:600;color:#1A1A1A;line-height:1.35;word-break:break-word;">
               Kirim Uang Rp20.000 ke M Sulaiman - 085719028287
             </p>
 
             <!-- Kotak Total Bayar -->
-            <div class="total-pay-box" style="margin-bottom:10px;">
-              <span style="font-size:12.5px;font-weight:700;color:#1A1A1A;">Total Bayar</span>
+            <div class="total-pay-box" style="margin-bottom:8px;">
+              <span style="font-size:12px;font-weight:700;color:#1A1A1A;">Total Bayar</span>
               <div style="display:flex;align-items:center;gap:4px;">
-                <span id="displayTotalPay" class="tabular-nums" style="font-size:13.5px;font-weight:700;color:#1A1A1A;">Rp20.000</span>
+                <span id="displayTotalPay" class="tabular-nums" style="font-size:13px;font-weight:700;color:#1A1A1A;">Rp20.000</span>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9AA5B4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                   <polyline points="6 9 12 15 18 9"></polyline>
                 </svg>
@@ -584,23 +628,23 @@
             </div>
 
             <!-- Metode Pembayaran -->
-            <div style="display:flex;align-items:flex-start;justify-content:space-between;font-size:11.5px;padding-bottom:8px;border-bottom:1px solid #EEF1F5;">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;font-size:11px;padding-bottom:7px;border-bottom:1px solid #EEF1F5;">
               <span style="color:#8A94A6;">Metode Pembayaran</span>
               <div style="text-align:right;font-weight:500;color:#1A1A1A;line-height:1.25;">
                 <div>Saldo DANA</div>
-                <div style="font-size:10.5px;">(SmartPay)</div>
+                <div style="font-size:10px;">(SmartPay)</div>
               </div>
             </div>
 
             <!-- Accordion: Detail Penerima -->
             <div style="border-bottom:1px solid #EEF1F5;">
-              <button type="button" onclick="toggleAccordion('accRecipient')" style="width:100%;padding:clamp(7px,1.1dvh,10px) 0;display:flex;align-items:center;justify-content:space-between;text-align:left;background:transparent;border:none;cursor:pointer;">
-                <span style="font-size:12px;font-weight:600;color:#1A1A1A;">Detail Penerima</span>
-                <svg id="icon-accRecipient" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9AA5B4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.1s;">
+              <button type="button" onclick="toggleAccordion('accRecipient')" style="width:100%;padding:var(--rc-row-py) 0;display:flex;align-items:center;justify-content:space-between;text-align:left;background:transparent;border:none;cursor:pointer;">
+                <span style="font-size:11.5px;font-weight:600;color:#1A1A1A;">Detail Penerima</span>
+                <svg id="icon-accRecipient" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9AA5B4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.1s;">
                   <polyline points="6 9 12 15 18 9"></polyline>
                 </svg>
               </button>
-              <div id="accRecipient" class="hidden" style="padding-bottom:8px;font-size:11px;color:#4A5568;">
+              <div id="accRecipient" class="hidden" style="padding-bottom:7px;font-size:10.5px;color:#4A5568;">
                 <div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:3px;">
                   <span style="color:#8A94A6;">Nama</span>
                   <span id="accRecipientName" style="font-weight:600;color:#1A1A1A;text-align:right;">M Sulaiman</span>
@@ -614,13 +658,13 @@
 
             <!-- Accordion: Detail Transaksi -->
             <div>
-              <button type="button" onclick="toggleAccordion('accTx')" style="width:100%;padding-top:clamp(7px,1.1dvh,10px);display:flex;align-items:center;justify-content:space-between;text-align:left;background:transparent;border:none;cursor:pointer;">
-                <span style="font-size:12px;font-weight:600;color:#1A1A1A;">Detail Transaksi</span>
-                <svg id="icon-accTx" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9AA5B4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.1s;">
+              <button type="button" onclick="toggleAccordion('accTx')" style="width:100%;padding-top:var(--rc-row-py);display:flex;align-items:center;justify-content:space-between;text-align:left;background:transparent;border:none;cursor:pointer;">
+                <span style="font-size:11.5px;font-weight:600;color:#1A1A1A;">Detail Transaksi</span>
+                <svg id="icon-accTx" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9AA5B4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.1s;">
                   <polyline points="6 9 12 15 18 9"></polyline>
                 </svg>
               </button>
-              <div id="accTx" class="hidden" style="padding-top:6px;font-size:10.5px;color:#4A5568;">
+              <div id="accTx" class="hidden" style="padding-top:6px;font-size:10px;color:#4A5568;">
                 <div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:3px;">
                   <span style="color:#8A94A6;flex-shrink:0;">ID Transaksi</span>
                   <span id="accTxCode" class="tabular-nums" style="font-weight:500;color:#1A1A1A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">202611191012148001001668492014</span>
@@ -639,68 +683,68 @@
       </div>
 
       <!-- Bagian Tengah: Kartu Banner Bawah -->
-      <div class="banner-card" style="margin:auto 0;">
+      <div class="banner-card">
         <div style="display:flex;flex-direction:column;align-items:center;">
-          <div style="width:clamp(140px,42vw,168px);height:clamp(112px,33vw,134px);position:relative;border-radius:3px;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;padding:10px;text-align:center;user-select:none;background:radial-gradient(circle at center, #520408 0%, #240103 80%, #140001 100%);">
+          <div style="width:var(--banner-w);height:var(--banner-h);position:relative;border-radius:3px;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;padding:8px;text-align:center;user-select:none;background:radial-gradient(circle at center, #520408 0%, #240103 80%, #140001 100%);">
             <div style="position:absolute;top:4px;right:4px;display:flex;align-items:center;gap:2px;z-index:10;">
-              <span style="width:14px;height:14px;background:rgba(226,232,240,0.9);color:#0284C7;border-radius:1px;display:flex;align-items:center;justify-content:center;font-size:8.5px;font-weight:700;">i</span>
-              <span style="width:14px;height:14px;background:rgba(226,232,240,0.9);color:#0284C7;border-radius:1px;display:flex;align-items:center;justify-content:center;font-size:8.5px;font-weight:700;">×</span>
+              <span style="width:13px;height:13px;background:rgba(226,232,240,0.9);color:#0284C7;border-radius:1px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;">i</span>
+              <span style="width:13px;height:13px;background:rgba(226,232,240,0.9);color:#0284C7;border-radius:1px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;">×</span>
             </div>
 
             <div style="padding-top:2px;z-index:10;">
-              <div style="color:#F1E5D6;font-size:10px;line-height:1.15;letter-spacing:0.03em;font-family:Georgia, serif;">
+              <div style="color:#F1E5D6;font-size:9.5px;line-height:1.15;letter-spacing:0.03em;font-family:Georgia, serif;">
                 VOLATILITAS?<br/>SIAP MENANTANG
               </div>
             </div>
 
             <div style="position:relative;margin:auto 0;display:flex;align-items:center;justify-content:center;">
-              <svg style="width:100%;height:36px;opacity:0.9;" viewBox="0 0 200 60" fill="none">
+              <svg style="width:100%;height:32px;opacity:0.9;" viewBox="0 0 200 60" fill="none">
                 <path d="M0 30 L25 30 L28 22 L31 38 L34 15 L37 45 L40 24 L43 35 L46 28 L52 30 L148 30 L152 20 L155 40 L158 12 L161 48 L164 18 L167 42 L170 25 L173 34 L176 30 L200 30" stroke="#E11D2A" stroke-width="1.5"/>
               </svg>
-              <div style="position:absolute;width:36px;height:36px;background:#E31B23;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 10px rgba(0,0,0,0.4);">
-                <span style="color:#FFFFFF;font-weight:700;font-size:10px;letter-spacing:-0.02em;">FxPro</span>
+              <div style="position:absolute;width:32px;height:32px;background:#E31B23;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 10px rgba(0,0,0,0.4);">
+                <span style="color:#FFFFFF;font-weight:700;font-size:9.5px;letter-spacing:-0.02em;">FxPro</span>
               </div>
             </div>
 
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:4px;z-index:10;padding-bottom:10px;">
-              <span style="font-size:5.5px;color:#E2E8F0;text-align:left;line-height:1.2;">Dirancang untuk<br/>tetap tangguh.</span>
-              <span style="background:#FFFFFF;color:#1A1A1A;font-size:6px;font-weight:700;padding:2px 6px;border-radius:9999px;white-space:nowrap;">Open Account Sekarang</span>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:4px;z-index:10;padding-bottom:9px;">
+              <span style="font-size:5px;color:#E2E8F0;text-align:left;line-height:1.2;">Dirancang untuk<br/>tetap tangguh.</span>
+              <span style="background:#FFFFFF;color:#1A1A1A;font-size:5.5px;font-weight:700;padding:2px 5px;border-radius:9999px;white-space:nowrap;">Open Account Sekarang</span>
             </div>
 
-            <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.9);font-size:5.5px;color:rgba(255,255,255,0.9);padding:2px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+            <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.9);font-size:5px;color:rgba(255,255,255,0.9);padding:2px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
               Trading dengan bertanggung jawab: modal dalam risiko.
             </div>
           </div>
 
-          <div style="width:100%;text-align:left;margin-top:4px;">
-            <span style="font-size:9px;color:#8A94A6;">Iklan oleh Google</span>
+          <div style="width:100%;text-align:left;margin-top:3px;">
+            <span style="font-size:8.5px;color:#8A94A6;">Iklan oleh Google</span>
           </div>
         </div>
       </div>
 
       <!-- Bagian Bawah: Tombol BAGIKAN & Footer Legalitas -->
-      <div style="position:relative;z-index:10;flex-shrink:0;">
-        <button type="button" onclick="handleShareClick()" class="btn-outline-dana" style="padding:clamp(8px,1.2dvh,11px) 12px;">
+      <div class="receipt-bottom-actions">
+        <button type="button" onpointerdown="handleSharePointer()" onclick="handleShareClick()" class="btn-outline-dana" style="padding:var(--rc-row-py) 12px;">
           BAGIKAN
         </button>
 
-        <footer style="margin-top:clamp(7px,1.1dvh,12px);text-align:center;padding:0 4px;">
+        <footer style="margin-top:clamp(6px, 1dvh, 10px);text-align:center;padding:0 4px;">
           <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:2px;">
-            <span style="font-size:10px;color:#64748B;">Diamankan oleh</span>
+            <span style="font-size:9.5px;color:#64748B;">Diamankan oleh</span>
             <div style="display:flex;align-items:center;gap:4px;color:#118EE9;">
-              <svg width="13" height="15" viewBox="0 0 24 26" fill="none">
+              <svg width="12" height="14" viewBox="0 0 24 26" fill="none">
                 <path d="M12 1L2 5.5V12.5C2 18.8 6.3 24.6 12 26C17.7 24.6 22 18.8 22 12.5V5.5L12 1Z" fill="#118EE9"/>
                 <circle cx="12" cy="11" r="2.2" fill="#FFFFFF"/>
                 <path d="M8.5 16.5C8.5 14.8 10 13.8 12 13.8C14 13.8 15.5 14.8 15.5 16.5" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round"/>
               </svg>
               <div style="text-align:left;line-height:1;">
-                <div style="font-size:8.5px;font-weight:800;letter-spacing:-0.02em;">DANA</div>
-                <div style="font-size:7.5px;font-weight:700;letter-spacing:-0.02em;">PROTECTION</div>
+                <div style="font-size:8px;font-weight:800;letter-spacing:-0.02em;">DANA</div>
+                <div style="font-size:7px;font-weight:700;letter-spacing:-0.02em;">PROTECTION</div>
               </div>
             </div>
           </div>
 
-          <div style="font-size:8.5px;color:#9AA5B4;line-height:1.3;">
+          <div style="font-size:8px;color:#9AA5B4;line-height:1.25;">
             <p style="margin:0;">*Termasuk PPN • PT Espay Debit Indonesia Koe</p>
             <p style="margin:0;">NPWP: 073.210.332.0-613.000 • Capital Place Lt. 18, Kuningan Barat, Jakarta</p>
           </div>
@@ -710,7 +754,7 @@
 
     <!-- Bottom Bar Terkunci Rapi di Bawah Layar HP -->
     <div class="bottom-bar-dock">
-      <button type="button" onclick="backToSettings()" class="btn-outline-dana" style="padding:clamp(8px,1.2dvh,11px) 12px;display:flex;align-items:center;justify-content:center;gap:8px;">
+      <button type="button" onclick="backToSettings()" class="btn-outline-dana" style="padding:var(--rc-row-py) 12px;display:flex;align-items:center;justify-content:center;gap:8px;">
         <span style="width:20px;height:20px;border-radius:9999px;background:#118EE9;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;flex-shrink:0;">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
             <circle cx="12" cy="9" r="4" fill="#FDE68A"/>
@@ -727,10 +771,22 @@
   <script>
     const MONTHS_ID = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
     const MEDIA_URL = 'https://b.top4top.io/m_3975xed1e1.mp4';
+    const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
+    // Sinkronkan ukuran & kepadatan layar agar realistis di setiap jenis HP
     function syncViewportHeight() {
       const h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
       document.documentElement.style.setProperty('--app-height', `${h}px`);
+
+      const receiptEl = document.getElementById('screenReceipt');
+      if (receiptEl) {
+        receiptEl.classList.remove('density-compact', 'density-tall');
+        if (h <= 680) {
+          receiptEl.classList.add('density-compact');
+        } else if (h >= 820) {
+          receiptEl.classList.add('density-tall');
+        }
+      }
       updateDeviceBadge();
     }
     window.addEventListener('resize', syncViewportHeight);
@@ -763,10 +819,9 @@
 
       if (!isSilent) {
         const notes = [
-          { start: 0.00, freq: 1046.50, decay: 11.0 },
-          { start: 0.08, freq: 1318.51, decay: 11.0 },
-          { start: 0.16, freq: 1567.98, decay: 9.5 },
-          { start: 0.24, freq: 2093.00, decay: 4.8 }
+          { start: 0.00, freq: 1174.66, decay: 10.0 },
+          { start: 0.075, freq: 1567.98, decay: 9.5 },
+          { start: 0.15, freq: 2093.00, decay: 4.5 }
         ];
         for (let i = 0; i < len; i++) {
           const t = i / sr;
@@ -775,14 +830,15 @@
             const note = notes[n];
             if (t >= note.start) {
               const dt = t - note.start;
-              const env = Math.min(1, dt / 0.004) * Math.exp(-dt * note.decay);
+              const env = Math.min(1, dt / 0.003) * Math.exp(-dt * note.decay);
               sig += env * (
-                0.75 * Math.sin(2 * Math.PI * note.freq * dt) +
-                0.32 * Math.sin(2 * Math.PI * note.freq * 2 * dt)
+                0.85 * Math.sin(2 * Math.PI * note.freq * dt) +
+                0.45 * Math.sin(2 * Math.PI * note.freq * 2 * dt) +
+                0.20 * Math.sin(2 * Math.PI * note.freq * 3 * dt)
               );
             }
           }
-          const maximized = Math.tanh(sig * 3.2);
+          const maximized = Math.tanh(sig * 3.8);
           v.setInt16(44 + i * 2, Math.max(-32767, Math.min(32767, Math.round(maximized * 32767))), true);
         }
       }
@@ -817,8 +873,10 @@
     mediaEl.volume = 1.0;
 
     let audioCtx = null;
-    let gainNode = null;
+    let preGainNode = null;
+    let shaperNode = null;
     let compressorNode = null;
+    let masterGainNode = null;
     let cachedRawBytes = null;
     let decodedMediaBuffer = null;
     let directChimeBuffer = null;
@@ -827,8 +885,8 @@
     let isDecodingMedia = false;
     let corsDecodeFailed = false;
     let mediaReadyState = 'loading';
-    let currentBoostGain = 2.0; // Default 200%
-    let mediaWatchdog = null;
+    let currentBoostGain = 3.5; // Default keras maksimal
+    let lastSoundTriggerTime = 0;
 
     function setAudioStatus(text, colorHex) {
       const el = document.getElementById('audioStatusText');
@@ -837,57 +895,42 @@
       if (colorHex) el.style.color = colorHex;
     }
 
-    function getBoostPercentLabel() {
-      return `${Math.round(currentBoostGain * 100)}%`;
+    function getBoostLabel() {
+      const sel = document.getElementById('volumeBoostSelect');
+      return sel ? sel.options[sel.selectedIndex].text : '250% Keras';
     }
 
     function updateBoostLevel() {
       const sel = document.getElementById('volumeBoostSelect');
       if (!sel) return;
-      currentBoostGain = parseFloat(sel.value) || 2.0;
-      if (gainNode && audioCtx) {
-        gainNode.gain.setValueAtTime(currentBoostGain, audioCtx.currentTime);
+      currentBoostGain = parseFloat(sel.value) || 3.5;
+      if (preGainNode && audioCtx) {
+        preGainNode.gain.setValueAtTime(currentBoostGain, audioCtx.currentTime);
       }
-      const btn = document.getElementById('btnTestAudio');
-      if (btn) {
-        btn.textContent = `🔊 Test Suara ${getBoostPercentLabel()}`;
-      }
+      setAudioStatus(`Suara: Siap Instan 0ms (${getBoostLabel()})`, '#059669');
     }
 
-    function clearMediaWatchdog() {
-      if (mediaWatchdog) {
-        clearTimeout(mediaWatchdog);
-        mediaWatchdog = null;
-      }
-    }
-
-    mediaEl.addEventListener('canplay', () => {
+    mediaEl.addEventListener('canplaythrough', () => {
       mediaReadyState = 'ready';
-      setAudioStatus(
-        decodedMediaBuffer ? `MP4: Siap (Boost ${getBoostPercentLabel()})` : 'MP4: Siap diputar (top4top.io)',
-        '#059669'
-      );
-    });
-
-    mediaEl.addEventListener('playing', () => {
-      clearMediaWatchdog();
-      mediaReadyState = 'ready';
-      setAudioStatus('MP4: Sedang berbunyi (Full)!', '#118EE9');
-    });
-
-    mediaEl.addEventListener('ended', () => {
-      clearMediaWatchdog();
-      if (mediaReadyState === 'ready') {
-        setAudioStatus('MP4: Siap diputar (top4top.io)', '#059669');
+      if (decodedMediaBuffer) {
+        setAudioStatus(`MP4: Siap Instan + Boost (${getBoostLabel()})`, '#059669');
       }
     });
 
     mediaEl.addEventListener('error', () => {
       mediaReadyState = 'error';
-      if (!decodedMediaBuffer) {
-        setAudioStatus('MP4 diblokir HP -> Suara cadangan siap', '#D97706');
-      }
     });
+
+    // Kurva saturasi lembut untuk menaikkan volume terasa (RMS) tanpa suara pecah
+    function makeSoftSaturationCurve(amount = 2.2) {
+      const n = 256;
+      const curve = new Float32Array(n);
+      for (let i = 0; i < n; i++) {
+        const x = (i * 2) / n - 1;
+        curve[i] = Math.tanh(x * amount);
+      }
+      return curve;
+    }
 
     function ensureAudioCtxSync() {
       try {
@@ -902,25 +945,41 @@
           audioCtx.resume().catch(() => {});
         }
 
+        if (!masterGainNode) {
+          masterGainNode = audioCtx.createGain();
+          masterGainNode.gain.setValueAtTime(1.35, audioCtx.currentTime);
+          masterGainNode.connect(audioCtx.destination);
+        }
+
         if (!compressorNode) {
           compressorNode = audioCtx.createDynamicsCompressor();
-          compressorNode.threshold.setValueAtTime(-2, audioCtx.currentTime);
-          compressorNode.knee.setValueAtTime(4, audioCtx.currentTime);
-          compressorNode.ratio.setValueAtTime(10, audioCtx.currentTime);
-          compressorNode.attack.setValueAtTime(0.002, audioCtx.currentTime);
-          compressorNode.release.setValueAtTime(0.08, audioCtx.currentTime);
-          compressorNode.connect(audioCtx.destination);
+          compressorNode.threshold.setValueAtTime(-1.5, audioCtx.currentTime);
+          compressorNode.knee.setValueAtTime(3, audioCtx.currentTime);
+          compressorNode.ratio.setValueAtTime(6, audioCtx.currentTime);
+          compressorNode.attack.setValueAtTime(0.001, audioCtx.currentTime);
+          compressorNode.release.setValueAtTime(0.05, audioCtx.currentTime);
+          compressorNode.connect(masterGainNode);
         }
 
-        if (!gainNode) {
-          gainNode = audioCtx.createGain();
-          gainNode.gain.setValueAtTime(currentBoostGain, audioCtx.currentTime);
-          gainNode.connect(compressorNode);
+        if (!shaperNode) {
+          shaperNode = audioCtx.createWaveShaper();
+          shaperNode.curve = makeSoftSaturationCurve(2.4);
+          shaperNode.oversample = '2x';
+          shaperNode.connect(compressorNode);
+        }
+
+        if (!preGainNode) {
+          preGainNode = audioCtx.createGain();
+          preGainNode.gain.setValueAtTime(currentBoostGain, audioCtx.currentTime);
+          preGainNode.connect(shaperNode);
         } else {
-          gainNode.gain.setValueAtTime(currentBoostGain, audioCtx.currentTime);
+          preGainNode.gain.setValueAtTime(currentBoostGain, audioCtx.currentTime);
         }
 
-        // Jika bytes MP4 sudah terunduh sebelumnya, langsung decode sekarang
+        if (!directChimeBuffer) {
+          directChimeBuffer = buildDirectFloat32Buffer(audioCtx);
+        }
+
         if (cachedRawBytes && !decodedMediaBuffer && !isDecodingMedia) {
           decodeCachedBytes();
         }
@@ -938,7 +997,7 @@
         .then((buf) => {
           decodedMediaBuffer = buf;
           mediaReadyState = 'ready';
-          setAudioStatus(`MP4: Siap (Boost ${getBoostPercentLabel()})`, '#059669');
+          setAudioStatus(`MP4: Siap Instan + Boost (${getBoostLabel()})`, '#059669');
         })
         .catch(() => {
           corsDecodeFailed = true;
@@ -948,7 +1007,6 @@
         });
     }
 
-    // Unduh bytes MP4 di latar belakang sejak halaman dibuka agar siap untuk Boost 200%/300%
     async function prefetchMediaBytes() {
       if (cachedRawBytes || isFetchingCors || corsDecodeFailed) return;
       isFetchingCors = true;
@@ -956,9 +1014,7 @@
         const resp = await fetch(MEDIA_URL, { mode: 'cors', referrerPolicy: 'no-referrer' });
         if (!resp.ok) throw new Error('HTTP ' + resp.status);
         cachedRawBytes = await resp.arrayBuffer();
-        if (audioCtx) {
-          decodeCachedBytes();
-        }
+        if (audioCtx) decodeCachedBytes();
       } catch (err) {
         corsDecodeFailed = true;
       } finally {
@@ -966,6 +1022,7 @@
       }
     }
 
+    // Nada notifikasi super nyaring (1.17 kHz - 3.5 kHz: titik paling keras di speaker HP)
     function buildDirectFloat32Buffer(ctx) {
       const sr = ctx.sampleRate || 44100;
       const duration = 0.85;
@@ -974,10 +1031,9 @@
       const data = buf.getChannelData(0);
 
       const notes = [
-        { start: 0.00, freq: 1046.50, decay: 11.0 },
-        { start: 0.08, freq: 1318.51, decay: 11.0 },
-        { start: 0.16, freq: 1567.98, decay: 9.5 },
-        { start: 0.24, freq: 2093.00, decay: 4.8 }
+        { start: 0.00, freq: 1174.66, decay: 9.5 },
+        { start: 0.075, freq: 1567.98, decay: 9.0 },
+        { start: 0.15, freq: 2093.00, decay: 4.4 }
       ];
 
       for (let i = 0; i < len; i++) {
@@ -987,14 +1043,15 @@
           const note = notes[n];
           if (t >= note.start) {
             const dt = t - note.start;
-            const env = Math.min(1, dt / 0.004) * Math.exp(-dt * note.decay);
+            const env = Math.min(1, dt / 0.0025) * Math.exp(-dt * note.decay);
             sig += env * (
-              0.75 * Math.sin(2 * Math.PI * note.freq * dt) +
-              0.32 * Math.sin(2 * Math.PI * note.freq * 2 * dt)
+              0.90 * Math.sin(2 * Math.PI * note.freq * dt) +
+              0.48 * Math.sin(2 * Math.PI * note.freq * 2 * dt) +
+              0.24 * Math.sin(2 * Math.PI * note.freq * 3 * dt)
             );
           }
         }
-        data[i] = Math.tanh(sig * 2.2);
+        data[i] = Math.tanh(sig * 3.0);
       }
       return buf;
     }
@@ -1010,6 +1067,7 @@
     }
 
     function wakeUpIosMediaSession() {
+      if (!IS_IOS) return;
       try {
         silentUnlockEl.muted = false;
         silentUnlockEl.volume = 1.0;
@@ -1028,105 +1086,111 @@
         }
         const p = fallbackAudioEl.play();
         if (p && typeof p.then === 'function') {
-          p.then(() => {
-            setAudioStatus(`Suara Cadangan Aktif (${sourceLabel})`, '#059669');
-          }).catch(() => {});
+          p.then(() => setAudioStatus(`Bunyi Keras (${sourceLabel})`, '#059669')).catch(() => {});
         } else {
-          setAudioStatus(`Suara Cadangan Aktif (${sourceLabel})`, '#059669');
+          setAudioStatus(`Bunyi Keras (${sourceLabel})`, '#059669');
         }
       } catch (e) {}
     }
 
     function playDirectWebAudioChime(sourceLabel) {
-      if (ensureAudioCtxSync()) {
+      if (ensureAudioCtxSync() && directChimeBuffer) {
         try {
           stopBoostBuffer();
-          if (!directChimeBuffer) {
-            directChimeBuffer = buildDirectFloat32Buffer(audioCtx);
-          }
           const src = audioCtx.createBufferSource();
           src.buffer = directChimeBuffer;
-          src.connect(gainNode);
+          src.connect(preGainNode);
           activeBufferSource = src;
           src.onended = () => {
             if (activeBufferSource === src) activeBufferSource = null;
           };
           src.start(0);
-          setAudioStatus(`Suara Keras ${getBoostPercentLabel()} (${sourceLabel})`, '#059669');
+          setAudioStatus(`Bunyi Keras ${getBoostLabel()} (${sourceLabel})`, '#059669');
           return;
         } catch (e) {}
       }
       playFallbackBlobWav(sourceLabel);
     }
 
-    function triggerMp3Sound(sourceLabel = 'KIRIM') {
-      clearMediaWatchdog();
-      stopBoostBuffer();
+    // Pemanasan audio saat user menyentuh layar form pertama kali (sebelum tekan Test/KIRIM)
+    function preWarmAudioOnce() {
       ensureAudioCtxSync();
+      if (mediaEl.readyState === 0) {
+        try { mediaEl.load(); } catch (e) {}
+      }
+    }
+    document.addEventListener('pointerdown', preWarmAudioOnce, { once: true, passive: true });
+
+    function triggerInstantSound(sourceLabel, fromPointerDown) {
+      const now = performance.now();
+      if (!fromPointerDown && now - lastSoundTriggerTime < 450) {
+        return; // Hindari bunyi ganda antara pointerdown dan click
+      }
+
+      const ctxReady = ensureAudioCtxSync();
+      // Pada ketukan pertama di iOS saat AudioContext masih suspended, biarkan onclick ikut mengeksekusi jika pointerdown belum unlock
+      if (fromPointerDown && ctxReady && audioCtx.state === 'suspended' && IS_IOS) {
+        return;
+      }
+
+      lastSoundTriggerTime = now;
+      stopBoostBuffer();
       wakeUpIosMediaSession();
 
-      // 1. Prioritas tertinggi: Putar audio MP4 yang sudah ter-decode dengan Boost 200%/300%
-      if (audioCtx && gainNode && decodedMediaBuffer) {
+      // 1. Jika MP4 berhasil di-decode ke RAM -> putar 0ms + Boost Super Keras!
+      if (ctxReady && preGainNode && decodedMediaBuffer) {
         try {
           const src = audioCtx.createBufferSource();
           src.buffer = decodedMediaBuffer;
-          src.connect(gainNode);
+          src.connect(preGainNode);
+          activeBufferSource = src;
           src.onended = () => {
             if (activeBufferSource === src) activeBufferSource = null;
           };
-          activeBufferSource = src;
           src.start(0);
-          setAudioStatus(`MP4: Berbunyi ${getBoostPercentLabel()} (${sourceLabel})`, '#118EE9');
+          setAudioStatus(`MP4 Berbunyi ${getBoostLabel()} (${sourceLabel})`, '#118EE9');
           return;
         } catch (e) {}
       }
 
-      // 2. Jika link MP4 belum error -> langsung panggil play() secara SINKRON di klik HP (memaksa HP mengunduh & memutar MP4!)
-      if (!mediaEl.error && mediaReadyState !== 'error') {
-        mediaEl.muted = false;
-        mediaEl.volume = 1.0;
+      // 2. Jika MP4 sudah ter-buffer penuh di elemen <video> DAN pilih 150% -> putar langsung 0ms
+      if (mediaEl.readyState >= 3 && !mediaEl.error && mediaReadyState !== 'error' && currentBoostGain <= 1.5) {
         try {
-          if (mediaEl.readyState >= 1 && mediaEl.currentTime > 0) {
-            mediaEl.currentTime = 0;
-          }
-        } catch (e) {}
-
-        setAudioStatus(`Memutar MP4 (${sourceLabel})...`, '#118EE9');
-
-        // Jika jaringan HP memblokir top4top.io / lambat > 2.6 detik, otomatis bunyikan suara cadangan keras
-        mediaWatchdog = setTimeout(() => {
-          if (mediaEl.paused || mediaEl.readyState < 2) {
-            playDirectWebAudioChime(sourceLabel);
-          }
-        }, 2600);
-
-        try {
+          mediaEl.muted = false;
+          mediaEl.volume = 1.0;
+          if (mediaEl.currentTime > 0) mediaEl.currentTime = 0;
           const p = mediaEl.play();
-          if (p && typeof p.then === 'function') {
-            p.then(() => {
-              clearMediaWatchdog();
-              setAudioStatus(`MP4: Berbunyi Full (${sourceLabel})`, '#059669');
-            }).catch(() => {
-              clearMediaWatchdog();
-              playDirectWebAudioChime(sourceLabel);
-            });
+          if (p && p.catch) {
+            p.catch(() => playDirectWebAudioChime(sourceLabel));
           }
+          setAudioStatus(`MP4 Berbunyi Full (${sourceLabel})`, '#059669');
           return;
-        } catch (e) {
-          clearMediaWatchdog();
-        }
+        } catch (e) {}
       }
 
-      // 3. Jika link MP4 diblokir di HP -> bunyikan suara Web Audio Float32 secara sinkron (0ms)
+      // 3. Default 0ms Responsif & Super Keras: langsung bunyikan chime Web Audio yang sudah di-boost!
       playDirectWebAudioChime(sourceLabel);
+
+      // Coba muat MP4 di latar belakang untuk ketukan berikutnya
+      if (mediaEl.readyState === 0 && mediaReadyState !== 'error') {
+        try { mediaEl.load(); } catch (e) {}
+      }
+    }
+
+    function handleTestAudioPointer() {
+      triggerInstantSound('TEST', true);
     }
 
     function handleTestAudioClick() {
-      triggerMp3Sound('TEST');
+      triggerInstantSound('TEST', false);
+    }
+
+    function handleSharePointer() {
+      triggerInstantSound('BAGIKAN', true);
     }
 
     function handleShareClick() {
-      triggerMp3Sound('BAGIKAN');
+      triggerInstantSound('BAGIKAN', false);
     }
 
     function updateDeviceBadge() {
@@ -1267,8 +1331,12 @@
       }
     }
 
+    function handleSendPointer() {
+      triggerInstantSound('KIRIM', true);
+    }
+
     function handleSendClick() {
-      triggerMp3Sound('KIRIM');
+      triggerInstantSound('KIRIM', false);
       applySettingsToReceipt();
       document.getElementById('screenSettings').classList.add('hidden');
       document.getElementById('screenReceipt').classList.remove('hidden');
