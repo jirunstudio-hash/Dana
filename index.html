@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="referrer" content="no-referrer" />
   <title>Detail Transaksi - DANA</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -18,6 +19,7 @@
       margin: 0;
       padding: 0;
       width: 100%;
+      height: 100vh;
       height: 100dvh;
       overflow: hidden;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -36,9 +38,10 @@
       touch-action: manipulation;
     }
 
-    /* Container Adaptif Mengikuti Layar Perangkat */
+    /* Full Layar Penuh di Semua HP & Perangkat Sentuh */
     .device-frame {
       width: 100%;
+      height: 100vh;
       height: 100dvh;
       position: relative;
       overflow: hidden;
@@ -51,33 +54,20 @@
       display: none !important;
     }
 
-    /* Tablet & Desktop: Proporsional di tengah layar */
-    @media (min-width: 540px) {
+    /* Khusus Layar Komputer/Desktop dengan Mouse: Tampil Rapi di Tengah */
+    @media (min-width: 768px) and (hover: hover) and (pointer: fine) {
       body {
-        padding: clamp(0px, 2dvh, 16px);
+        padding: clamp(8px, 2dvh, 18px);
       }
       .device-frame {
-        width: min(100%, 440px);
+        width: min(100%, 430px);
         height: min(100%, 880px);
         max-height: 100dvh;
-        border-radius: 20px;
-        box-shadow: 0 16px 48px rgba(15, 23, 42, 0.18);
+        border-radius: 22px;
+        box-shadow: 0 18px 50px rgba(15, 23, 42, 0.2);
       }
     }
 
-    /* Layar Pendek / Mode Landscape HP */
-    @media (max-height: 540px) and (min-width: 540px) {
-      body {
-        padding: 0;
-      }
-      .device-frame {
-        width: min(100%, 480px);
-        height: 100dvh;
-        border-radius: 0;
-      }
-    }
-
-    /* Sembunyikan scrollbar namun tetap bisa di-scroll jika layar kecil */
     .no-scrollbar {
       -ms-overflow-style: none;
       scrollbar-width: none;
@@ -96,29 +86,29 @@
       z-index: 10;
     }
 
-    /* Area Konten Utama Struk (Menyesuaikan Tinggi Layar) */
+    /* Area Konten Utama Struk Full Layar HP */
     .receipt-body-wrap {
       flex: 1;
       min-height: 0;
-      padding: 0 clamp(10px, 3vw, 14px) clamp(8px, 1.4dvh, 14px) clamp(10px, 3vw, 14px);
+      padding: 2px clamp(12px, 3.4vw, 16px) clamp(10px, 1.8dvh, 16px) clamp(12px, 3.4vw, 16px);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      gap: clamp(8px, 1.4dvh, 14px);
+      gap: clamp(8px, 1.5dvh, 16px);
       position: relative;
       z-index: 2;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
     }
 
-    /* Pita Biru Lanjutan Header di Belakang Bagian Atas Kartu Struk */
+    /* Lanjutan Warna Biru Header di Belakang Bagian Atas Struk (Tanpa Garis Putus) */
     .receipt-body-wrap::before {
       content: "";
       position: absolute;
-      top: 0;
+      top: -2px;
       left: 0;
       right: 0;
-      height: clamp(36px, 5.5dvh, 48px);
+      height: clamp(38px, 5.8dvh, 52px);
       background-color: #118EE9;
       z-index: 0;
       pointer-events: none;
@@ -127,14 +117,14 @@
     /* Kartu Struk Putih */
     .receipt-card {
       background-color: #FFFFFF;
-      border-radius: 10px 10px 0 0;
+      border-radius: 11px 11px 0 0;
       position: relative;
       z-index: 2;
       overflow: hidden;
       border-top: 1px solid #E5E9F0;
       border-left: 1px solid #E5E9F0;
       border-right: 1px solid #E5E9F0;
-      box-shadow: 0 2px 8px rgba(17, 142, 233, 0.04);
+      box-shadow: 0 3px 10px rgba(17, 142, 233, 0.06);
     }
 
     /* Watermark Diagonal DANA Halus */
@@ -149,7 +139,6 @@
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='138' height='138' viewBox='0 0 138 138'%3E%3Cg transform='rotate(-45 69 69)' fill='%23118EE9'%3E%3Ccircle cx='34' cy='69' r='12'/%3E%3Cpath d='M27 66.5c2.5-1.5 5.2-1.5 7.7 0s5.2 1.5 7.7 0v5.5c-2.5 1.5-5.2 1.5-7.7 0s-5.2-1.5-7.7 0v-5.5z' fill='%23FFFFFF'/%3E%3Ctext x='51' y='74' font-family='Arial, sans-serif' font-weight='800' font-size='15' letter-spacing='1.5'%3EDANA%3C/text%3E%3C/g%3E%3C/svg%3E");
     }
 
-    /* Garis Pemisah Horizontal Lurus */
     .straight-divider {
       border-top: 1px solid #EEF1F5;
       margin: 0 14px;
@@ -157,17 +146,15 @@
       z-index: 2;
     }
 
-    /* Kotak Total Bayar Biru Sangat Muda */
     .total-pay-box {
       background-color: #EFF6FC;
-      border-radius: 6px;
-      padding: clamp(6px, 1dvh, 9px) 11px;
+      border-radius: 7px;
+      padding: clamp(7px, 1.1dvh, 10px) 12px;
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
 
-    /* Tepi Bawah Kartu Bergerigi Halus */
     .scallop-bottom {
       height: 8px;
       width: 100%;
@@ -180,7 +167,6 @@
       background-repeat: repeat-x;
     }
 
-    /* Banner Tengah */
     .banner-card {
       position: relative;
       z-index: 2;
@@ -189,13 +175,13 @@
       flex-shrink: 0;
     }
 
-    /* Bottom Bar BUTUH BANTUAN? Selalu Pas di Bawah Perangkat */
+    /* Bottom Bar BUTUH BANTUAN? Terkunci Rapi di Bawah Layar HP */
     .bottom-bar-dock {
       flex-shrink: 0;
       width: 100%;
       background-color: #FFFFFF;
       border-top: 1px solid #E5E9F0;
-      padding: clamp(7px, 1dvh, 10px) 12px max(8px, env(safe-area-inset-bottom)) 12px;
+      padding: clamp(8px, 1.2dvh, 11px) 14px max(10px, env(safe-area-inset-bottom)) 14px;
       z-index: 20;
     }
 
@@ -206,12 +192,13 @@
 </head>
 <body>
 
-  <!-- Elemen Audio MP3 Utama (Tanpa crossOrigin agar pemutaran langsung tidak pernah terblokir CORS) -->
+  <!-- Elemen Audio MP3 Utama -->
   <audio
     id="notifAudio"
     src="https://a.top4top.io/m_3975h1p771.mp3"
     preload="auto"
     playsinline
+    webkit-playsinline
   ></audio>
 
   <!-- LAYAR 1: PENGATURAN TRANSAKSI -->
@@ -230,10 +217,10 @@
           <p class="text-[10px] text-white/85 truncate">Atur detail sebelum kirim bukti transaksi</p>
         </div>
       </div>
-      <span id="deviceSizeBadge" class="text-[10px] font-semibold bg-white/20 px-2 py-0.5 rounded-full flex-shrink-0">Auto Fit</span>
+      <span id="deviceSizeBadge" class="text-[10px] font-semibold bg-white/20 px-2 py-0.5 rounded-full flex-shrink-0">Full HP</span>
     </div>
 
-    <!-- Area Form Scrollable Halus untuk Semua Ukuran Layar -->
+    <!-- Area Form Scrollable Halus -->
     <div class="flex-1 min-h-0 overflow-y-auto no-scrollbar p-3">
       <div class="bg-white rounded-2xl border border-slate-200/90 p-3 space-y-2.5">
         <!-- Nama Penerima -->
@@ -344,7 +331,7 @@
               </select>
             </div>
             <div id="audioStatusText" class="text-[11px] font-medium text-amber-600 truncate mt-0.5">
-              MP3: Memuat audio...
+              MP3: Siap dicoba (Ketuk Test)
             </div>
           </div>
           <button
@@ -376,13 +363,13 @@
     </div>
   </section>
 
-  <!-- LAYAR 2: DETAIL TRANSAKSI (ADAPTIF MENYESUAIKAN LAYAR PERANGKAT) -->
+  <!-- LAYAR 2: DETAIL TRANSAKSI (FULL LAYAR HP) -->
   <section id="screenReceipt" class="device-frame hidden">
     <!-- Top Header Biru -->
     <header class="dana-header-top">
       <div class="flex items-center gap-3">
         <button type="button" onclick="backToSettings(event)" class="p-1 -ml-1 text-white focus:outline-none" title="Kembali ke Pengaturan">
-          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="15 18 9 12 15 6"></polyline>
           </svg>
         </button>
@@ -390,7 +377,7 @@
       </div>
     </header>
 
-    <!-- Konten Utama yang Mengisi & Menyesuaikan Layar -->
+    <!-- Konten Utama Mengisi Full Layar HP -->
     <main class="receipt-body-wrap no-scrollbar">
       <!-- Bagian Atas: Kartu Struk + Scallop -->
       <div class="relative z-10">
@@ -398,18 +385,18 @@
           <div class="watermark-layer"></div>
 
           <!-- Logo DANA -->
-          <div class="relative z-10 pt-[clamp(12px,1.8dvh,18px)] pb-[clamp(8px,1.2dvh,12px)] px-4 flex flex-col items-center justify-center">
+          <div class="relative z-10 pt-[clamp(14px,2.2dvh,22px)] pb-[clamp(9px,1.5dvh,14px)] px-4 flex flex-col items-center justify-center">
             <div class="flex items-center gap-2">
-              <svg width="29" height="29" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg width="30" height="30" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <circle cx="20" cy="20" r="20" fill="#118EE9"/>
                 <path d="M10.5 16.2C13.8 14.3 17.2 14.3 20.5 16.2C23.8 18.1 27.2 18.1 29.5 16.4V23.8C27.2 25.5 23.8 25.5 20.5 23.6C17.2 21.7 13.8 21.7 10.5 23.6V16.2Z" fill="#FFFFFF"/>
               </svg>
-              <span class="text-[20px] font-bold tracking-[0.14em] text-[#118EE9] leading-none">DANA</span>
+              <span class="text-[21px] font-bold tracking-[0.14em] text-[#118EE9] leading-none">DANA</span>
             </div>
           </div>
 
           <!-- Baris Tanggal & ID DANA -->
-          <div class="relative z-10 px-3.5 pb-1.5 flex items-center justify-between gap-2 text-[10.5px] text-[#8A94A6] tabular-nums">
+          <div class="relative z-10 px-4 pb-2 flex items-center justify-between gap-2 text-[11px] text-[#8A94A6] tabular-nums">
             <span id="displayDateTime" class="truncate">19 Nov 2026 • 23:25</span>
             <span id="displayIdDana" class="truncate text-right">ID DANA 0858-4151-2418</span>
           </div>
@@ -418,51 +405,51 @@
           <div class="straight-divider"></div>
 
           <!-- Status & Rincian Transfer -->
-          <div class="relative z-10 px-3.5 pt-[clamp(8px,1.2dvh,12px)] pb-[clamp(6px,1dvh,10px)]">
+          <div class="relative z-10 px-4 pt-[clamp(10px,1.5dvh,14px)] pb-[clamp(8px,1.3dvh,12px)]">
             <!-- Status Transaksi Berhasil -->
-            <div class="flex items-center gap-1.5 mb-1.5">
-              <span class="w-3.5 h-3.5 rounded-full bg-[#10B981] flex items-center justify-center flex-shrink-0">
-                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+            <div class="flex items-center gap-1.5 mb-2">
+              <span class="w-4 h-4 rounded-full bg-[#10B981] flex items-center justify-center flex-shrink-0">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
               </span>
-              <span class="text-[11.5px] font-medium text-[#4A5568]">Transaksi berhasil!</span>
+              <span class="text-[12px] font-medium text-[#4A5568]">Transaksi berhasil!</span>
             </div>
 
             <!-- Kalimat Kirim Uang -->
-            <p id="displaySummaryText" class="text-[12px] font-semibold text-[#1A1A1A] leading-snug mb-2 break-words">
+            <p id="displaySummaryText" class="text-[12.5px] font-semibold text-[#1A1A1A] leading-snug mb-2.5 break-words">
               Kirim Uang Rp20.000 ke M Sulaiman - 085719028287
             </p>
 
             <!-- Kotak Total Bayar -->
-            <div class="total-pay-box mb-2">
-              <span class="text-[12px] font-bold text-[#1A1A1A]">Total Bayar</span>
+            <div class="total-pay-box mb-2.5">
+              <span class="text-[12.5px] font-bold text-[#1A1A1A]">Total Bayar</span>
               <div class="flex items-center gap-1">
-                <span id="displayTotalPay" class="text-[13px] font-bold text-[#1A1A1A] tabular-nums">Rp20.000</span>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9AA5B4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <span id="displayTotalPay" class="text-[13.5px] font-bold text-[#1A1A1A] tabular-nums">Rp20.000</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9AA5B4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                   <polyline points="6 9 12 15 18 9"></polyline>
                 </svg>
               </div>
             </div>
 
             <!-- Metode Pembayaran -->
-            <div class="flex items-start justify-between text-[11px] pb-1.5 border-b border-[#EEF1F5]">
+            <div class="flex items-start justify-between text-[11.5px] pb-2 border-b border-[#EEF1F5]">
               <span class="text-[#8A94A6]">Metode Pembayaran</span>
               <div class="text-right font-medium text-[#1A1A1A] leading-tight">
                 <div>Saldo DANA</div>
-                <div class="text-[10px]">(SmartPay)</div>
+                <div class="text-[10.5px]">(SmartPay)</div>
               </div>
             </div>
 
             <!-- Accordion: Detail Penerima -->
             <div class="border-b border-[#EEF1F5]">
-              <button type="button" onclick="toggleAccordion('accRecipient', event)" class="w-full py-[clamp(6px,0.9dvh,9px)] flex items-center justify-between text-left focus:outline-none">
-                <span class="text-[11.5px] font-semibold text-[#1A1A1A]">Detail Penerima</span>
-                <svg id="icon-accRecipient" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9AA5B4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform duration-100">
+              <button type="button" onclick="toggleAccordion('accRecipient', event)" class="w-full py-[clamp(7px,1.1dvh,10px)] flex items-center justify-between text-left focus:outline-none">
+                <span class="text-[12px] font-semibold text-[#1A1A1A]">Detail Penerima</span>
+                <svg id="icon-accRecipient" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9AA5B4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform duration-100">
                   <polyline points="6 9 12 15 18 9"></polyline>
                 </svg>
               </button>
-              <div id="accRecipient" class="hidden pb-1.5 text-[10.5px] text-[#4A5568] space-y-0.5">
+              <div id="accRecipient" class="hidden pb-2 text-[11px] text-[#4A5568] space-y-1">
                 <div class="flex justify-between gap-2">
                   <span class="text-[#8A94A6]">Nama</span>
                   <span id="accRecipientName" class="font-semibold text-[#1A1A1A] text-right">M Sulaiman</span>
@@ -476,13 +463,13 @@
 
             <!-- Accordion: Detail Transaksi -->
             <div>
-              <button type="button" onclick="toggleAccordion('accTx', event)" class="w-full pt-[clamp(6px,0.9dvh,9px)] flex items-center justify-between text-left focus:outline-none">
-                <span class="text-[11.5px] font-semibold text-[#1A1A1A]">Detail Transaksi</span>
-                <svg id="icon-accTx" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9AA5B4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform duration-100">
+              <button type="button" onclick="toggleAccordion('accTx', event)" class="w-full pt-[clamp(7px,1.1dvh,10px)] flex items-center justify-between text-left focus:outline-none">
+                <span class="text-[12px] font-semibold text-[#1A1A1A]">Detail Transaksi</span>
+                <svg id="icon-accTx" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9AA5B4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform duration-100">
                   <polyline points="6 9 12 15 18 9"></polyline>
                 </svg>
               </button>
-              <div id="accTx" class="hidden pt-1 text-[10px] text-[#4A5568] space-y-0.5">
+              <div id="accTx" class="hidden pt-1.5 text-[10.5px] text-[#4A5568] space-y-1">
                 <div class="flex justify-between gap-2">
                   <span class="text-[#8A94A6] flex-shrink-0">ID Transaksi</span>
                   <span id="accTxCode" class="font-medium text-[#1A1A1A] truncate tabular-nums">202611191012148001001668492014</span>
@@ -500,69 +487,69 @@
         <div class="scallop-bottom"></div>
       </div>
 
-      <!-- Bagian Tengah: Kartu Banner Bawah -->
+      <!-- Bagian Tengah: Kartu Banner Bawah (Skala Proporsional Layar HP) -->
       <div class="banner-card my-auto">
         <div class="flex flex-col items-center">
-          <div class="w-[138px] h-[110px] relative rounded-[2px] overflow-hidden flex flex-col justify-between p-2 text-center select-none" style="background: radial-gradient(circle at center, #520408 0%, #240103 80%, #140001 100%);">
+          <div class="w-[clamp(140px,42vw,168px)] h-[clamp(112px,33vw,134px)] relative rounded-[3px] overflow-hidden flex flex-col justify-between p-2.5 text-center select-none shadow-sm" style="background: radial-gradient(circle at center, #520408 0%, #240103 80%, #140001 100%);">
             <div class="absolute top-1 right-1 flex items-center gap-0.5 z-10">
-              <span class="w-3 h-3 bg-[#E2E8F0]/90 text-[#0284C7] rounded-[1px] flex items-center justify-center text-[8px] font-bold">i</span>
-              <span class="w-3 h-3 bg-[#E2E8F0]/90 text-[#0284C7] rounded-[1px] flex items-center justify-center text-[8px] font-bold">×</span>
+              <span class="w-3.5 h-3.5 bg-[#E2E8F0]/90 text-[#0284C7] rounded-[1px] flex items-center justify-center text-[8.5px] font-bold">i</span>
+              <span class="w-3.5 h-3.5 bg-[#E2E8F0]/90 text-[#0284C7] rounded-[1px] flex items-center justify-center text-[8.5px] font-bold">×</span>
             </div>
 
             <div class="pt-0.5 z-10">
-              <div class="text-[#F1E5D6] text-[9.5px] leading-[1.15] tracking-wide" style="font-family: Georgia, serif;">
+              <div class="text-[#F1E5D6] text-[10px] leading-[1.15] tracking-wide" style="font-family: Georgia, serif;">
                 VOLATILITAS?<br/>SIAP MENANTANG
               </div>
             </div>
 
             <div class="relative my-auto flex items-center justify-center">
-              <svg class="w-full h-8 opacity-90" viewBox="0 0 200 60" fill="none">
+              <svg class="w-full h-9 opacity-90" viewBox="0 0 200 60" fill="none">
                 <path d="M0 30 L25 30 L28 22 L31 38 L34 15 L37 45 L40 24 L43 35 L46 28 L52 30 L148 30 L152 20 L155 40 L158 12 L161 48 L164 18 L167 42 L170 25 L173 34 L176 30 L200 30" stroke="#E11D2A" stroke-width="1.5"/>
               </svg>
-              <div class="absolute w-8 h-8 bg-[#E31B23] flex items-center justify-center shadow-md">
-                <span class="text-white font-bold text-[9.5px] tracking-tight">FxPro</span>
+              <div class="absolute w-9 h-9 bg-[#E31B23] flex items-center justify-center shadow-md">
+                <span class="text-white font-bold text-[10px] tracking-tight">FxPro</span>
               </div>
             </div>
 
-            <div class="flex items-center justify-between gap-1 z-10 pb-2">
-              <span class="text-[5px] text-[#E2E8F0] text-left leading-tight">Dirancang untuk<br/>tetap tangguh.</span>
-              <span class="bg-white text-[#1A1A1A] text-[5.5px] font-bold px-1.5 py-0.5 rounded-full whitespace-nowrap">Open Account Sekarang</span>
+            <div class="flex items-center justify-between gap-1 z-10 pb-2.5">
+              <span class="text-[5.5px] text-[#E2E8F0] text-left leading-tight">Dirancang untuk<br/>tetap tangguh.</span>
+              <span class="bg-white text-[#1A1A1A] text-[6px] font-bold px-1.5 py-0.5 rounded-full whitespace-nowrap">Open Account Sekarang</span>
             </div>
 
-            <div class="absolute bottom-0 inset-x-0 bg-black/90 text-[5px] text-white/90 py-0.5 px-1 truncate">
+            <div class="absolute bottom-0 inset-x-0 bg-black/90 text-[5.5px] text-white/90 py-0.5 px-1 truncate">
               Trading dengan bertanggung jawab: modal dalam risiko.
             </div>
           </div>
 
           <div class="w-full text-left mt-1">
-            <span class="text-[8.5px] text-[#8A94A6]">Iklan oleh Google</span>
+            <span class="text-[9px] text-[#8A94A6]">Iklan oleh Google</span>
           </div>
         </div>
       </div>
 
       <!-- Bagian Bawah: Tombol BAGIKAN & Footer Legalitas -->
       <div class="relative z-10 flex-shrink-0">
-        <button type="button" onclick="handleShareClick(event)" class="w-full py-[clamp(6px,1dvh,9px)] bg-white hover:bg-blue-50/50 active:bg-blue-50 border border-[#68B5EE] rounded-[6px] text-[#118EE9] text-[12px] font-semibold tracking-wide">
+        <button type="button" onclick="handleShareClick(event)" class="w-full py-[clamp(8px,1.2dvh,11px)] bg-white hover:bg-blue-50/50 active:bg-blue-50 border border-[#68B5EE] rounded-[7px] text-[#118EE9] text-[12.5px] font-semibold tracking-wide">
           BAGIKAN
         </button>
 
-        <footer class="mt-[clamp(6px,0.9dvh,10px)] text-center px-1">
+        <footer class="mt-[clamp(7px,1.1dvh,12px)] text-center px-1">
           <div class="flex items-center justify-center gap-1.5 mb-0.5">
-            <span class="text-[9.5px] text-[#64748B]">Diamankan oleh</span>
+            <span class="text-[10px] text-[#64748B]">Diamankan oleh</span>
             <div class="flex items-center gap-1 text-[#118EE9]">
-              <svg width="12" height="14" viewBox="0 0 24 26" fill="none">
+              <svg width="13" height="15" viewBox="0 0 24 26" fill="none">
                 <path d="M12 1L2 5.5V12.5C2 18.8 6.3 24.6 12 26C17.7 24.6 22 18.8 22 12.5V5.5L12 1Z" fill="#118EE9"/>
                 <circle cx="12" cy="11" r="2.2" fill="#FFFFFF"/>
                 <path d="M8.5 16.5C8.5 14.8 10 13.8 12 13.8C14 13.8 15.5 14.8 15.5 16.5" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round"/>
               </svg>
               <div class="text-left leading-none">
-                <div class="text-[8px] font-extrabold tracking-tight">DANA</div>
-                <div class="text-[7px] font-bold tracking-tight">PROTECTION</div>
+                <div class="text-[8.5px] font-extrabold tracking-tight">DANA</div>
+                <div class="text-[7.5px] font-bold tracking-tight">PROTECTION</div>
               </div>
             </div>
           </div>
 
-          <div class="text-[8px] text-[#9AA5B4] leading-[1.25]">
+          <div class="text-[8.5px] text-[#9AA5B4] leading-[1.3]">
             <p>*Termasuk PPN • PT Espay Debit Indonesia Koe</p>
             <p>NPWP: 073.210.332.0-613.000 • Capital Place Lt. 18, Kuningan Barat, Jakarta</p>
           </div>
@@ -570,9 +557,9 @@
       </div>
     </main>
 
-    <!-- Bottom Bar Terkunci Rapi di Bawah Frame -->
+    <!-- Bottom Bar Terkunci Rapi di Bawah Layar HP -->
     <div class="bottom-bar-dock">
-      <button type="button" onclick="backToSettings(event)" class="w-full py-[clamp(6px,1dvh,9px)] bg-white hover:bg-blue-50/40 border border-[#68B5EE] rounded-[6px] flex items-center justify-center gap-2 text-[#118EE9] text-[12px] font-semibold tracking-wide">
+      <button type="button" onclick="backToSettings(event)" class="w-full py-[clamp(8px,1.2dvh,11px)] bg-white hover:bg-blue-50/40 border border-[#68B5EE] rounded-[7px] flex items-center justify-center gap-2 text-[#118EE9] text-[12.5px] font-semibold tracking-wide">
         <span class="w-5 h-5 rounded-full bg-[#118EE9] flex items-center justify-center relative overflow-hidden">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
             <circle cx="12" cy="9" r="4" fill="#FDE68A"/>
@@ -590,9 +577,7 @@
     const MONTHS_ID = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
     const MP3_URL = 'https://a.top4top.io/m_3975h1p771.mp3';
 
-    // Elemen <audio> utama (TIDAK dihubungkan ke createMediaElementSource agar kebal blokir CORS)
     const audioEl = document.getElementById('notifAudio');
-    audioEl.src = MP3_URL;
     audioEl.preload = 'auto';
     audioEl.playsInline = true;
     audioEl.muted = false;
@@ -607,6 +592,7 @@
     let corsDecodeFailed = false;
     let mp3ReadyState = 'loading';
     let currentBoostGain = 2.0; // Default 200%
+    let audioWatchdogTimer = null;
 
     function setAudioStatus(text, colorClass) {
       const el = document.getElementById('audioStatusText');
@@ -635,32 +621,33 @@
       }
     }
 
+    function clearAudioWatchdog() {
+      if (audioWatchdogTimer) {
+        clearTimeout(audioWatchdogTimer);
+        audioWatchdogTimer = null;
+      }
+    }
+
     audioEl.addEventListener('canplay', () => {
       mp3ReadyState = 'ready';
       if (decodedMp3Buffer) {
         setAudioStatus(`MP3: Siap (Boost ${getBoostPercentLabel()} Aktif)`, 'text-emerald-600');
       } else {
-        setAudioStatus('MP3: Siap (Volume Full 100%)', 'text-emerald-600');
-      }
-    });
-
-    audioEl.addEventListener('canplaythrough', () => {
-      mp3ReadyState = 'ready';
-      if (decodedMp3Buffer) {
-        setAudioStatus(`MP3: Siap penuh (Boost ${getBoostPercentLabel()})`, 'text-emerald-600');
-      } else {
-        setAudioStatus('MP3: Siap penuh (Volume 100%)', 'text-emerald-600');
+        setAudioStatus('MP3: Siap (Volume Full HP)', 'text-emerald-600');
       }
     });
 
     audioEl.addEventListener('playing', () => {
-      setAudioStatus('MP3: Sedang diputar (Volume Full)...', 'text-[#118EE9]');
+      clearAudioWatchdog();
+      mp3ReadyState = 'ready';
+      setAudioStatus('MP3: Sedang berbunyi (Full)...', 'text-[#118EE9]');
     });
 
     audioEl.addEventListener('ended', () => {
+      clearAudioWatchdog();
       if (mp3ReadyState === 'ready') {
         setAudioStatus(
-          decodedMp3Buffer ? `MP3: Siap (Boost ${getBoostPercentLabel()} Aktif)` : 'MP3: Siap (Volume Full 100%)',
+          decodedMp3Buffer ? `MP3: Siap (Boost ${getBoostPercentLabel()} Aktif)` : 'MP3: Siap (Volume Full HP)',
           'text-emerald-600'
         );
       }
@@ -669,11 +656,12 @@
     audioEl.addEventListener('error', () => {
       mp3ReadyState = 'error';
       if (!decodedMp3Buffer) {
-        setAudioStatus('MP3: Gagal load link, pakai nada darurat', 'text-rose-600');
+        setAudioStatus('MP3 diblokir/offline -> Pakai nada cadangan', 'text-amber-600');
       }
     });
 
-    function ensureBoostContext() {
+    // Unlock Web Audio API secara sinkron di dalam gestur sentuhan HP (wajib untuk iOS & Android WebView)
+    function ensureAndUnlockAudioContext() {
       try {
         const AudioContextClass = window.AudioContext || window.webkitAudioContext;
         if (!AudioContextClass) return false;
@@ -684,6 +672,14 @@
 
         if (audioCtx.state === 'suspended') {
           audioCtx.resume().catch(() => {});
+          // Silent buffer unlock trick untuk iOS Safari & browser HP ketat
+          try {
+            const silent = audioCtx.createBuffer(1, 1, audioCtx.sampleRate || 22050);
+            const sSrc = audioCtx.createBufferSource();
+            sSrc.buffer = silent;
+            sSrc.connect(audioCtx.destination);
+            sSrc.start(0);
+          } catch (e) {}
         }
 
         if (!compressorNode) {
@@ -712,11 +708,11 @@
 
     async function fetchAndDecodeMp3() {
       if (decodedMp3Buffer || isDecodingMp3 || corsDecodeFailed) return;
-      if (!ensureBoostContext()) return;
+      if (!ensureAndUnlockAudioContext()) return;
 
       isDecodingMp3 = true;
       try {
-        const resp = await fetch(MP3_URL, { mode: 'cors', cache: 'force-cache' });
+        const resp = await fetch(MP3_URL, { mode: 'cors', referrerPolicy: 'no-referrer' });
         if (!resp.ok) throw new Error('HTTP ' + resp.status);
         const arrBuf = await resp.arrayBuffer();
         decodedMp3Buffer = await audioCtx.decodeAudioData(arrBuf);
@@ -725,15 +721,39 @@
       } catch (err) {
         corsDecodeFailed = true;
         decodedMp3Buffer = null;
-        if (mp3ReadyState === 'ready') {
-          setAudioStatus('MP3: Siap (Volume Full 100%)', 'text-emerald-600');
-        }
       } finally {
         isDecodingMp3 = false;
       }
     }
 
-    function stopCurrentlyPlaying() {
+    // Nada notifikasi keras (cadangan instan jika link MP3 terblokir DNS/AdBlock di HP)
+    function playLoudFallbackChime() {
+      try {
+        if (!ensureAndUnlockAudioContext()) return;
+        const now = audioCtx.currentTime;
+
+        const playTone = (freq, startOffset, duration, type = 'triangle', peak = 0.95) => {
+          const osc = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, now + startOffset);
+          g.gain.setValueAtTime(0.001, now + startOffset);
+          g.gain.exponentialRampToValueAtTime(peak, now + startOffset + 0.015);
+          g.gain.exponentialRampToValueAtTime(0.001, now + startOffset + duration);
+          osc.connect(g);
+          g.connect(gainNode || audioCtx.destination);
+          osc.start(now + startOffset);
+          osc.stop(now + startOffset + duration + 0.02);
+        };
+
+        // Lonceng ganda cerah & keras
+        playTone(1046.5, 0.0, 0.22, 'triangle', 1.0);
+        playTone(1567.98, 0.11, 0.36, 'triangle', 1.0);
+        playTone(2093.0, 0.11, 0.28, 'sine', 0.55);
+      } catch (e) {}
+    }
+
+    function stopBoostBufferOnly() {
       if (activeBufferSource) {
         try {
           activeBufferSource.stop();
@@ -741,82 +761,23 @@
         } catch (e) {}
         activeBufferSource = null;
       }
-      try {
-        audioEl.pause();
-        audioEl.currentTime = 0;
-      } catch (e) {}
-    }
-
-    function emergencyFallbackTone() {
-      try {
-        if (!ensureBoostContext()) return;
-        const now = audioCtx.currentTime;
-        const osc1 = audioCtx.createOscillator();
-        const osc2 = audioCtx.createOscillator();
-        const g = audioCtx.createGain();
-
-        osc1.type = 'triangle';
-        osc1.frequency.setValueAtTime(1046.5, now);
-        osc1.frequency.setValueAtTime(1318.5, now + 0.11);
-
-        osc2.type = 'sine';
-        osc2.frequency.setValueAtTime(1567.98, now + 0.11);
-
-        g.gain.setValueAtTime(0.01, now);
-        g.gain.exponentialRampToValueAtTime(0.9, now + 0.02);
-        g.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
-
-        osc1.connect(g);
-        osc2.connect(g);
-        g.connect(gainNode || audioCtx.destination);
-
-        osc1.start(now);
-        osc2.start(now + 0.11);
-        osc1.stop(now + 0.46);
-        osc2.stop(now + 0.46);
-      } catch (e) {}
-    }
-
-    function playNativeAudioElement(sourceLabel) {
-      audioEl.muted = false;
-      audioEl.volume = 1.0;
-      try {
-        audioEl.currentTime = 0;
-      } catch (e) {}
-
-      const playPromise = audioEl.play();
-      if (playPromise !== undefined) {
-        playPromise.then(() => {
-          setAudioStatus(`MP3: Diputar via ${sourceLabel} (Vol 100%)`, 'text-emerald-600');
-        }).catch(() => {
-          try {
-            const direct = new Audio(MP3_URL);
-            direct.volume = 1.0;
-            direct.playsInline = true;
-            direct.play().then(() => {
-              setAudioStatus(`MP3: Diputar via ${sourceLabel} (Vol 100%)`, 'text-emerald-600');
-            }).catch(() => {
-              setAudioStatus('MP3: Gagal putar, pakai nada darurat', 'text-rose-600');
-              emergencyFallbackTone();
-            });
-          } catch (e2) {
-            emergencyFallbackTone();
-          }
-        });
-      }
     }
 
     function triggerMp3Sound(sourceLabel = 'KIRIM') {
-      stopCurrentlyPlaying();
-      ensureBoostContext();
+      clearAudioWatchdog();
+      stopBoostBufferOnly();
+
+      // 1. Wajib unlock AudioContext secara sinkron di dalam event klik HP
+      ensureAndUnlockAudioContext();
 
       if (!decodedMp3Buffer && !corsDecodeFailed) {
         fetchAndDecodeMp3();
       }
 
+      // 2. Jika buffer MP3 hasil decode Web Audio sudah siap -> putar dengan Boost 200%/300%
       if (audioCtx && gainNode && decodedMp3Buffer) {
         try {
-          const runBoostedBuffer = () => {
+          const startBoosted = () => {
             const src = audioCtx.createBufferSource();
             src.buffer = decodedMp3Buffer;
             src.connect(gainNode);
@@ -826,30 +787,77 @@
             };
             activeBufferSource = src;
             src.start(0);
-            setAudioStatus(`MP3: Diputar Keras ${getBoostPercentLabel()} (${sourceLabel})`, 'text-[#118EE9]');
+            setAudioStatus(`MP3: Berbunyi ${getBoostPercentLabel()} (${sourceLabel})`, 'text-[#118EE9]');
           };
 
           if (audioCtx.state === 'suspended') {
-            audioCtx.resume().then(runBoostedBuffer).catch(() => playNativeAudioElement(sourceLabel));
+            audioCtx.resume().then(startBoosted).catch(playLoudFallbackChime);
           } else {
-            runBoostedBuffer();
+            startBoosted();
           }
           return;
-        } catch (err) {}
+        } catch (e) {}
       }
 
-      playNativeAudioElement(sourceLabel);
+      // 3. Jika MP3 memang sudah gagal dimuat di HP (DNS/AdBlock/offline) -> bunyikan nada keras langsung + coba ulang load
+      if (mp3ReadyState === 'error' || audioEl.error) {
+        playLoudFallbackChime();
+        setAudioStatus('MP3 terblokir di HP -> Bunyi nada cadangan', 'text-amber-600');
+        try {
+          audioEl.load();
+        } catch (e) {}
+        return;
+      }
+
+      // 4. Putar <audio> langsung secara sinkron di gestur klik HP (tanpa pause() yang memicu AbortError)
+      audioEl.muted = false;
+      audioEl.volume = 1.0;
+      try {
+        if (audioEl.readyState >= 1 && audioEl.currentTime > 0) {
+          audioEl.currentTime = 0;
+        }
+      } catch (e) {}
+
+      setAudioStatus(`MP3: Memutar di HP (${sourceLabel})...`, 'text-[#118EE9]');
+
+      // Watchdog 2.2 detik: jika jaringan HP memblokir/menahan top4top.io, bunyikan nada cadangan agar tidak bisu
+      audioWatchdogTimer = setTimeout(() => {
+        if (audioEl.paused || audioEl.readyState < 2) {
+          playLoudFallbackChime();
+          setAudioStatus('MP3 lambat/diblokir HP -> Nada cadangan', 'text-amber-600');
+        }
+      }, 2200);
+
+      try {
+        const playPromise = audioEl.play();
+        if (playPromise !== undefined) {
+          playPromise.then(() => {
+            clearAudioWatchdog();
+            setAudioStatus(`MP3: Berbunyi Full (${sourceLabel})`, 'text-emerald-600');
+          }).catch(() => {
+            clearAudioWatchdog();
+            playLoudFallbackChime();
+            setAudioStatus('MP3 ditahan browser -> Nada cadangan', 'text-amber-600');
+          });
+        }
+      } catch (err) {
+        clearAudioWatchdog();
+        playLoudFallbackChime();
+        setAudioStatus('MP3 gagal -> Bunyi nada cadangan', 'text-amber-600');
+      }
     }
 
     function unlockAudioOnFirstTouch() {
-      ensureBoostContext();
+      ensureAndUnlockAudioContext();
       fetchAndDecodeMp3();
       if (audioEl.readyState === 0) {
-        audioEl.load();
+        try {
+          audioEl.load();
+        } catch (e) {}
       }
     }
-    document.addEventListener('pointerdown', unlockAudioOnFirstTouch, { once: true, passive: true });
     document.addEventListener('touchstart', unlockAudioOnFirstTouch, { once: true, passive: true });
+    document.addEventListener('pointerdown', unlockAudioOnFirstTouch, { once: true, passive: true });
 
     function handleTestAudioClick(e) {
       if (e) e.preventDefault();
@@ -861,23 +869,15 @@
       triggerMp3Sound('BAGIKAN');
     }
 
-    // Deteksi info perangkat secara dinamis untuk badge header
     function updateDeviceBadge() {
       const badge = document.getElementById('deviceSizeBadge');
       if (!badge) return;
-      const w = window.innerWidth;
-      if (w < 540) {
-        badge.textContent = 'Mobile Fit';
-      } else if (w < 900) {
-        badge.textContent = 'Tablet Fit';
-      } else {
-        badge.textContent = 'Desktop Fit';
-      }
+      const isDesktop = window.matchMedia('(min-width: 768px) and (hover: hover) and (pointer: fine)').matches;
+      badge.textContent = isDesktop ? 'Desktop Fit' : 'Full Layar HP';
     }
     window.addEventListener('resize', updateDeviceBadge);
     updateDeviceBadge();
 
-    // Format & Pengaturan Data Transaksi
     function formatRupiah(numStr) {
       const clean = String(numStr).replace(/\D/g, '');
       if (!clean) return '0';
@@ -1027,8 +1027,10 @@
       refreshClockPreview();
     }
 
-    // Inisialisasi awal & pemanasan audio MP3
-    audioEl.load();
+    // Inisialisasi awal
+    try {
+      audioEl.load();
+    } catch (e) {}
     refreshClockPreview();
     setInterval(() => {
       if (document.getElementById('autoTimeCheck').checked) {
