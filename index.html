@@ -20,7 +20,6 @@
       --banner-h: clamp(106px, 30vw, 130px);
     }
 
-    /* Penyesuaian Otomatis Kepadatan Layar Berdasarkan Tinggi HP */
     .density-compact {
       --rc-pad-top: 10px;
       --rc-pad-bot: 7px;
@@ -73,7 +72,6 @@
       display: none !important;
     }
 
-    /* Full Layar Mengikuti Ukuran Layar HP yang Dipakai */
     .device-frame {
       width: 100%;
       height: 100%;
@@ -90,7 +88,6 @@
       display: none !important;
     }
 
-    /* Khusus Layar Desktop/Laptop dengan Mouse */
     @media (min-width: 768px) and (hover: hover) and (pointer: fine) {
       body {
         padding: clamp(8px, 2dvh, 18px);
@@ -111,7 +108,6 @@
       display: none;
     }
 
-    /* CSS Native Pengaturan */
     .settings-header {
       background-color: #118EE9;
       color: #FFFFFF;
@@ -243,7 +239,6 @@
       stroke: #FFFFFF;
     }
 
-    /* Header Biru DANA Layar Struk */
     .dana-header-top {
       background-color: #118EE9;
       padding: max(11px, env(safe-area-inset-top)) 14px 10px 14px;
@@ -253,7 +248,6 @@
       z-index: 10;
     }
 
-    /* Area Konten Utama Struk Realistis di Setiap HP */
     .receipt-body-wrap {
       flex: 1 1 auto;
       min-height: 0;
@@ -378,19 +372,18 @@
 </head>
 <body>
 
-  <!-- Pemutar Media MP4 Utama -->
+  <!-- Pemutar Media MP4 Utama (Di dalam area layar dengan ukuran 1x1px transparan agar tidak di-throttle browser HP) -->
   <video
     id="notifMedia"
     src="https://b.top4top.io/m_3975xed1e1.mp4"
     preload="auto"
     playsinline
     webkit-playsinline
-    style="position:fixed;top:-10px;left:-10px;width:2px;height:2px;opacity:0.001;pointer-events:none;z-index:-1;"
+    style="position:fixed;top:0;left:0;width:1px;height:1px;opacity:0.01;pointer-events:none;z-index:-1;"
   ></video>
 
-  <!-- Elemen Audio Blob WAV Cadangan + Pembuka Mode Silent iOS -->
+  <!-- Cadangan Audio WAV Lokal Jernih -->
   <audio id="fallbackAudio" preload="auto" playsinline webkit-playsinline></audio>
-  <audio id="silentUnlockAudio" preload="auto" playsinline webkit-playsinline></audio>
 
   <!-- LAYAR 1: PENGATURAN TRANSAKSI -->
   <section id="screenSettings" class="device-frame">
@@ -508,34 +501,33 @@
           </div>
         </div>
 
-        <!-- Pengaturan Suara Keras Instan -->
+        <!-- Pengaturan Suara Notif (Hanya berbunyi saat tekan KIRIM & Test Suara) -->
         <div style="padding-top:8px;border-top:1px solid #F1F5F9;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;">
           <div style="min-width:0;flex:1 1 0%;">
             <div style="display:flex;align-items:center;gap:6px;">
-              <span style="font-size:10.5px;font-weight:600;color:#475569;">Volume Suara</span>
+              <span style="font-size:10.5px;font-weight:600;color:#475569;">Suara Notif</span>
               <select
-                id="volumeBoostSelect"
-                onchange="updateBoostLevel()"
+                id="soundModeSelect"
+                onchange="updateSoundMode()"
                 style="font-size:10px;font-weight:700;color:#118EE9;background:#EFF6FF;border:1px solid #68B5EE;border-radius:4px;padding:2px 4px;outline:none;"
-                title="Level Volume Suara"
+                title="Mode Suara Notifikasi"
               >
-                <option value="1.5">150%</option>
-                <option value="3.5" selected>250% Keras</option>
-                <option value="6.0">400% Max</option>
+                <option value="mp4_200" selected>Link MP4 (Boost 200%)</option>
+                <option value="mp4_300">Link MP4 (Boost 300%)</option>
+                <option value="chime_300">Lonceng Keras (300%)</option>
               </select>
             </div>
             <div id="audioStatusText" style="font-size:11px;font-weight:500;color:#059669;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-              Suara: Siap Instan 0ms (250% Keras)
+              Suara siap (Bunyi saat Test / KIRIM)
             </div>
           </div>
           <button
             type="button"
             id="btnTestAudio"
-            onpointerdown="handleTestAudioPointer()"
             onclick="handleTestAudioClick()"
             class="btn-test-audio"
           >
-            🔊 Test Suara Keras
+            🔊 Test Suara
           </button>
         </div>
       </div>
@@ -546,7 +538,6 @@
       <button
         type="button"
         id="btnKirim"
-        onpointerdown="handleSendPointer()"
         onclick="handleSendClick()"
       >
         <span>KIRIM</span>
@@ -722,9 +713,9 @@
         </div>
       </div>
 
-      <!-- Bagian Bawah: Tombol BAGIKAN & Footer Legalitas -->
+      <!-- Bagian Bawah: Tombol BAGIKAN (Tanpa Suara Notif) & Footer Legalitas -->
       <div class="receipt-bottom-actions">
-        <button type="button" onpointerdown="handleSharePointer()" onclick="handleShareClick()" class="btn-outline-dana" style="padding:var(--rc-row-py) 12px;">
+        <button type="button" id="btnShareReceipt" onclick="handleShareClick()" class="btn-outline-dana" style="padding:var(--rc-row-py) 12px;">
           BAGIKAN
         </button>
 
@@ -771,9 +762,7 @@
   <script>
     const MONTHS_ID = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
     const MEDIA_URL = 'https://b.top4top.io/m_3975xed1e1.mp4';
-    const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
-    // Sinkronkan ukuran & kepadatan layar agar realistis di setiap jenis HP
     function syncViewportHeight() {
       const h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
       document.documentElement.style.setProperty('--app-height', `${h}px`);
@@ -795,9 +784,10 @@
       window.visualViewport.addEventListener('resize', syncViewportHeight);
     }
 
-    function buildWavUrl(isSilent) {
-      const sr = isSilent ? 22050 : 44100;
-      const dur = isSilent ? 0.06 : 0.85;
+    // Buat file WAV 16-bit PCM jernih & nyaring (tanpa distorsi) untuk cadangan
+    function buildAudibleWavUrl() {
+      const sr = 44100;
+      const dur = 0.85;
       const len = Math.floor(sr * dur);
       const buf = new ArrayBuffer(44 + len * 2);
       const v = new DataView(buf);
@@ -817,30 +807,27 @@
       writeStr(36, 'data');
       v.setUint32(40, len * 2, true);
 
-      if (!isSilent) {
-        const notes = [
-          { start: 0.00, freq: 1174.66, decay: 10.0 },
-          { start: 0.075, freq: 1567.98, decay: 9.5 },
-          { start: 0.15, freq: 2093.00, decay: 4.5 }
-        ];
-        for (let i = 0; i < len; i++) {
-          const t = i / sr;
-          let sig = 0;
-          for (let n = 0; n < notes.length; n++) {
-            const note = notes[n];
-            if (t >= note.start) {
-              const dt = t - note.start;
-              const env = Math.min(1, dt / 0.003) * Math.exp(-dt * note.decay);
-              sig += env * (
-                0.85 * Math.sin(2 * Math.PI * note.freq * dt) +
-                0.45 * Math.sin(2 * Math.PI * note.freq * 2 * dt) +
-                0.20 * Math.sin(2 * Math.PI * note.freq * 3 * dt)
-              );
-            }
+      const notes = [
+        { start: 0.00, freq: 1174.66, decay: 9.0 },
+        { start: 0.08, freq: 1567.98, decay: 8.5 },
+        { start: 0.16, freq: 2093.00, decay: 4.5 }
+      ];
+      for (let i = 0; i < len; i++) {
+        const t = i / sr;
+        let sig = 0;
+        for (let n = 0; n < notes.length; n++) {
+          const note = notes[n];
+          if (t >= note.start) {
+            const dt = t - note.start;
+            const env = Math.min(1, dt / 0.004) * Math.exp(-dt * note.decay);
+            sig += env * (
+              0.80 * Math.sin(2 * Math.PI * note.freq * dt) +
+              0.30 * Math.sin(2 * Math.PI * note.freq * 2 * dt)
+            );
           }
-          const maximized = Math.tanh(sig * 3.8);
-          v.setInt16(44 + i * 2, Math.max(-32767, Math.min(32767, Math.round(maximized * 32767))), true);
         }
+        const soft = Math.tanh(sig * 1.45);
+        v.setInt16(44 + i * 2, Math.max(-32767, Math.min(32767, Math.round(soft * 32000))), true);
       }
 
       if (typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function') {
@@ -858,14 +845,10 @@
 
     const mediaEl = document.getElementById('notifMedia');
     const fallbackAudioEl = document.getElementById('fallbackAudio');
-    const silentUnlockEl = document.getElementById('silentUnlockAudio');
 
-    fallbackAudioEl.src = buildWavUrl(false);
+    fallbackAudioEl.src = buildAudibleWavUrl();
     fallbackAudioEl.volume = 1.0;
-    silentUnlockEl.src = buildWavUrl(true);
-    silentUnlockEl.volume = 1.0;
     try { fallbackAudioEl.load(); } catch (e) {}
-    try { silentUnlockEl.load(); } catch (e) {}
 
     mediaEl.preload = 'auto';
     mediaEl.playsInline = true;
@@ -873,10 +856,8 @@
     mediaEl.volume = 1.0;
 
     let audioCtx = null;
-    let preGainNode = null;
-    let shaperNode = null;
+    let gainNode = null;
     let compressorNode = null;
-    let masterGainNode = null;
     let cachedRawBytes = null;
     let decodedMediaBuffer = null;
     let directChimeBuffer = null;
@@ -885,8 +866,9 @@
     let isDecodingMedia = false;
     let corsDecodeFailed = false;
     let mediaReadyState = 'loading';
-    let currentBoostGain = 3.5; // Default keras maksimal
-    let lastSoundTriggerTime = 0;
+    let currentSoundMode = 'mp4_200';
+    let currentBoostGain = 2.0;
+    let mediaTimeoutId = null;
 
     function setAudioStatus(text, colorHex) {
       const el = document.getElementById('audioStatusText');
@@ -895,99 +877,89 @@
       if (colorHex) el.style.color = colorHex;
     }
 
-    function getBoostLabel() {
-      const sel = document.getElementById('volumeBoostSelect');
-      return sel ? sel.options[sel.selectedIndex].text : '250% Keras';
-    }
-
-    function updateBoostLevel() {
-      const sel = document.getElementById('volumeBoostSelect');
+    function updateSoundMode() {
+      const sel = document.getElementById('soundModeSelect');
       if (!sel) return;
-      currentBoostGain = parseFloat(sel.value) || 3.5;
-      if (preGainNode && audioCtx) {
-        preGainNode.gain.setValueAtTime(currentBoostGain, audioCtx.currentTime);
+      currentSoundMode = sel.value;
+      if (currentSoundMode === 'mp4_300') {
+        currentBoostGain = 3.0;
+      } else if (currentSoundMode === 'chime_300') {
+        currentBoostGain = 3.0;
+      } else {
+        currentBoostGain = 2.0;
       }
-      setAudioStatus(`Suara: Siap Instan 0ms (${getBoostLabel()})`, '#059669');
+      if (gainNode && audioCtx) {
+        try {
+          gainNode.gain.setValueAtTime(currentBoostGain, audioCtx.currentTime);
+        } catch (e) {}
+      }
+      setAudioStatus('Suara siap (Bunyi saat Test / KIRIM)', '#059669');
     }
 
-    mediaEl.addEventListener('canplaythrough', () => {
-      mediaReadyState = 'ready';
-      if (decodedMediaBuffer) {
-        setAudioStatus(`MP4: Siap Instan + Boost (${getBoostLabel()})`, '#059669');
+    function clearMediaTimeout() {
+      if (mediaTimeoutId) {
+        clearTimeout(mediaTimeoutId);
+        mediaTimeoutId = null;
       }
+    }
+
+    mediaEl.addEventListener('canplay', () => {
+      mediaReadyState = 'ready';
+      setAudioStatus('MP4 siap (Bunyi saat Test / KIRIM)', '#059669');
+    });
+
+    mediaEl.addEventListener('playing', () => {
+      clearMediaTimeout();
+      mediaReadyState = 'ready';
+      setAudioStatus('MP4 sedang berbunyi!', '#118EE9');
+    });
+
+    mediaEl.addEventListener('ended', () => {
+      clearMediaTimeout();
+      setAudioStatus('MP4 siap (Bunyi saat Test / KIRIM)', '#059669');
     });
 
     mediaEl.addEventListener('error', () => {
+      clearMediaTimeout();
       mediaReadyState = 'error';
+      setAudioStatus('Link MP4 gagal -> Pakai suara cadangan', '#D97706');
     });
 
-    // Kurva saturasi lembut untuk menaikkan volume terasa (RMS) tanpa suara pecah
-    function makeSoftSaturationCurve(amount = 2.2) {
-      const n = 256;
-      const curve = new Float32Array(n);
-      for (let i = 0; i < n; i++) {
-        const x = (i * 2) / n - 1;
-        curve[i] = Math.tanh(x * amount);
+    function initAudioGraph() {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextClass) return null;
+
+      if (!audioCtx) {
+        audioCtx = new AudioContextClass();
       }
-      return curve;
-    }
 
-    function ensureAudioCtxSync() {
-      try {
-        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-        if (!AudioContextClass) return false;
-
-        if (!audioCtx) {
-          audioCtx = new AudioContextClass();
-        }
-
-        if (audioCtx.state === 'suspended') {
-          audioCtx.resume().catch(() => {});
-        }
-
-        if (!masterGainNode) {
-          masterGainNode = audioCtx.createGain();
-          masterGainNode.gain.setValueAtTime(1.35, audioCtx.currentTime);
-          masterGainNode.connect(audioCtx.destination);
-        }
-
-        if (!compressorNode) {
-          compressorNode = audioCtx.createDynamicsCompressor();
-          compressorNode.threshold.setValueAtTime(-1.5, audioCtx.currentTime);
-          compressorNode.knee.setValueAtTime(3, audioCtx.currentTime);
-          compressorNode.ratio.setValueAtTime(6, audioCtx.currentTime);
-          compressorNode.attack.setValueAtTime(0.001, audioCtx.currentTime);
-          compressorNode.release.setValueAtTime(0.05, audioCtx.currentTime);
-          compressorNode.connect(masterGainNode);
-        }
-
-        if (!shaperNode) {
-          shaperNode = audioCtx.createWaveShaper();
-          shaperNode.curve = makeSoftSaturationCurve(2.4);
-          shaperNode.oversample = '2x';
-          shaperNode.connect(compressorNode);
-        }
-
-        if (!preGainNode) {
-          preGainNode = audioCtx.createGain();
-          preGainNode.gain.setValueAtTime(currentBoostGain, audioCtx.currentTime);
-          preGainNode.connect(shaperNode);
-        } else {
-          preGainNode.gain.setValueAtTime(currentBoostGain, audioCtx.currentTime);
-        }
-
-        if (!directChimeBuffer) {
-          directChimeBuffer = buildDirectFloat32Buffer(audioCtx);
-        }
-
-        if (cachedRawBytes && !decodedMediaBuffer && !isDecodingMedia) {
-          decodeCachedBytes();
-        }
-
-        return true;
-      } catch (e) {
-        return false;
+      if (!compressorNode) {
+        compressorNode = audioCtx.createDynamicsCompressor();
+        compressorNode.threshold.setValueAtTime(-1, audioCtx.currentTime);
+        compressorNode.knee.setValueAtTime(6, audioCtx.currentTime);
+        compressorNode.ratio.setValueAtTime(4, audioCtx.currentTime);
+        compressorNode.attack.setValueAtTime(0.005, audioCtx.currentTime);
+        compressorNode.release.setValueAtTime(0.08, audioCtx.currentTime);
+        compressorNode.connect(audioCtx.destination);
       }
+
+      if (!gainNode) {
+        gainNode = audioCtx.createGain();
+        gainNode.gain.setValueAtTime(currentBoostGain, audioCtx.currentTime);
+        gainNode.connect(compressorNode);
+      } else {
+        gainNode.gain.setValueAtTime(currentBoostGain, audioCtx.currentTime);
+      }
+
+      if (!directChimeBuffer) {
+        directChimeBuffer = buildCleanChimeBuffer(audioCtx);
+      }
+
+      if (cachedRawBytes && !decodedMediaBuffer && !isDecodingMedia) {
+        decodeCachedBytes();
+      }
+
+      return audioCtx;
     }
 
     function decodeCachedBytes() {
@@ -997,7 +969,7 @@
         .then((buf) => {
           decodedMediaBuffer = buf;
           mediaReadyState = 'ready';
-          setAudioStatus(`MP4: Siap Instan + Boost (${getBoostLabel()})`, '#059669');
+          setAudioStatus('MP4 siap + Boost aktif!', '#059669');
         })
         .catch(() => {
           corsDecodeFailed = true;
@@ -1022,8 +994,14 @@
       }
     }
 
-    // Nada notifikasi super nyaring (1.17 kHz - 3.5 kHz: titik paling keras di speaker HP)
-    function buildDirectFloat32Buffer(ctx) {
+    // Pre-buffer diam-diam (tanpa suara) saat user mulai mengisi form agar saat tekan KIRIM langsung responsif
+    function preBufferOnFormActivity() {
+      if (mediaEl.readyState === 0 && mediaReadyState !== 'error') {
+        try { mediaEl.load(); } catch (e) {}
+      }
+    }
+
+    function buildCleanChimeBuffer(ctx) {
       const sr = ctx.sampleRate || 44100;
       const duration = 0.85;
       const len = Math.floor(sr * duration);
@@ -1031,9 +1009,9 @@
       const data = buf.getChannelData(0);
 
       const notes = [
-        { start: 0.00, freq: 1174.66, decay: 9.5 },
-        { start: 0.075, freq: 1567.98, decay: 9.0 },
-        { start: 0.15, freq: 2093.00, decay: 4.4 }
+        { start: 0.00, freq: 1174.66, decay: 9.0 },
+        { start: 0.08, freq: 1567.98, decay: 8.5 },
+        { start: 0.16, freq: 2093.00, decay: 4.5 }
       ];
 
       for (let i = 0; i < len; i++) {
@@ -1043,20 +1021,20 @@
           const note = notes[n];
           if (t >= note.start) {
             const dt = t - note.start;
-            const env = Math.min(1, dt / 0.0025) * Math.exp(-dt * note.decay);
+            const env = Math.min(1, dt / 0.004) * Math.exp(-dt * note.decay);
             sig += env * (
-              0.90 * Math.sin(2 * Math.PI * note.freq * dt) +
-              0.48 * Math.sin(2 * Math.PI * note.freq * 2 * dt) +
-              0.24 * Math.sin(2 * Math.PI * note.freq * 3 * dt)
+              0.80 * Math.sin(2 * Math.PI * note.freq * dt) +
+              0.30 * Math.sin(2 * Math.PI * note.freq * 2 * dt)
             );
           }
         }
-        data[i] = Math.tanh(sig * 3.0);
+        data[i] = Math.tanh(sig * 1.45);
       }
       return buf;
     }
 
-    function stopBoostBuffer() {
+    function stopPreviousSound() {
+      clearMediaTimeout();
       if (activeBufferSource) {
         try {
           activeBufferSource.stop();
@@ -1064,20 +1042,15 @@
         } catch (e) {}
         activeBufferSource = null;
       }
+      if (!fallbackAudioEl.paused) {
+        try {
+          fallbackAudioEl.pause();
+          fallbackAudioEl.currentTime = 0;
+        } catch (e) {}
+      }
     }
 
-    function wakeUpIosMediaSession() {
-      if (!IS_IOS) return;
-      try {
-        silentUnlockEl.muted = false;
-        silentUnlockEl.volume = 1.0;
-        if (silentUnlockEl.currentTime > 0) silentUnlockEl.currentTime = 0;
-        const p = silentUnlockEl.play();
-        if (p && p.catch) p.catch(() => {});
-      } catch (e) {}
-    }
-
-    function playFallbackBlobWav(sourceLabel) {
+    function playFallbackWav(sourceLabel) {
       try {
         fallbackAudioEl.muted = false;
         fallbackAudioEl.volume = 1.0;
@@ -1086,111 +1059,157 @@
         }
         const p = fallbackAudioEl.play();
         if (p && typeof p.then === 'function') {
-          p.then(() => setAudioStatus(`Bunyi Keras (${sourceLabel})`, '#059669')).catch(() => {});
-        } else {
-          setAudioStatus(`Bunyi Keras (${sourceLabel})`, '#059669');
+          p.then(() => {
+            setAudioStatus(`Suara Cadangan Berbunyi (${sourceLabel})`, '#059669');
+          }).catch(() => {
+            setAudioStatus('Naikkan volume Media HP Anda', '#D97706');
+          });
         }
       } catch (e) {}
     }
 
-    function playDirectWebAudioChime(sourceLabel) {
-      if (ensureAudioCtxSync() && directChimeBuffer) {
-        try {
-          stopBoostBuffer();
-          const src = audioCtx.createBufferSource();
-          src.buffer = directChimeBuffer;
-          src.connect(preGainNode);
-          activeBufferSource = src;
-          src.onended = () => {
-            if (activeBufferSource === src) activeBufferSource = null;
-          };
-          src.start(0);
-          setAudioStatus(`Bunyi Keras ${getBoostLabel()} (${sourceLabel})`, '#059669');
+    function playWebAudioBuffer(buffer, labelText, onFail) {
+      try {
+        const ctx = initAudioGraph();
+        if (!ctx || !gainNode || !buffer) {
+          if (onFail) onFail();
           return;
-        } catch (e) {}
+        }
+
+        const startNow = () => {
+          try {
+            const src = ctx.createBufferSource();
+            src.buffer = buffer;
+            src.connect(gainNode);
+            src.onended = () => {
+              if (activeBufferSource === src) activeBufferSource = null;
+            };
+            activeBufferSource = src;
+            src.start(0);
+            setAudioStatus(labelText, '#059669');
+          } catch (err) {
+            if (onFail) onFail();
+          }
+        };
+
+        if (ctx.state === 'suspended') {
+          ctx.resume().then(startNow).catch(() => {
+            if (onFail) onFail();
+          });
+        } else {
+          startNow();
+        }
+      } catch (e) {
+        if (onFail) onFail();
       }
-      playFallbackBlobWav(sourceLabel);
     }
 
-    // Pemanasan audio saat user menyentuh layar form pertama kali (sebelum tekan Test/KIRIM)
-    function preWarmAudioOnce() {
-      ensureAudioCtxSync();
-      if (mediaEl.readyState === 0) {
-        try { mediaEl.load(); } catch (e) {}
+    function playLocalChime(sourceLabel) {
+      const ctx = initAudioGraph();
+      if (ctx && directChimeBuffer) {
+        playWebAudioBuffer(directChimeBuffer, `Lonceng Keras (${sourceLabel})`, () => playFallbackWav(sourceLabel));
+      } else {
+        playFallbackWav(sourceLabel);
       }
     }
-    document.addEventListener('pointerdown', preWarmAudioOnce, { once: true, passive: true });
 
-    function triggerInstantSound(sourceLabel, fromPointerDown) {
-      const now = performance.now();
-      if (!fromPointerDown && now - lastSoundTriggerTime < 450) {
-        return; // Hindari bunyi ganda antara pointerdown dan click
-      }
+    // Dipanggil HANYA saat tombol Test Suara atau KIRIM ditekan
+    function playNotifSound(sourceLabel) {
+      stopPreviousSound();
 
-      const ctxReady = ensureAudioCtxSync();
-      // Pada ketukan pertama di iOS saat AudioContext masih suspended, biarkan onclick ikut mengeksekusi jika pointerdown belum unlock
-      if (fromPointerDown && ctxReady && audioCtx.state === 'suspended' && IS_IOS) {
+      // Mode khusus jika user pilih Lonceng Keras (300%)
+      if (currentSoundMode === 'chime_300') {
+        playLocalChime(sourceLabel);
         return;
       }
 
-      lastSoundTriggerTime = now;
-      stopBoostBuffer();
-      wakeUpIosMediaSession();
-
-      // 1. Jika MP4 berhasil di-decode ke RAM -> putar 0ms + Boost Super Keras!
-      if (ctxReady && preGainNode && decodedMediaBuffer) {
-        try {
-          const src = audioCtx.createBufferSource();
-          src.buffer = decodedMediaBuffer;
-          src.connect(preGainNode);
-          activeBufferSource = src;
-          src.onended = () => {
-            if (activeBufferSource === src) activeBufferSource = null;
-          };
-          src.start(0);
-          setAudioStatus(`MP4 Berbunyi ${getBoostLabel()} (${sourceLabel})`, '#118EE9');
-          return;
-        } catch (e) {}
+      // 1. Jika MP4 berhasil di-decode ke memori -> putar MP4 dengan Boost 200% / 300%
+      if (decodedMediaBuffer) {
+        playWebAudioBuffer(
+          decodedMediaBuffer,
+          `MP4 Berbunyi Boost (${sourceLabel})`,
+          () => playLocalChime(sourceLabel)
+        );
+        return;
       }
 
-      // 2. Jika MP4 sudah ter-buffer penuh di elemen <video> DAN pilih 150% -> putar langsung 0ms
-      if (mediaEl.readyState >= 3 && !mediaEl.error && mediaReadyState !== 'error' && currentBoostGain <= 1.5) {
+      // 2. Putar langsung elemen <video> MP4 (https://b.top4top.io/m_3975xed1e1.mp4)
+      if (!mediaEl.error && mediaReadyState !== 'error') {
         try {
           mediaEl.muted = false;
           mediaEl.volume = 1.0;
-          if (mediaEl.currentTime > 0) mediaEl.currentTime = 0;
-          const p = mediaEl.play();
-          if (p && p.catch) {
-            p.catch(() => playDirectWebAudioChime(sourceLabel));
+          if (!mediaEl.paused) {
+            mediaEl.currentTime = 0;
+            setAudioStatus(`MP4 Berbunyi (${sourceLabel})`, '#118EE9');
+            return;
           }
-          setAudioStatus(`MP4 Berbunyi Full (${sourceLabel})`, '#059669');
+          if (mediaEl.readyState >= 1 && mediaEl.currentTime > 0) {
+            mediaEl.currentTime = 0;
+          }
+
+          setAudioStatus(`Memutar MP4 (${sourceLabel})...`, '#118EE9');
+
+          // Watchdog jika link lambat/diblokir di HP > 2.2 detik -> otomatis bunyikan cadangan
+          mediaTimeoutId = setTimeout(() => {
+            if (mediaEl.paused || mediaEl.readyState < 2) {
+              playLocalChime(sourceLabel);
+            }
+          }, 2200);
+
+          const p = mediaEl.play();
+          if (p && typeof p.then === 'function') {
+            p.then(() => {
+              clearMediaTimeout();
+              setAudioStatus(`MP4 Berbunyi (${sourceLabel})`, '#059669');
+            }).catch(() => {
+              clearMediaTimeout();
+              playLocalChime(sourceLabel);
+            });
+          }
           return;
-        } catch (e) {}
+        } catch (e) {
+          clearMediaTimeout();
+        }
       }
 
-      // 3. Default 0ms Responsif & Super Keras: langsung bunyikan chime Web Audio yang sudah di-boost!
-      playDirectWebAudioChime(sourceLabel);
-
-      // Coba muat MP4 di latar belakang untuk ketukan berikutnya
-      if (mediaEl.readyState === 0 && mediaReadyState !== 'error') {
-        try { mediaEl.load(); } catch (e) {}
-      }
+      // 3. Fallback jika link MP4 gagal dimuat
+      playLocalChime(sourceLabel);
     }
 
-    function handleTestAudioPointer() {
-      triggerInstantSound('TEST', true);
-    }
-
+    // HANYA tombol Test Suara & KIRIM yang membunyikan suara notif
     function handleTestAudioClick() {
-      triggerInstantSound('TEST', false);
+      playNotifSound('TEST');
     }
 
-    function handleSharePointer() {
-      triggerInstantSound('BAGIKAN', true);
+    function handleSendClick() {
+      playNotifSound('KIRIM');
+      applySettingsToReceipt();
+      document.getElementById('screenSettings').classList.add('hidden');
+      document.getElementById('screenReceipt').classList.remove('hidden');
+      syncViewportHeight();
     }
 
+    // Tombol BAGIKAN tanpa suara notif
     function handleShareClick() {
-      triggerInstantSound('BAGIKAN', false);
+      const summary = document.getElementById('displaySummaryText').textContent;
+      const btn = document.getElementById('btnShareReceipt');
+
+      if (navigator.share) {
+        navigator.share({
+          title: 'Bukti Transaksi DANA',
+          text: summary
+        }).catch(() => {});
+        return;
+      }
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(summary).then(() => {
+          if (btn) {
+            btn.textContent = 'DETAIL TERSALIN';
+            setTimeout(() => { btn.textContent = 'BAGIKAN'; }, 1500);
+          }
+        }).catch(() => {});
+      }
     }
 
     function updateDeviceBadge() {
@@ -1208,10 +1227,12 @@
 
     function handleAmountInput(el) {
       el.value = formatRupiah(el.value);
+      preBufferOnFormActivity();
     }
 
     function setQuickAmount(val) {
       document.getElementById('inputAmount').value = formatRupiah(val);
+      preBufferOnFormActivity();
     }
 
     function maskRecipientName(name) {
@@ -1329,18 +1350,6 @@
         panel.classList.add('hidden');
         if (icon) icon.style.transform = 'rotate(0deg)';
       }
-    }
-
-    function handleSendPointer() {
-      triggerInstantSound('KIRIM', true);
-    }
-
-    function handleSendClick() {
-      triggerInstantSound('KIRIM', false);
-      applySettingsToReceipt();
-      document.getElementById('screenSettings').classList.add('hidden');
-      document.getElementById('screenReceipt').classList.remove('hidden');
-      syncViewportHeight();
     }
 
     function backToSettings() {
