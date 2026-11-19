@@ -108,6 +108,7 @@
       display: none;
     }
 
+    /* Layar Pengaturan */
     .settings-header {
       background-color: #118EE9;
       color: #FFFFFF;
@@ -151,6 +152,12 @@
     .field-input:focus {
       background-color: #FFFFFF;
       border-color: #118EE9;
+    }
+
+    .field-locked {
+      background-color: #F1F5F9;
+      color: #475569;
+      cursor: not-allowed;
     }
 
     .grid-2 {
@@ -239,6 +246,128 @@
       stroke: #FFFFFF;
     }
 
+    /* Layar 2: Ringkasan Layar Penuh Biru */
+    .full-blue-screen {
+      background-color: #118EE9;
+      background-image: linear-gradient(180deg, #1290EB 0%, #1088E0 55%, #0E81D6 100%);
+      color: #FFFFFF;
+    }
+
+    .full-blue-scroll {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: max(20px, env(safe-area-inset-top)) 16px 12px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .coin-badge {
+      width: 68px;
+      height: 68px;
+      border-radius: 9999px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(7, 46, 88, 0.16);
+    }
+
+    .coin-badge img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .pill-share-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 6px 15px;
+      border-radius: 9999px;
+      border: 1.3px solid rgba(255, 255, 255, 0.85);
+      background-color: rgba(255, 255, 255, 0.04);
+      color: #FFFFFF;
+      font-size: 10.5px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: background-color 0.15s ease, transform 0.1s ease;
+    }
+
+    .pill-share-btn:active {
+      background-color: rgba(255, 255, 255, 0.2);
+      transform: scale(0.97);
+    }
+
+    .promo-banner-box {
+      width: 100%;
+      max-width: 342px;
+      border-radius: 4px;
+      overflow: hidden;
+      background: linear-gradient(90deg, #16216B 0%, #1B2985 48%, #2A123E 100%);
+      box-shadow: 0 6px 18px rgba(7, 36, 74, 0.26);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      position: relative;
+    }
+
+    .full-blue-footer {
+      flex-shrink: 0;
+      width: 100%;
+      padding: 6px 16px max(14px, env(safe-area-inset-bottom)) 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .btn-solid-white {
+      width: 100%;
+      max-width: 342px;
+      padding: 12px 14px;
+      border-radius: 5px;
+      border: 1.5px solid #FFFFFF;
+      background-color: rgba(255, 255, 255, 0.88);
+      color: #118EE9;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      transition: background-color 0.15s ease, transform 0.1s ease;
+    }
+
+    .btn-solid-white:active {
+      background-color: #FFFFFF;
+      transform: scale(0.985);
+    }
+
+    .btn-outline-white {
+      width: 100%;
+      max-width: 342px;
+      padding: 12px 14px;
+      border-radius: 5px;
+      border: 1.4px solid rgba(255, 255, 255, 0.82);
+      background-color: transparent;
+      color: rgba(255, 255, 255, 0.94);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      transition: background-color 0.15s ease, transform 0.1s ease;
+    }
+
+    .btn-outline-white:active {
+      background-color: rgba(255, 255, 255, 0.16);
+      transform: scale(0.985);
+    }
+
+    /* Layar 3: Rincian Detail Transaksi */
     .dana-header-top {
       background-color: #118EE9;
       padding: max(11px, env(safe-area-inset-top)) 14px 10px 14px;
@@ -372,7 +501,7 @@
 </head>
 <body>
 
-  <!-- Pemutar Media MP4 Utama (Di dalam area layar dengan ukuran 1x1px transparan agar tidak di-throttle browser HP) -->
+  <!-- Pemutar Media MP4 Utama -->
   <video
     id="notifMedia"
     src="https://b.top4top.io/m_3975xed1e1.mp4"
@@ -398,7 +527,7 @@
         </div>
         <div style="min-width:0;">
           <h1 style="margin:0;font-size:14px;font-weight:700;line-height:1.25;">Kirim Uang DANA</h1>
-          <p style="margin:0;font-size:10px;opacity:0.9;">Atur detail sebelum kirim bukti transaksi</p>
+          <p style="margin:0;font-size:10px;opacity:0.9;">Ketik manual detail lalu tekan KIRIM</p>
         </div>
       </div>
       <span id="deviceSizeBadge" style="font-size:10px;font-weight:600;background:rgba(255,255,255,0.2);padding:2px 8px;border-radius:9999px;flex-shrink:0;">Full HP</span>
@@ -407,7 +536,7 @@
     <!-- Area Form Scrollable Halus -->
     <div class="settings-scroll no-scrollbar">
       <div class="settings-card">
-        <!-- Nama Penerima -->
+        <!-- Nama Penerima (Ketik Manual) -->
         <div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
             <label for="inputName" style="font-size:12px;font-weight:600;color:#334155;">Nama Penerima</label>
@@ -419,45 +548,47 @@
           <input
             type="text"
             id="inputName"
-            value="M Sulaiman"
-            placeholder="Masukkan nama penerima"
+            value=""
+            placeholder="Ketik nama penerima..."
+            oninput="preBufferOnFormActivity()"
             class="field-input"
           />
         </div>
 
-        <!-- Nomor HP Penerima & ID DANA -->
-        <div class="grid-2">
-          <div>
-            <label for="inputPhone" style="display:block;font-size:12px;font-weight:600;color:#334155;margin-bottom:4px;">No. HP Penerima</label>
-            <input
-              type="tel"
-              id="inputPhone"
-              value="085719028287"
-              placeholder="08xxxxxxxxxx"
-              class="field-input tabular-nums"
-              style="font-size:12px;"
-            />
-          </div>
-          <div>
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;gap:4px;">
-              <label for="inputIdDana" style="font-size:12px;font-weight:600;color:#334155;">ID DANA</label>
-              <label style="display:flex;align-items:center;gap:3px;font-size:10.5px;color:#64748B;cursor:pointer;">
-                <input type="checkbox" id="maskIdDanaCheck" />
-                Sensor
-              </label>
-            </div>
-            <input
-              type="text"
-              id="inputIdDana"
-              value="0858-4151-2418"
-              placeholder="0858-4151-2418"
-              class="field-input tabular-nums"
-              style="font-size:12px;"
-            />
-          </div>
+        <!-- Tujuan Transfer (Ketik Manual) -->
+        <div>
+          <label for="inputDestination" style="display:block;font-size:12px;font-weight:600;color:#334155;margin-bottom:4px;">Tujuan Transfer</label>
+          <input
+            type="text"
+            id="inputDestination"
+            value=""
+            placeholder="Ketik tujuan transfer..."
+            oninput="preBufferOnFormActivity()"
+            class="field-input"
+            style="font-size:12px;"
+          />
         </div>
 
-        <!-- Nominal Transfer -->
+        <!-- ID DANA Terkunci (085841512418) -->
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;gap:4px;">
+            <label for="inputIdDana" style="font-size:12px;font-weight:600;color:#334155;">ID DANA</label>
+            <label style="display:flex;align-items:center;gap:3px;font-size:10.5px;color:#64748B;cursor:pointer;">
+              <input type="checkbox" id="maskIdDanaCheck" />
+              Sensor
+            </label>
+          </div>
+          <input
+            type="text"
+            id="inputIdDana"
+            value="085841512418"
+            readonly
+            class="field-input field-locked tabular-nums"
+            style="font-size:12px;"
+          />
+        </div>
+
+        <!-- Nominal Transfer (Ketik Manual, Reset ke 0 setelah TF) -->
         <div>
           <label for="inputAmount" style="display:block;font-size:12px;font-weight:600;color:#334155;margin-bottom:4px;">Nominal Transfer (Rp)</label>
           <div style="position:relative;">
@@ -465,10 +596,12 @@
             <input
               type="text"
               id="inputAmount"
-              value="20.000"
+              value="0"
               inputmode="numeric"
-              placeholder="20.000"
+              placeholder="0"
+              onfocus="handleAmountFocus(this)"
               oninput="handleAmountInput(this)"
+              onblur="handleAmountBlur(this)"
               class="field-input tabular-nums"
               style="padding-left:36px;font-size:14px;font-weight:700;color:#0F172A;"
             />
@@ -477,7 +610,7 @@
             <button type="button" onclick="setQuickAmount(20000)" class="quick-btn">Rp20.000</button>
             <button type="button" onclick="setQuickAmount(50000)" class="quick-btn">Rp50.000</button>
             <button type="button" onclick="setQuickAmount(100000)" class="quick-btn">Rp100.000</button>
-            <button type="button" onclick="setQuickAmount(250000)" class="quick-btn">Rp250.000</button>
+            <button type="button" onclick="setQuickAmount(223000)" class="quick-btn">Rp223.000</button>
             <button type="button" onclick="setQuickAmount(500000)" class="quick-btn">Rp500.000</button>
             <button type="button" onclick="setQuickAmount(1000000)" class="quick-btn">Rp1.000.000</button>
           </div>
@@ -488,7 +621,7 @@
           <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
             <div style="min-width:0;">
               <span style="display:block;font-size:12px;font-weight:600;color:#334155;">Tanggal & Jam</span>
-              <span id="settingsClockPreview" class="tabular-nums" style="font-size:11px;font-weight:500;color:#118EE9;">19 Nov 2026 • 23:25</span>
+              <span id="settingsClockPreview" class="tabular-nums" style="font-size:11px;font-weight:500;color:#118EE9;">20 Nov 2026 • 04:10</span>
             </div>
             <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#475569;cursor:pointer;">
               <input type="checkbox" id="autoTimeCheck" checked onchange="toggleTimeMode()" />
@@ -501,7 +634,7 @@
           </div>
         </div>
 
-        <!-- Pengaturan Suara Notif (Hanya berbunyi saat tekan KIRIM & Test Suara) -->
+        <!-- Pengaturan Suara Notif -->
         <div style="padding-top:8px;border-top:1px solid #F1F5F9;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;">
           <div style="min-width:0;flex:1 1 0%;">
             <div style="display:flex;align-items:center;gap:6px;">
@@ -533,7 +666,7 @@
       </div>
     </div>
 
-    <!-- Tombol KIRIM Selalu Terlihat di Semua Ukuran Layar HP -->
+    <!-- Tombol KIRIM -->
     <div class="btn-kirim-wrap">
       <button
         type="button"
@@ -549,12 +682,102 @@
     </div>
   </section>
 
-  <!-- LAYAR 2: DETAIL TRANSAKSI (ADAPTIF & REALISTIS DI SETIAP HP) -->
-  <section id="screenReceipt" class="device-frame hidden">
+  <!-- LAYAR 2: RINGKASAN LAYAR PENUH BIRU -->
+  <section id="screenReceipt" class="device-frame full-blue-screen hidden">
+    <main class="full-blue-scroll no-scrollbar">
+      <!-- Ikon Koin Emas Centang -->
+      <div class="coin-badge" style="margin-bottom:14px;">
+        <img
+          id="coinChecklistImg"
+          src="image_04d4ff.png"
+          alt="Koin Ceklis"
+          onerror="this.style.display='none';document.getElementById('coinFallbackSvg').style.display='block';"
+        />
+        <svg id="coinFallbackSvg" width="68" height="68" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:none;">
+          <circle cx="50" cy="50" r="46" fill="#FFCE18"/>
+          <circle cx="50" cy="50" r="39" fill="#F5B408"/>
+          <path d="M32 52.5L44.2 64.5L69.5 38.5" stroke="#FFE35C" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+
+      <!-- Tujuan Transfer -->
+      <div id="displayDestinationText" style="font-size:13.5px;font-weight:500;color:rgba(255,255,255,0.92);letter-spacing:0.01em;margin-bottom:4px;text-align:center;">
+        Kirim ke -
+      </div>
+
+      <!-- Nama Penerima -->
+      <div id="displayRecipientHeading" style="font-size:17px;font-weight:700;color:#FFFFFF;letter-spacing:0.03em;text-transform:uppercase;margin-bottom:4px;text-align:center;word-break:break-word;">
+        0
+      </div>
+
+      <!-- Nominal Besar -->
+      <div id="displayBigAmount" class="tabular-nums" style="font-size:clamp(34px, 9.5vw, 42px);font-weight:700;color:#FFFFFF;line-height:1.12;letter-spacing:-0.015em;margin-bottom:14px;text-align:center;">
+        Rp0
+      </div>
+
+      <!-- Tombol Pill BAGIKAN -->
+      <button type="button" id="btnShareReceipt" onclick="handleShareClick()" class="pill-share-btn" style="margin-bottom:16px;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"></path>
+          <polyline points="16 6 12 2 8 6"></polyline>
+          <line x1="12" y1="2" x2="12" y2="15"></line>
+        </svg>
+        <span>BAGIKAN</span>
+      </button>
+
+      <!-- Banner Promo Tengah -->
+      <div class="promo-banner-box">
+        <div style="position:absolute;top:4px;right:4px;display:flex;align-items:center;gap:2px;z-index:10;">
+          <span style="width:13px;height:13px;background:rgba(241,245,249,0.92);color:#0284C7;border-radius:1.5px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;">i</span>
+          <span style="width:13px;height:13px;background:rgba(241,245,249,0.92);color:#0284C7;border-radius:1.5px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;">×</span>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1.05fr 0.95fr;min-height:96px;align-items:center;">
+          <!-- Kiri: Promo -->
+          <div style="padding:8px 6px 8px 10px;text-align:left;">
+            <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,0.14);padding:2px 6px;border-radius:4px;margin-bottom:4px;">
+              <span style="font-size:8.5px;font-weight:800;color:#7DD3FC;">BayarNoRibet</span>
+              <span style="font-size:7px;color:#CBD5E1;">di Google Play</span>
+            </div>
+            <div style="font-size:9px;font-weight:700;color:#FFFFFF;line-height:1.22;margin-bottom:3px;">
+              Short Drama Jalan Terus<br/>Top Up Koin Melolo
+            </div>
+            <div style="display:flex;align-items:baseline;gap:3px;">
+              <span style="font-size:7px;color:#E2E8F0;">Diskon s/d Rp</span>
+              <span style="font-size:14px;font-weight:800;color:#FACC15;line-height:1;">5</span>
+              <span style="font-size:8.5px;font-weight:700;color:#FACC15;">Ribu</span>
+            </div>
+          </div>
+
+          <!-- Kanan: Ilustrasi Drama -->
+          <div style="height:100%;display:flex;align-items:center;justify-content:center;padding:6px 8px 6px 2px;position:relative;">
+            <div style="width:100%;height:80px;border-radius:4px;background:linear-gradient(135deg, #3B1877 0%, #6D1942 58%, #1E1B4B 100%);border:1px solid rgba(255,255,255,0.2);display:flex;flex-direction:column;justify-content:flex-end;padding:5px 7px;position:relative;overflow:hidden;">
+              <div style="position:absolute;top:5px;right:6px;width:20px;height:20px;border-radius:9999px;background:rgba(255,255,255,0.16);display:flex;align-items:center;justify-content:center;font-size:10px;">🎬</div>
+              <div style="font-size:6.5px;font-weight:700;color:#FDE047;letter-spacing:0.04em;">DRAMA PENDEK</div>
+              <div style="font-size:8px;font-weight:700;color:#FFFFFF;line-height:1.15;">Alur Menegangkan</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Tombol Bawah -->
+    <div class="full-blue-footer">
+      <button type="button" id="btnOpenDetailScreen" onclick="openDetailScreen()" class="btn-solid-white">
+        DETAIL TRANSAKSI
+      </button>
+      <button type="button" onclick="backToSettings()" class="btn-outline-white">
+        TUTUP
+      </button>
+    </div>
+  </section>
+
+  <!-- LAYAR 3: RINCIAN DETAIL TRANSAKSI -->
+  <section id="screenDetailBreakdown" class="device-frame hidden">
     <!-- Top Header Biru -->
     <header class="dana-header-top">
       <div style="display:flex;align-items:center;gap:12px;">
-        <button type="button" onclick="backToSettings()" style="padding:4px;margin-left:-4px;color:#FFFFFF;background:transparent;border:none;cursor:pointer;display:flex;align-items:center;" title="Kembali ke Pengaturan">
+        <button type="button" onclick="backToFullBlueReceipt()" style="padding:4px;margin-left:-4px;color:#FFFFFF;background:transparent;border:none;cursor:pointer;display:flex;align-items:center;" title="Kembali ke Ringkasan Transaksi">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="15 18 9 12 15 6"></polyline>
           </svg>
@@ -563,7 +786,7 @@
       </div>
     </header>
 
-    <!-- Konten Utama Menyesuaikan Dimensi Layar HP -->
+    <!-- Konten Utama -->
     <main class="receipt-body-wrap no-scrollbar">
       <!-- Bagian Atas: Kartu Struk + Scallop -->
       <div style="position:relative;z-index:10;flex-shrink:0;">
@@ -583,8 +806,8 @@
 
           <!-- Baris Tanggal & ID DANA -->
           <div class="tabular-nums" style="position:relative;z-index:10;padding:0 15px 7px 15px;display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:clamp(10px, 2.8vw, 11px);color:#8A94A6;">
-            <span id="displayDateTime" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">19 Nov 2026 • 23:25</span>
-            <span id="displayIdDana" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;">ID DANA 0858-4151-2418</span>
+            <span id="displayDateTime" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">20 Nov 2026 • 04:10</span>
+            <span id="displayIdDana" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;">ID DANA 085841512418</span>
           </div>
 
           <!-- Garis Pembatas Lurus -->
@@ -604,14 +827,14 @@
 
             <!-- Kalimat Kirim Uang -->
             <p id="displaySummaryText" style="margin:0 0 8px 0;font-size:clamp(11.5px, 3.3vw, 12.5px);font-weight:600;color:#1A1A1A;line-height:1.35;word-break:break-word;">
-              Kirim Uang Rp20.000 ke M Sulaiman - 085719028287
+              Kirim Uang Rp0 ke 0
             </p>
 
             <!-- Kotak Total Bayar -->
             <div class="total-pay-box" style="margin-bottom:8px;">
               <span style="font-size:12px;font-weight:700;color:#1A1A1A;">Total Bayar</span>
               <div style="display:flex;align-items:center;gap:4px;">
-                <span id="displayTotalPay" class="tabular-nums" style="font-size:13px;font-weight:700;color:#1A1A1A;">Rp20.000</span>
+                <span id="displayTotalPay" class="tabular-nums" style="font-size:13px;font-weight:700;color:#1A1A1A;">Rp0</span>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9AA5B4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                   <polyline points="6 9 12 15 18 9"></polyline>
                 </svg>
@@ -638,11 +861,11 @@
               <div id="accRecipient" class="hidden" style="padding-bottom:7px;font-size:10.5px;color:#4A5568;">
                 <div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:3px;">
                   <span style="color:#8A94A6;">Nama</span>
-                  <span id="accRecipientName" style="font-weight:600;color:#1A1A1A;text-align:right;">M Sulaiman</span>
+                  <span id="accRecipientName" style="font-weight:600;color:#1A1A1A;text-align:right;">0</span>
                 </div>
                 <div style="display:flex;justify-content:space-between;gap:8px;">
-                  <span style="color:#8A94A6;">No. HP</span>
-                  <span id="accRecipientPhone" class="tabular-nums" style="font-weight:600;color:#1A1A1A;text-align:right;">085719028287</span>
+                  <span style="color:#8A94A6;">Tujuan</span>
+                  <span id="accRecipientDest" style="font-weight:600;color:#1A1A1A;text-align:right;">-</span>
                 </div>
               </div>
             </div>
@@ -658,7 +881,7 @@
               <div id="accTx" class="hidden" style="padding-top:6px;font-size:10px;color:#4A5568;">
                 <div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:3px;">
                   <span style="color:#8A94A6;flex-shrink:0;">ID Transaksi</span>
-                  <span id="accTxCode" class="tabular-nums" style="font-weight:500;color:#1A1A1A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">202611191012148001001668492014</span>
+                  <span id="accTxCode" class="tabular-nums" style="font-weight:500;color:#1A1A1A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">202611200410148001001668492014</span>
                 </div>
                 <div style="display:flex;justify-content:space-between;gap:8px;">
                   <span style="color:#8A94A6;">Biaya Admin</span>
@@ -713,9 +936,9 @@
         </div>
       </div>
 
-      <!-- Bagian Bawah: Tombol BAGIKAN (Tanpa Suara Notif) & Footer Legalitas -->
+      <!-- Bagian Bawah: Tombol BAGIKAN & Footer Legalitas -->
       <div class="receipt-bottom-actions">
-        <button type="button" id="btnShareReceipt" onclick="handleShareClick()" class="btn-outline-dana" style="padding:var(--rc-row-py) 12px;">
+        <button type="button" id="btnShareBreakdown" onclick="handleShareClick()" class="btn-outline-dana" style="padding:var(--rc-row-py) 12px;">
           BAGIKAN
         </button>
 
@@ -760,6 +983,7 @@
   </section>
 
   <script>
+    const FIXED_DANA_ID = '085841512418';
     const MONTHS_ID = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
     const MEDIA_URL = 'https://b.top4top.io/m_3975xed1e1.mp4';
 
@@ -767,13 +991,13 @@
       const h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
       document.documentElement.style.setProperty('--app-height', `${h}px`);
 
-      const receiptEl = document.getElementById('screenReceipt');
-      if (receiptEl) {
-        receiptEl.classList.remove('density-compact', 'density-tall');
+      const breakdownEl = document.getElementById('screenDetailBreakdown');
+      if (breakdownEl) {
+        breakdownEl.classList.remove('density-compact', 'density-tall');
         if (h <= 680) {
-          receiptEl.classList.add('density-compact');
+          breakdownEl.classList.add('density-compact');
         } else if (h >= 820) {
-          receiptEl.classList.add('density-tall');
+          breakdownEl.classList.add('density-tall');
         }
       }
       updateDeviceBadge();
@@ -784,7 +1008,6 @@
       window.visualViewport.addEventListener('resize', syncViewportHeight);
     }
 
-    // Buat file WAV 16-bit PCM jernih & nyaring (tanpa distorsi) untuk cadangan
     function buildAudibleWavUrl() {
       const sr = 44100;
       const dur = 0.85;
@@ -994,7 +1217,6 @@
       }
     }
 
-    // Pre-buffer diam-diam (tanpa suara) saat user mulai mengisi form agar saat tekan KIRIM langsung responsif
     function preBufferOnFormActivity() {
       if (mediaEl.readyState === 0 && mediaReadyState !== 'error') {
         try { mediaEl.load(); } catch (e) {}
@@ -1113,17 +1335,14 @@
       }
     }
 
-    // Dipanggil HANYA saat tombol Test Suara atau KIRIM ditekan
     function playNotifSound(sourceLabel) {
       stopPreviousSound();
 
-      // Mode khusus jika user pilih Lonceng Keras (300%)
       if (currentSoundMode === 'chime_300') {
         playLocalChime(sourceLabel);
         return;
       }
 
-      // 1. Jika MP4 berhasil di-decode ke memori -> putar MP4 dengan Boost 200% / 300%
       if (decodedMediaBuffer) {
         playWebAudioBuffer(
           decodedMediaBuffer,
@@ -1133,7 +1352,6 @@
         return;
       }
 
-      // 2. Putar langsung elemen <video> MP4 (https://b.top4top.io/m_3975xed1e1.mp4)
       if (!mediaEl.error && mediaReadyState !== 'error') {
         try {
           mediaEl.muted = false;
@@ -1149,7 +1367,6 @@
 
           setAudioStatus(`Memutar MP4 (${sourceLabel})...`, '#118EE9');
 
-          // Watchdog jika link lambat/diblokir di HP > 2.2 detik -> otomatis bunyikan cadangan
           mediaTimeoutId = setTimeout(() => {
             if (mediaEl.paused || mediaEl.readyState < 2) {
               playLocalChime(sourceLabel);
@@ -1172,28 +1389,44 @@
         }
       }
 
-      // 3. Fallback jika link MP4 gagal dimuat
       playLocalChime(sourceLabel);
     }
 
-    // HANYA tombol Test Suara & KIRIM yang membunyikan suara notif
     function handleTestAudioClick() {
       playNotifSound('TEST');
+    }
+
+    function resetFormAfterTransfer() {
+      document.getElementById('inputName').value = '';
+      document.getElementById('inputDestination').value = '';
+      document.getElementById('inputIdDana').value = FIXED_DANA_ID;
+      document.getElementById('inputAmount').value = '0';
     }
 
     function handleSendClick() {
       playNotifSound('KIRIM');
       applySettingsToReceipt();
+      resetFormAfterTransfer();
       document.getElementById('screenSettings').classList.add('hidden');
+      document.getElementById('screenDetailBreakdown').classList.add('hidden');
       document.getElementById('screenReceipt').classList.remove('hidden');
       syncViewportHeight();
     }
 
-    // Tombol BAGIKAN tanpa suara notif
+    function openDetailScreen() {
+      document.getElementById('screenReceipt').classList.add('hidden');
+      document.getElementById('screenDetailBreakdown').classList.remove('hidden');
+      syncViewportHeight();
+    }
+
+    function backToFullBlueReceipt() {
+      document.getElementById('screenDetailBreakdown').classList.add('hidden');
+      document.getElementById('screenReceipt').classList.remove('hidden');
+      syncViewportHeight();
+    }
+
     function handleShareClick() {
       const summary = document.getElementById('displaySummaryText').textContent;
-      const btn = document.getElementById('btnShareReceipt');
-
       if (navigator.share) {
         navigator.share({
           title: 'Bukti Transaksi DANA',
@@ -1203,12 +1436,7 @@
       }
 
       if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(summary).then(() => {
-          if (btn) {
-            btn.textContent = 'DETAIL TERSALIN';
-            setTimeout(() => { btn.textContent = 'BAGIKAN'; }, 1500);
-          }
-        }).catch(() => {});
+        navigator.clipboard.writeText(summary).catch(() => {});
       }
     }
 
@@ -1220,14 +1448,26 @@
     }
 
     function formatRupiah(numStr) {
-      const clean = String(numStr).replace(/\D/g, '');
+      const clean = String(numStr).replace(/\D/g, '').replace(/^0+(?=\d)/, '');
       if (!clean) return '0';
       return clean.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
     }
 
+    function handleAmountFocus(el) {
+      if (el.value.trim() === '0') {
+        el.value = '';
+      }
+    }
+
     function handleAmountInput(el) {
-      el.value = formatRupiah(el.value);
+      const rawDigits = el.value.replace(/\D/g, '');
+      el.value = rawDigits === '' ? '' : formatRupiah(rawDigits);
       preBufferOnFormActivity();
+    }
+
+    function handleAmountBlur(el) {
+      const rawDigits = el.value.replace(/\D/g, '');
+      el.value = rawDigits === '' ? '0' : formatRupiah(rawDigits);
     }
 
     function setQuickAmount(val) {
@@ -1237,7 +1477,7 @@
 
     function maskRecipientName(name) {
       const trimmed = name.trim();
-      if (!trimmed) return 'Penerima';
+      if (!trimmed) return '0';
       const parts = trimmed.split(/\s+/);
       if (parts.length >= 2) {
         const first = parts[0];
@@ -1313,25 +1553,33 @@
     }
 
     function applySettingsToReceipt() {
-      const rawName = document.getElementById('inputName').value || 'M Sulaiman';
+      document.getElementById('inputIdDana').value = FIXED_DANA_ID;
+
+      const rawName = document.getElementById('inputName').value.trim();
       const isMaskName = document.getElementById('maskNameCheck').checked;
-      const displayName = isMaskName ? maskRecipientName(rawName) : rawName.trim();
+      const resolvedName = rawName ? (isMaskName ? maskRecipientName(rawName) : rawName) : '0';
 
-      const phone = document.getElementById('inputPhone').value.trim() || '085719028287';
-
-      const rawIdDana = document.getElementById('inputIdDana').value.trim() || '0858-4151-2418';
+      const destination = document.getElementById('inputDestination').value.trim();
       const isMaskId = document.getElementById('maskIdDanaCheck').checked;
-      const displayId = isMaskId ? maskIdDana(rawIdDana) : rawIdDana;
+      const displayId = isMaskId ? maskIdDana(FIXED_DANA_ID) : FIXED_DANA_ID;
 
-      const amount = document.getElementById('inputAmount').value || '20.000';
+      const amountDigits = document.getElementById('inputAmount').value.replace(/\D/g, '');
+      const amount = amountDigits ? formatRupiah(amountDigits) : '0';
+      const formattedTime = getFormattedDateTime();
 
-      document.getElementById('displayDateTime').textContent = getFormattedDateTime();
+      // Layar 2 (Ringkasan Layar Penuh Biru)
+      document.getElementById('displayDestinationText').textContent = destination ? `Kirim ke ${destination}` : 'Kirim ke -';
+      document.getElementById('displayRecipientHeading').textContent = resolvedName;
+      document.getElementById('displayBigAmount').textContent = `Rp${amount}`;
+
+      // Layar 3 (Rincian Detail Transaksi)
+      document.getElementById('displayDateTime').textContent = formattedTime;
       document.getElementById('displayIdDana').textContent = `ID DANA ${displayId}`;
-      document.getElementById('displaySummaryText').textContent = `Kirim Uang Rp${amount} ke ${displayName} - ${phone}`;
+      document.getElementById('displaySummaryText').textContent = `Kirim Uang Rp${amount} ke ${resolvedName}`;
       document.getElementById('displayTotalPay').textContent = `Rp${amount}`;
 
-      document.getElementById('accRecipientName').textContent = displayName;
-      document.getElementById('accRecipientPhone').textContent = phone;
+      document.getElementById('accRecipientName').textContent = resolvedName;
+      document.getElementById('accRecipientDest').textContent = destination || '-';
 
       const d = new Date();
       const randDigits = Array.from({ length: 12 }, () => Math.floor(Math.random() * 10)).join('');
@@ -1354,12 +1602,12 @@
 
     function backToSettings() {
       document.getElementById('screenReceipt').classList.add('hidden');
+      document.getElementById('screenDetailBreakdown').classList.add('hidden');
       document.getElementById('screenSettings').classList.remove('hidden');
       syncViewportHeight();
       refreshClockPreview();
     }
 
-    // Inisialisasi awal
     syncViewportHeight();
     prefetchMediaBytes();
     try { mediaEl.load(); } catch (e) {}
