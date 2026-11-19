@@ -10,6 +10,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
+    :root {
+      --app-height: 100dvh;
+    }
+
     * {
       box-sizing: border-box;
       -webkit-tap-highlight-color: transparent;
@@ -19,8 +23,7 @@
       margin: 0;
       padding: 0;
       width: 100%;
-      height: 100vh;
-      height: 100dvh;
+      height: 100%;
       overflow: hidden;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background-color: #E2E8F0;
@@ -29,6 +32,8 @@
     }
 
     body {
+      position: fixed;
+      inset: 0;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -38,11 +43,16 @@
       touch-action: manipulation;
     }
 
-    /* Full Layar Penuh di Semua HP & Perangkat Sentuh */
+    .hidden {
+      display: none !important;
+    }
+
+    /* Full Layar Mengikuti Ukuran Layar HP yang Dipakai */
     .device-frame {
       width: 100%;
-      height: 100vh;
-      height: 100dvh;
+      height: 100%;
+      height: var(--app-height, 100dvh);
+      max-height: 100%;
       position: relative;
       overflow: hidden;
       display: flex;
@@ -54,7 +64,7 @@
       display: none !important;
     }
 
-    /* Khusus Layar Komputer/Desktop dengan Mouse: Tampil Rapi di Tengah */
+    /* Khusus Layar Desktop/Laptop dengan Mouse */
     @media (min-width: 768px) and (hover: hover) and (pointer: fine) {
       body {
         padding: clamp(8px, 2dvh, 18px);
@@ -62,7 +72,6 @@
       .device-frame {
         width: min(100%, 430px);
         height: min(100%, 880px);
-        max-height: 100dvh;
         border-radius: 22px;
         box-shadow: 0 18px 50px rgba(15, 23, 42, 0.2);
       }
@@ -76,7 +85,73 @@
       display: none;
     }
 
-    /* Header Biru DANA dengan Safe Area Atas */
+    /* CSS Cadangan Penting Agar Tombol & Header Selalu Muncul Walau CDN Lambat */
+    .settings-header {
+      background-color: #118EE9;
+      color: #FFFFFF;
+      padding: max(12px, env(safe-area-inset-top)) 14px 12px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .settings-scroll {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 12px;
+    }
+
+    .settings-card {
+      background-color: #FFFFFF;
+      border-radius: 16px;
+      border: 1px solid #E2E8F0;
+      padding: 12px;
+    }
+
+    .btn-kirim-wrap {
+      flex-shrink: 0;
+      padding: 8px 12px max(12px, env(safe-area-inset-bottom)) 12px;
+      background-color: #F5F6F8;
+      border-top: 1px solid #E5E9F0;
+      position: relative;
+      z-index: 30;
+    }
+
+    #btnKirim {
+      width: 100%;
+      padding: 12px 16px;
+      background-color: #118EE9;
+      color: #FFFFFF;
+      font-weight: 700;
+      font-size: 14px;
+      letter-spacing: 0.05em;
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(17, 142, 233, 0.28);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    #btnKirim:active {
+      background-color: #0D7CD0;
+      transform: scale(0.985);
+    }
+
+    #btnKirim svg {
+      display: inline-block;
+      flex-shrink: 0;
+      width: 18px;
+      height: 18px;
+      stroke: #FFFFFF;
+    }
+
+    /* Header Biru DANA Layar Struk */
     .dana-header-top {
       background-color: #118EE9;
       padding: max(12px, env(safe-area-inset-top)) 14px 10px 14px;
@@ -88,7 +163,7 @@
 
     /* Area Konten Utama Struk Full Layar HP */
     .receipt-body-wrap {
-      flex: 1;
+      flex: 1 1 auto;
       min-height: 0;
       padding: 2px clamp(12px, 3.4vw, 16px) clamp(10px, 1.8dvh, 16px) clamp(12px, 3.4vw, 16px);
       display: flex;
@@ -101,7 +176,6 @@
       -webkit-overflow-scrolling: touch;
     }
 
-    /* Lanjutan Warna Biru Header di Belakang Bagian Atas Struk (Tanpa Garis Putus) */
     .receipt-body-wrap::before {
       content: "";
       position: absolute;
@@ -114,7 +188,6 @@
       pointer-events: none;
     }
 
-    /* Kartu Struk Putih */
     .receipt-card {
       background-color: #FFFFFF;
       border-radius: 11px 11px 0 0;
@@ -127,7 +200,6 @@
       box-shadow: 0 3px 10px rgba(17, 142, 233, 0.06);
     }
 
-    /* Watermark Diagonal DANA Halus */
     .watermark-layer {
       position: absolute;
       inset: 0;
@@ -175,7 +247,6 @@
       flex-shrink: 0;
     }
 
-    /* Bottom Bar BUTUH BANTUAN? Terkunci Rapi di Bawah Layar HP */
     .bottom-bar-dock {
       flex-shrink: 0;
       width: 100%;
@@ -192,7 +263,7 @@
 </head>
 <body>
 
-  <!-- Elemen Audio MP3 Utama -->
+  <!-- Elemen Audio MP3 Utama (Link Eksternal) -->
   <audio
     id="notifAudio"
     src="https://a.top4top.io/m_3975h1p771.mp3"
@@ -201,10 +272,18 @@
     webkit-playsinline
   ></audio>
 
+  <!-- Elemen Audio Cadangan Bawaan (100% Lokal WAV - Kebal Blokir DNS/AdBlock/Offline) -->
+  <audio
+    id="fallbackAudio"
+    preload="auto"
+    playsinline
+    webkit-playsinline
+  ></audio>
+
   <!-- LAYAR 1: PENGATURAN TRANSAKSI -->
   <section id="screenSettings" class="device-frame">
     <!-- Header Pengaturan -->
-    <div class="bg-[#118EE9] px-3.5 pb-3 text-white flex items-center justify-between flex-shrink-0" style="padding-top: max(12px, env(safe-area-inset-top));">
+    <div class="settings-header">
       <div class="flex items-center gap-2.5 min-w-0">
         <div class="w-7 h-7 rounded-full bg-white flex items-center justify-center flex-shrink-0">
           <svg width="18" height="18" viewBox="0 0 40 40" fill="none">
@@ -221,8 +300,8 @@
     </div>
 
     <!-- Area Form Scrollable Halus -->
-    <div class="flex-1 min-h-0 overflow-y-auto no-scrollbar p-3">
-      <div class="bg-white rounded-2xl border border-slate-200/90 p-3 space-y-2.5">
+    <div class="settings-scroll no-scrollbar">
+      <div class="settings-card space-y-2.5">
         <!-- Nama Penerima -->
         <div>
           <div class="flex justify-between items-center mb-1">
@@ -314,11 +393,11 @@
           </div>
         </div>
 
-        <!-- Indikator Status Audio MP3 & Tombol Test Suara Boost 200% -->
+        <!-- Indikator Status Audio & Tombol Test Suara Boost 200% -->
         <div class="pt-1.5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-1.5">
-              <span class="text-[10.5px] font-semibold text-slate-600">Suara MP3</span>
+              <span class="text-[10.5px] font-semibold text-slate-600">Suara Notif</span>
               <select
                 id="volumeBoostSelect"
                 onchange="updateBoostLevel()"
@@ -330,8 +409,8 @@
                 <option value="3.0">300% Max</option>
               </select>
             </div>
-            <div id="audioStatusText" class="text-[11px] font-medium text-amber-600 truncate mt-0.5">
-              MP3: Siap dicoba (Ketuk Test)
+            <div id="audioStatusText" class="text-[11px] font-medium text-emerald-600 truncate mt-0.5">
+              Suara: Siap (MP3 + Cadangan Anti-Blokir)
             </div>
           </div>
           <button
@@ -346,16 +425,15 @@
       </div>
     </div>
 
-    <!-- Tombol KIRIM Terkunci Rapi di Bawah Layar Pengaturan -->
-    <div class="flex-shrink-0 px-3 pt-1 bg-[#F5F6F8]" style="padding-bottom: max(12px, env(safe-area-inset-bottom));">
+    <!-- Tombol KIRIM Selalu Terlihat di Semua Ukuran Layar HP -->
+    <div class="btn-kirim-wrap">
       <button
         type="button"
         id="btnKirim"
         onclick="handleSendClick(event)"
-        class="w-full py-3 bg-[#118EE9] hover:bg-[#0D7CD0] active:scale-[0.98] text-white font-bold text-sm tracking-wider rounded-xl shadow-md flex items-center justify-center gap-2"
       >
         <span>KIRIM</span>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <line x1="22" y1="2" x2="11" y2="13"></line>
           <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
         </svg>
@@ -487,7 +565,7 @@
         <div class="scallop-bottom"></div>
       </div>
 
-      <!-- Bagian Tengah: Kartu Banner Bawah (Skala Proporsional Layar HP) -->
+      <!-- Bagian Tengah: Kartu Banner Bawah -->
       <div class="banner-card my-auto">
         <div class="flex flex-col items-center">
           <div class="w-[clamp(140px,42vw,168px)] h-[clamp(112px,33vw,134px)] relative rounded-[3px] overflow-hidden flex flex-col justify-between p-2.5 text-center select-none shadow-sm" style="background: radial-gradient(circle at center, #520408 0%, #240103 80%, #140001 100%);">
@@ -577,7 +655,97 @@
     const MONTHS_ID = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
     const MP3_URL = 'https://a.top4top.io/m_3975h1p771.mp3';
 
+    // Sinkronkan tinggi aktual layar HP (mengatasi bug 100vh di berbagai merek HP)
+    function syncViewportHeight() {
+      const h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+      document.documentElement.style.setProperty('--app-height', `${h}px`);
+      updateDeviceBadge();
+    }
+    window.addEventListener('resize', syncViewportHeight);
+    window.addEventListener('orientationchange', () => setTimeout(syncViewportHeight, 120));
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', syncViewportHeight);
+    }
+
+    // Buat file WAV Notifikasi Lokal 16-bit PCM (0ms buffering, 100% kebal blokir DNS/AdBlock/CORS/Offline)
+    function createLoudChimeWavDataUrl() {
+      const sampleRate = 22050;
+      const duration = 0.78;
+      const numSamples = Math.floor(sampleRate * duration);
+      const buffer = new ArrayBuffer(44 + numSamples * 2);
+      const view = new DataView(buffer);
+
+      function writeStr(offset, str) {
+        for (let i = 0; i < str.length; i++) {
+          view.setUint8(offset + i, str.charCodeAt(i));
+        }
+      }
+
+      writeStr(0, 'RIFF');
+      view.setUint32(4, 36 + numSamples * 2, true);
+      writeStr(8, 'WAVE');
+      writeStr(12, 'fmt ');
+      view.setUint32(16, 16, true);
+      view.setUint16(20, 1, true);
+      view.setUint16(22, 1, true);
+      view.setUint32(24, sampleRate, true);
+      view.setUint32(28, sampleRate * 2, true);
+      view.setUint16(32, 2, true);
+      view.setUint16(34, 16, true);
+      writeStr(36, 'data');
+      view.setUint32(40, numSamples * 2, true);
+
+      for (let i = 0; i < numSamples; i++) {
+        const t = i / sampleRate;
+        let sig = 0;
+
+        // Nada 1 (C6)
+        if (t < 0.32) {
+          const env1 = Math.min(1, t / 0.005) * Math.exp(-t * 9.5);
+          sig += env1 * (
+            0.78 * Math.sin(2 * Math.PI * 1046.5 * t) +
+            0.35 * Math.sin(2 * Math.PI * 2093.0 * t) +
+            0.15 * Math.sin(2 * Math.PI * 3139.5 * t)
+          );
+        }
+
+        // Nada 2 (G6 cerah & nyaring)
+        if (t >= 0.105) {
+          const t2 = t - 0.105;
+          const env2 = Math.min(1, t2 / 0.005) * Math.exp(-t2 * 5.0);
+          sig += env2 * (
+            0.88 * Math.sin(2 * Math.PI * 1567.98 * t2) +
+            0.42 * Math.sin(2 * Math.PI * 3135.96 * t2) +
+            0.20 * Math.sin(2 * Math.PI * 4703.94 * t2)
+          );
+        }
+
+        // Soft-clipping maximizer agar volume suara penuh maksimal
+        const maximized = Math.tanh(sig * 2.8);
+        const pcm = Math.max(-32767, Math.min(32767, Math.round(maximized * 32767)));
+        view.setInt16(44 + i * 2, pcm, true);
+      }
+
+      const bytes = new Uint8Array(buffer);
+      let binary = '';
+      const chunkSize = 8192;
+      for (let i = 0; i < bytes.length; i += chunkSize) {
+        binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkSize));
+      }
+      return {
+        dataUrl: 'data:audio/wav;base64,' + btoa(binary),
+        rawBuffer: buffer
+      };
+    }
+
+    const localWavAsset = createLoudChimeWavDataUrl();
     const audioEl = document.getElementById('notifAudio');
+    const fallbackAudioEl = document.getElementById('fallbackAudio');
+
+    fallbackAudioEl.src = localWavAsset.dataUrl;
+    fallbackAudioEl.volume = 1.0;
+    fallbackAudioEl.muted = false;
+
     audioEl.preload = 'auto';
     audioEl.playsInline = true;
     audioEl.muted = false;
@@ -587,12 +755,15 @@
     let gainNode = null;
     let compressorNode = null;
     let decodedMp3Buffer = null;
+    let decodedLocalWavBuffer = null;
     let activeBufferSource = null;
     let isDecodingMp3 = false;
     let corsDecodeFailed = false;
     let mp3ReadyState = 'loading';
     let currentBoostGain = 2.0; // Default 200%
     let audioWatchdogTimer = null;
+    let isFallbackUnlocked = false;
+    let isPlayingFallbackNow = false;
 
     function setAudioStatus(text, colorClass) {
       const el = document.getElementById('audioStatusText');
@@ -616,9 +787,6 @@
       if (btn) {
         btn.textContent = `🔊 Test Suara ${getBoostPercentLabel()}`;
       }
-      if (decodedMp3Buffer) {
-        setAudioStatus(`MP3: Siap (Boost ${getBoostPercentLabel()} Aktif)`, 'text-emerald-600');
-      }
     }
 
     function clearAudioWatchdog() {
@@ -630,37 +798,32 @@
 
     audioEl.addEventListener('canplay', () => {
       mp3ReadyState = 'ready';
-      if (decodedMp3Buffer) {
-        setAudioStatus(`MP3: Siap (Boost ${getBoostPercentLabel()} Aktif)`, 'text-emerald-600');
-      } else {
-        setAudioStatus('MP3: Siap (Volume Full HP)', 'text-emerald-600');
-      }
+      setAudioStatus(
+        decodedMp3Buffer ? `MP3: Siap (Boost ${getBoostPercentLabel()} Aktif)` : 'MP3: Siap diputar (Full HP)',
+        'text-emerald-600'
+      );
     });
 
     audioEl.addEventListener('playing', () => {
       clearAudioWatchdog();
       mp3ReadyState = 'ready';
-      setAudioStatus('MP3: Sedang berbunyi (Full)...', 'text-[#118EE9]');
+      setAudioStatus('MP3: Sedang berbunyi (Full)!', 'text-[#118EE9]');
     });
 
     audioEl.addEventListener('ended', () => {
       clearAudioWatchdog();
       if (mp3ReadyState === 'ready') {
-        setAudioStatus(
-          decodedMp3Buffer ? `MP3: Siap (Boost ${getBoostPercentLabel()} Aktif)` : 'MP3: Siap (Volume Full HP)',
-          'text-emerald-600'
-        );
+        setAudioStatus('MP3: Siap diputar (Full HP)', 'text-emerald-600');
       }
     });
 
     audioEl.addEventListener('error', () => {
       mp3ReadyState = 'error';
       if (!decodedMp3Buffer) {
-        setAudioStatus('MP3 diblokir/offline -> Pakai nada cadangan', 'text-amber-600');
+        setAudioStatus('MP3 diblokir HP -> Suara bawaan aktif', 'text-amber-600');
       }
     });
 
-    // Unlock Web Audio API secara sinkron di dalam gestur sentuhan HP (wajib untuk iOS & Android WebView)
     function ensureAndUnlockAudioContext() {
       try {
         const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -672,7 +835,6 @@
 
         if (audioCtx.state === 'suspended') {
           audioCtx.resume().catch(() => {});
-          // Silent buffer unlock trick untuk iOS Safari & browser HP ketat
           try {
             const silent = audioCtx.createBuffer(1, 1, audioCtx.sampleRate || 22050);
             const sSrc = audioCtx.createBufferSource();
@@ -698,6 +860,13 @@
           gainNode.connect(compressorNode);
         } else {
           gainNode.gain.setValueAtTime(currentBoostGain, audioCtx.currentTime);
+        }
+
+        // Decode WAV lokal untuk boost Web Audio 200%/300%
+        if (!decodedLocalWavBuffer && localWavAsset.rawBuffer) {
+          audioCtx.decodeAudioData(localWavAsset.rawBuffer.slice(0))
+            .then((buf) => { decodedLocalWavBuffer = buf; })
+            .catch(() => {});
         }
 
         return true;
@@ -726,30 +895,21 @@
       }
     }
 
-    // Nada notifikasi keras (cadangan instan jika link MP3 terblokir DNS/AdBlock di HP)
-    function playLoudFallbackChime() {
+    function unlockFallbackAudioElement() {
+      if (isFallbackUnlocked || isPlayingFallbackNow) return;
       try {
-        if (!ensureAndUnlockAudioContext()) return;
-        const now = audioCtx.currentTime;
-
-        const playTone = (freq, startOffset, duration, type = 'triangle', peak = 0.95) => {
-          const osc = audioCtx.createOscillator();
-          const g = audioCtx.createGain();
-          osc.type = type;
-          osc.frequency.setValueAtTime(freq, now + startOffset);
-          g.gain.setValueAtTime(0.001, now + startOffset);
-          g.gain.exponentialRampToValueAtTime(peak, now + startOffset + 0.015);
-          g.gain.exponentialRampToValueAtTime(0.001, now + startOffset + duration);
-          osc.connect(g);
-          g.connect(gainNode || audioCtx.destination);
-          osc.start(now + startOffset);
-          osc.stop(now + startOffset + duration + 0.02);
-        };
-
-        // Lonceng ganda cerah & keras
-        playTone(1046.5, 0.0, 0.22, 'triangle', 1.0);
-        playTone(1567.98, 0.11, 0.36, 'triangle', 1.0);
-        playTone(2093.0, 0.11, 0.28, 'sine', 0.55);
+        fallbackAudioEl.muted = true;
+        const p = fallbackAudioEl.play();
+        if (p && typeof p.then === 'function') {
+          p.then(() => {
+            if (!isPlayingFallbackNow) {
+              fallbackAudioEl.pause();
+              fallbackAudioEl.currentTime = 0;
+              fallbackAudioEl.muted = false;
+            }
+            isFallbackUnlocked = true;
+          }).catch(() => {});
+        }
       } catch (e) {}
     }
 
@@ -763,18 +923,93 @@
       }
     }
 
+    function playOscillatorBackup() {
+      try {
+        if (!ensureAndUnlockAudioContext()) return;
+        const now = audioCtx.currentTime;
+        const playTone = (freq, startOffset, duration, peak = 1.0) => {
+          const osc = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, now + startOffset);
+          g.gain.setValueAtTime(0.001, now + startOffset);
+          g.gain.exponentialRampToValueAtTime(peak, now + startOffset + 0.01);
+          g.gain.exponentialRampToValueAtTime(0.001, now + startOffset + duration);
+          osc.connect(g);
+          g.connect(gainNode || audioCtx.destination);
+          osc.start(now + startOffset);
+          osc.stop(now + startOffset + duration + 0.02);
+        };
+        playTone(1046.5, 0.0, 0.22, 1.0);
+        playTone(1567.98, 0.105, 0.38, 1.0);
+      } catch (e) {}
+    }
+
+    // Putar suara bawaan WAV lokal (Selalu Bunyi Keras di Semua HP walau MP3 diblokir)
+    function playGuaranteedLocalSound(sourceLabel) {
+      isPlayingFallbackNow = true;
+      setAudioStatus(`Bunyi Notif Keras (${sourceLabel})`, 'text-emerald-600');
+
+      // 1. Jika Web Audio WAV buffer siap, putar dengan boost 200%/300%
+      if (audioCtx && gainNode && decodedLocalWavBuffer) {
+        try {
+          const runBoostedWav = () => {
+            stopBoostBufferOnly();
+            const src = audioCtx.createBufferSource();
+            src.buffer = decodedLocalWavBuffer;
+            src.connect(gainNode);
+            src.onended = () => {
+              if (activeBufferSource === src) activeBufferSource = null;
+              isPlayingFallbackNow = false;
+            };
+            activeBufferSource = src;
+            src.start(0);
+          };
+          if (audioCtx.state === 'suspended') {
+            audioCtx.resume().then(runBoostedWav).catch(() => {});
+          } else {
+            runBoostedWav();
+          }
+        } catch (e) {}
+      } else {
+        playOscillatorBackup();
+      }
+
+      // 2. Sekaligus putar elemen <audio> WAV lokal (tetap tembus walau iPhone mode Silent!)
+      try {
+        fallbackAudioEl.muted = false;
+        fallbackAudioEl.volume = 1.0;
+        if (fallbackAudioEl.readyState >= 1 && fallbackAudioEl.currentTime > 0) {
+          fallbackAudioEl.currentTime = 0;
+        }
+        const fp = fallbackAudioEl.play();
+        if (fp && typeof fp.then === 'function') {
+          fp.then(() => {
+            isFallbackUnlocked = true;
+          }).catch(() => {});
+        }
+        fallbackAudioEl.onended = () => {
+          isPlayingFallbackNow = false;
+        };
+      } catch (e) {
+        isPlayingFallbackNow = false;
+      }
+    }
+
     function triggerMp3Sound(sourceLabel = 'KIRIM') {
       clearAudioWatchdog();
       stopBoostBufferOnly();
+      isPlayingFallbackNow = false;
 
-      // 1. Wajib unlock AudioContext secara sinkron di dalam event klik HP
+      // Unlock AudioContext & fallbackAudio secara sinkron di dalam klik HP
       ensureAndUnlockAudioContext();
+      unlockFallbackAudioElement();
 
       if (!decodedMp3Buffer && !corsDecodeFailed) {
         fetchAndDecodeMp3();
       }
 
-      // 2. Jika buffer MP3 hasil decode Web Audio sudah siap -> putar dengan Boost 200%/300%
+      // 1. Jika MP3 eksternal sudah ter-decode -> putar dengan boost 200%/300%
       if (audioCtx && gainNode && decodedMp3Buffer) {
         try {
           const startBoosted = () => {
@@ -791,7 +1026,7 @@
           };
 
           if (audioCtx.state === 'suspended') {
-            audioCtx.resume().then(startBoosted).catch(playLoudFallbackChime);
+            audioCtx.resume().then(startBoosted).catch(() => playGuaranteedLocalSound(sourceLabel));
           } else {
             startBoosted();
           }
@@ -799,17 +1034,13 @@
         } catch (e) {}
       }
 
-      // 3. Jika MP3 memang sudah gagal dimuat di HP (DNS/AdBlock/offline) -> bunyikan nada keras langsung + coba ulang load
+      // 2. Jika link MP3 sudah terdeteksi diblokir/error di HP -> langsung bunyikan suara bawaan keras
       if (mp3ReadyState === 'error' || audioEl.error) {
-        playLoudFallbackChime();
-        setAudioStatus('MP3 terblokir di HP -> Bunyi nada cadangan', 'text-amber-600');
-        try {
-          audioEl.load();
-        } catch (e) {}
+        playGuaranteedLocalSound(sourceLabel);
         return;
       }
 
-      // 4. Putar <audio> langsung secara sinkron di gestur klik HP (tanpa pause() yang memicu AbortError)
+      // 3. Coba putar link MP3 langsung
       audioEl.muted = false;
       audioEl.volume = 1.0;
       try {
@@ -818,15 +1049,14 @@
         }
       } catch (e) {}
 
-      setAudioStatus(`MP3: Memutar di HP (${sourceLabel})...`, 'text-[#118EE9]');
+      setAudioStatus(`Memutar suara (${sourceLabel})...`, 'text-[#118EE9]');
 
-      // Watchdog 2.2 detik: jika jaringan HP memblokir/menahan top4top.io, bunyikan nada cadangan agar tidak bisu
+      // Watchdog 1.5 detik: jika top4top.io diblokir diam-diam oleh jaringan HP, langsung bunyikan suara bawaan
       audioWatchdogTimer = setTimeout(() => {
         if (audioEl.paused || audioEl.readyState < 2) {
-          playLoudFallbackChime();
-          setAudioStatus('MP3 lambat/diblokir HP -> Nada cadangan', 'text-amber-600');
+          playGuaranteedLocalSound(sourceLabel);
         }
-      }, 2200);
+      }, 1500);
 
       try {
         const playPromise = audioEl.play();
@@ -836,24 +1066,21 @@
             setAudioStatus(`MP3: Berbunyi Full (${sourceLabel})`, 'text-emerald-600');
           }).catch(() => {
             clearAudioWatchdog();
-            playLoudFallbackChime();
-            setAudioStatus('MP3 ditahan browser -> Nada cadangan', 'text-amber-600');
+            playGuaranteedLocalSound(sourceLabel);
           });
         }
       } catch (err) {
         clearAudioWatchdog();
-        playLoudFallbackChime();
-        setAudioStatus('MP3 gagal -> Bunyi nada cadangan', 'text-amber-600');
+        playGuaranteedLocalSound(sourceLabel);
       }
     }
 
     function unlockAudioOnFirstTouch() {
       ensureAndUnlockAudioContext();
+      unlockFallbackAudioElement();
       fetchAndDecodeMp3();
       if (audioEl.readyState === 0) {
-        try {
-          audioEl.load();
-        } catch (e) {}
+        try { audioEl.load(); } catch (e) {}
       }
     }
     document.addEventListener('touchstart', unlockAudioOnFirstTouch, { once: true, passive: true });
@@ -875,8 +1102,6 @@
       const isDesktop = window.matchMedia('(min-width: 768px) and (hover: hover) and (pointer: fine)').matches;
       badge.textContent = isDesktop ? 'Desktop Fit' : 'Full Layar HP';
     }
-    window.addEventListener('resize', updateDeviceBadge);
-    updateDeviceBadge();
 
     function formatRupiah(numStr) {
       const clean = String(numStr).replace(/\D/g, '');
@@ -1018,19 +1243,20 @@
       applySettingsToReceipt();
       document.getElementById('screenSettings').classList.add('hidden');
       document.getElementById('screenReceipt').classList.remove('hidden');
+      syncViewportHeight();
     }
 
     function backToSettings(e) {
       if (e) e.preventDefault();
       document.getElementById('screenReceipt').classList.add('hidden');
       document.getElementById('screenSettings').classList.remove('hidden');
+      syncViewportHeight();
       refreshClockPreview();
     }
 
     // Inisialisasi awal
-    try {
-      audioEl.load();
-    } catch (e) {}
+    syncViewportHeight();
+    try { audioEl.load(); } catch (e) {}
     refreshClockPreview();
     setInterval(() => {
       if (document.getElementById('autoTimeCheck').checked) {
