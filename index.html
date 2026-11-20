@@ -160,28 +160,6 @@
       gap: 8px;
     }
 
-    .grid-3 {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 6px;
-    }
-
-    .quick-btn {
-      padding: 7px 4px;
-      background-color: #F1F5F9;
-      border: none;
-      border-radius: 8px;
-      font-size: 11px;
-      font-weight: 600;
-      color: #334155;
-      cursor: pointer;
-    }
-
-    .quick-btn:active {
-      background-color: #DBEAFE;
-      color: #118EE9;
-    }
-
     .btn-test-audio {
       padding: 7px 10px;
       background-color: #EFF6FF;
@@ -260,19 +238,19 @@
     }
 
     .coin-badge {
-      width: 72px;
-      height: 72px;
+      width: 94px;
+      height: 94px;
       border-radius: 9999px;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      box-shadow: 0 4px 14px rgba(7, 46, 88, 0.18);
+      box-shadow: 0 5px 16px rgba(7, 46, 88, 0.2);
     }
 
     .coin-badge svg {
-      width: 72px;
-      height: 72px;
+      width: 94px;
+      height: 94px;
       display: block;
     }
 
@@ -547,7 +525,7 @@
           />
         </div>
 
-        <!-- Nominal Transfer (Ketik Manual, Reset ke 0 setelah TF) -->
+        <!-- Nominal Transfer (Ketik Angka Manual, Reset ke 0 setelah TF) -->
         <div>
           <label for="inputAmount" style="display:block;font-size:12px;font-weight:600;color:#334155;margin-bottom:4px;">Nominal Transfer (Rp)</label>
           <div style="position:relative;">
@@ -565,14 +543,6 @@
               style="padding-left:36px;font-size:14px;font-weight:700;color:#0F172A;"
             />
           </div>
-          <div class="grid-3" style="margin-top:6px;">
-            <button type="button" onclick="setQuickAmount(1)" class="quick-btn">Rp1</button>
-            <button type="button" onclick="setQuickAmount(50000)" class="quick-btn">Rp50.000</button>
-            <button type="button" onclick="setQuickAmount(100000)" class="quick-btn">Rp100.000</button>
-            <button type="button" onclick="setQuickAmount(223000)" class="quick-btn">Rp223.000</button>
-            <button type="button" onclick="setQuickAmount(500000)" class="quick-btn">Rp500.000</button>
-            <button type="button" onclick="setQuickAmount(1000000)" class="quick-btn">Rp1.000.000</button>
-          </div>
         </div>
 
         <!-- Waktu Perangkat -->
@@ -580,7 +550,7 @@
           <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
             <div style="min-width:0;">
               <span style="display:block;font-size:12px;font-weight:600;color:#334155;">Tanggal & Jam</span>
-              <span id="settingsClockPreview" class="tabular-nums" style="font-size:11px;font-weight:500;color:#118EE9;">20 Nov 2026 • 21:39</span>
+              <span id="settingsClockPreview" class="tabular-nums" style="font-size:11px;font-weight:500;color:#118EE9;">20 Nov 2026 • 21:48</span>
             </div>
             <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#475569;cursor:pointer;">
               <input type="checkbox" id="autoTimeCheck" checked onchange="toggleTimeMode()" />
@@ -644,8 +614,8 @@
   <!-- LAYAR 2: RINGKASAN LAYAR PENUH BIRU (KOIN EMAS CENTANG) -->
   <section id="screenReceipt" class="device-frame full-blue-screen hidden">
     <main class="full-blue-scroll no-scrollbar">
-      <!-- Ikon Koin Emas Centang -->
-      <div class="coin-badge" style="margin-bottom:18px;">
+      <!-- Ikon Koin Emas Centang Besar -->
+      <div class="coin-badge" style="margin-bottom:20px;">
         <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Koin Centang Berhasil">
           <circle cx="50" cy="50" r="47" fill="#FFCE18"/>
           <circle cx="50" cy="50" r="38" fill="#F5B408"/>
@@ -653,13 +623,13 @@
         </svg>
       </div>
 
-      <!-- Baris Atas: Tujuan Transfer Otomatis Saldo DANA -->
-      <div id="displayDestinationText" style="font-size:14.5px;font-weight:500;color:rgba(255,255,255,0.95);letter-spacing:0.01em;margin-bottom:6px;text-align:center;word-break:break-word;">
+      <!-- Baris Atas: Tujuan Transfer Otomatis Saldo DANA (Ketebalan Sama dengan Nama & Nomor) -->
+      <div id="displayDestinationText" style="font-size:18.5px;font-weight:700;color:#FFFFFF;letter-spacing:0.015em;margin-bottom:6px;text-align:center;word-break:break-word;line-height:1.25;">
         Kirim ke Saldo DANA
       </div>
 
       <!-- Baris Tengah: Nama Penerima Otomatis Sensor 3 Huruf Terakhir Tiap Kata + Nomor Penerima -->
-      <div id="displayRecipientHeading" style="font-size:19px;font-weight:700;color:#FFFFFF;letter-spacing:0.02em;margin-bottom:6px;text-align:center;word-break:break-word;line-height:1.25;">
+      <div id="displayRecipientHeading" style="font-size:18.5px;font-weight:700;color:#FFFFFF;letter-spacing:0.015em;margin-bottom:8px;text-align:center;word-break:break-word;line-height:1.25;">
         -
       </div>
 
@@ -724,7 +694,7 @@
 
           <!-- Baris Tanggal & ID DANA Otomatis Tersensor -->
           <div class="tabular-nums" style="position:relative;z-index:10;padding:0 15px 7px 15px;display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:clamp(10px, 2.8vw, 11px);color:#8A94A6;">
-            <span id="displayDateTime" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">20 Nov 2026 • 21:39</span>
+            <span id="displayDateTime" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">20 Nov 2026 • 21:48</span>
             <span id="displayIdDana" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;">ID DANA 0858••••2418</span>
           </div>
 
@@ -803,7 +773,7 @@
               <div id="accTx" class="hidden" style="padding-top:6px;font-size:10px;color:#4A5568;">
                 <div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:3px;">
                   <span style="color:#8A94A6;flex-shrink:0;">ID Transaksi</span>
-                  <span id="accTxCode" class="tabular-nums" style="font-weight:500;color:#1A1A1A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">202611202139148001001668492014</span>
+                  <span id="accTxCode" class="tabular-nums" style="font-weight:500;color:#1A1A1A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">202611202148148001001668492014</span>
                 </div>
                 <div style="display:flex;justify-content:space-between;gap:8px;">
                   <span style="color:#8A94A6;">Biaya Admin</span>
@@ -1390,11 +1360,6 @@
     function handleAmountBlur(el) {
       const rawDigits = el.value.replace(/\D/g, '');
       el.value = rawDigits === '' ? '0' : formatRupiah(rawDigits);
-    }
-
-    function setQuickAmount(val) {
-      document.getElementById('inputAmount').value = formatRupiah(val);
-      preBufferOnFormActivity();
     }
 
     function autoMaskLastThreeLetters(rawName) {
