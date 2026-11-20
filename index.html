@@ -154,12 +154,6 @@
       border-color: #118EE9;
     }
 
-    .field-locked {
-      background-color: #F1F5F9;
-      color: #475569;
-      cursor: not-allowed;
-    }
-
     .grid-2 {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -258,7 +252,7 @@
       min-height: 0;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
-      padding: max(20px, env(safe-area-inset-top)) 16px 12px 16px;
+      padding: max(28px, env(safe-area-inset-top)) 20px 18px 20px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -266,21 +260,19 @@
     }
 
     .coin-badge {
-      width: 68px;
-      height: 68px;
+      width: 72px;
+      height: 72px;
       border-radius: 9999px;
-      overflow: hidden;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      box-shadow: 0 4px 12px rgba(7, 46, 88, 0.16);
+      box-shadow: 0 4px 14px rgba(7, 46, 88, 0.18);
     }
 
-    .coin-badge img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
+    .coin-badge svg {
+      width: 72px;
+      height: 72px;
       display: block;
     }
 
@@ -289,12 +281,12 @@
       align-items: center;
       justify-content: center;
       gap: 6px;
-      padding: 6px 15px;
+      padding: 6px 16px;
       border-radius: 9999px;
-      border: 1.3px solid rgba(255, 255, 255, 0.85);
-      background-color: rgba(255, 255, 255, 0.04);
+      border: 1.3px solid rgba(255, 255, 255, 0.9);
+      background-color: transparent;
       color: #FFFFFF;
-      font-size: 10.5px;
+      font-size: 11px;
       font-weight: 600;
       letter-spacing: 0.05em;
       cursor: pointer;
@@ -306,34 +298,23 @@
       transform: scale(0.97);
     }
 
-    .promo-banner-box {
-      width: 100%;
-      max-width: 342px;
-      border-radius: 4px;
-      overflow: hidden;
-      background: linear-gradient(90deg, #16216B 0%, #1B2985 48%, #2A123E 100%);
-      box-shadow: 0 6px 18px rgba(7, 36, 74, 0.26);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      position: relative;
-    }
-
     .full-blue-footer {
       flex-shrink: 0;
       width: 100%;
-      padding: 6px 16px max(14px, env(safe-area-inset-bottom)) 16px;
+      padding: 8px 18px max(18px, env(safe-area-inset-bottom)) 18px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 9px;
+      gap: 10px;
     }
 
     .btn-solid-white {
       width: 100%;
-      max-width: 342px;
-      padding: 12px 14px;
+      max-width: 360px;
+      padding: 12.5px 14px;
       border-radius: 5px;
       border: 1.5px solid #FFFFFF;
-      background-color: rgba(255, 255, 255, 0.88);
+      background-color: rgba(255, 255, 255, 0.92);
       color: #118EE9;
       font-size: 12px;
       font-weight: 700;
@@ -349,12 +330,12 @@
 
     .btn-outline-white {
       width: 100%;
-      max-width: 342px;
-      padding: 12px 14px;
+      max-width: 360px;
+      padding: 12.5px 14px;
       border-radius: 5px;
-      border: 1.4px solid rgba(255, 255, 255, 0.82);
+      border: 1.4px solid rgba(255, 255, 255, 0.85);
       background-color: transparent;
-      color: rgba(255, 255, 255, 0.94);
+      color: rgba(255, 255, 255, 0.95);
       font-size: 12px;
       font-weight: 600;
       letter-spacing: 0.06em;
@@ -527,7 +508,7 @@
         </div>
         <div style="min-width:0;">
           <h1 style="margin:0;font-size:14px;font-weight:700;line-height:1.25;">Kirim Uang DANA</h1>
-          <p style="margin:0;font-size:10px;opacity:0.9;">Ketik manual detail lalu tekan KIRIM</p>
+          <p style="margin:0;font-size:10px;opacity:0.9;">Ketik nama & nominal lalu tekan KIRIM</p>
         </div>
       </div>
       <span id="deviceSizeBadge" style="font-size:10px;font-weight:600;background:rgba(255,255,255,0.2);padding:2px 8px;border-radius:9999px;flex-shrink:0;">Full HP</span>
@@ -536,55 +517,33 @@
     <!-- Area Form Scrollable Halus -->
     <div class="settings-scroll no-scrollbar">
       <div class="settings-card">
-        <!-- Nama Penerima (Ketik Manual) -->
+        <!-- Nama Penerima (Ketik Manual, Otomatis Sensor 3 Huruf Terakhir Tiap Kata) -->
         <div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
             <label for="inputName" style="font-size:12px;font-weight:600;color:#334155;">Nama Penerima</label>
-            <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:#64748B;cursor:pointer;">
-              <input type="checkbox" id="maskNameCheck" />
-              Sensor (••••)
-            </label>
+            <span style="font-size:10.5px;font-weight:600;color:#118EE9;">Auto Sensor 3 Huruf Belakang (XXX)</span>
           </div>
           <input
             type="text"
             id="inputName"
             value=""
-            placeholder="Ketik nama penerima..."
+            placeholder="Contoh: MUHAMMAD TAUFIK ROHMAN"
             oninput="preBufferOnFormActivity()"
             class="field-input"
           />
         </div>
 
-        <!-- Tujuan Transfer (Ketik Manual) -->
+        <!-- Nomor Penerima (Di Bawah Nama Penerima) -->
         <div>
-          <label for="inputDestination" style="display:block;font-size:12px;font-weight:600;color:#334155;margin-bottom:4px;">Tujuan Transfer</label>
+          <label for="inputPhone" style="display:block;font-size:12px;font-weight:600;color:#334155;margin-bottom:4px;">Nomor Penerima</label>
           <input
             type="text"
-            id="inputDestination"
+            id="inputPhone"
             value=""
-            placeholder="Ketik tujuan transfer..."
+            inputmode="numeric"
+            placeholder="Contoh: 1234567890"
             oninput="preBufferOnFormActivity()"
-            class="field-input"
-            style="font-size:12px;"
-          />
-        </div>
-
-        <!-- ID DANA Terkunci (085841512418) -->
-        <div>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;gap:4px;">
-            <label for="inputIdDana" style="font-size:12px;font-weight:600;color:#334155;">ID DANA</label>
-            <label style="display:flex;align-items:center;gap:3px;font-size:10.5px;color:#64748B;cursor:pointer;">
-              <input type="checkbox" id="maskIdDanaCheck" />
-              Sensor
-            </label>
-          </div>
-          <input
-            type="text"
-            id="inputIdDana"
-            value="085841512418"
-            readonly
-            class="field-input field-locked tabular-nums"
-            style="font-size:12px;"
+            class="field-input tabular-nums"
           />
         </div>
 
@@ -607,7 +566,7 @@
             />
           </div>
           <div class="grid-3" style="margin-top:6px;">
-            <button type="button" onclick="setQuickAmount(20000)" class="quick-btn">Rp20.000</button>
+            <button type="button" onclick="setQuickAmount(1)" class="quick-btn">Rp1</button>
             <button type="button" onclick="setQuickAmount(50000)" class="quick-btn">Rp50.000</button>
             <button type="button" onclick="setQuickAmount(100000)" class="quick-btn">Rp100.000</button>
             <button type="button" onclick="setQuickAmount(223000)" class="quick-btn">Rp223.000</button>
@@ -621,7 +580,7 @@
           <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
             <div style="min-width:0;">
               <span style="display:block;font-size:12px;font-weight:600;color:#334155;">Tanggal & Jam</span>
-              <span id="settingsClockPreview" class="tabular-nums" style="font-size:11px;font-weight:500;color:#118EE9;">20 Nov 2026 • 04:10</span>
+              <span id="settingsClockPreview" class="tabular-nums" style="font-size:11px;font-weight:500;color:#118EE9;">20 Nov 2026 • 21:39</span>
             </div>
             <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#475569;cursor:pointer;">
               <input type="checkbox" id="autoTimeCheck" checked onchange="toggleTimeMode()" />
@@ -682,83 +641,42 @@
     </div>
   </section>
 
-  <!-- LAYAR 2: RINGKASAN LAYAR PENUH BIRU -->
+  <!-- LAYAR 2: RINGKASAN LAYAR PENUH BIRU (KOIN EMAS CENTANG) -->
   <section id="screenReceipt" class="device-frame full-blue-screen hidden">
     <main class="full-blue-scroll no-scrollbar">
       <!-- Ikon Koin Emas Centang -->
-      <div class="coin-badge" style="margin-bottom:14px;">
-        <img
-          id="coinChecklistImg"
-          src="image_04d4ff.png"
-          alt="Koin Ceklis"
-          onerror="this.style.display='none';document.getElementById('coinFallbackSvg').style.display='block';"
-        />
-        <svg id="coinFallbackSvg" width="68" height="68" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:none;">
-          <circle cx="50" cy="50" r="46" fill="#FFCE18"/>
-          <circle cx="50" cy="50" r="39" fill="#F5B408"/>
-          <path d="M32 52.5L44.2 64.5L69.5 38.5" stroke="#FFE35C" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+      <div class="coin-badge" style="margin-bottom:18px;">
+        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Koin Centang Berhasil">
+          <circle cx="50" cy="50" r="47" fill="#FFCE18"/>
+          <circle cx="50" cy="50" r="38" fill="#F5B408"/>
+          <path d="M31.5 52.5L44 64.5L70.5 37.5" stroke="#FFE66D" stroke-width="11.5" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </div>
 
-      <!-- Tujuan Transfer -->
-      <div id="displayDestinationText" style="font-size:13.5px;font-weight:500;color:rgba(255,255,255,0.92);letter-spacing:0.01em;margin-bottom:4px;text-align:center;">
-        Kirim ke -
+      <!-- Baris Atas: Tujuan Transfer Otomatis Saldo DANA -->
+      <div id="displayDestinationText" style="font-size:14.5px;font-weight:500;color:rgba(255,255,255,0.95);letter-spacing:0.01em;margin-bottom:6px;text-align:center;word-break:break-word;">
+        Kirim ke Saldo DANA
       </div>
 
-      <!-- Nama Penerima -->
-      <div id="displayRecipientHeading" style="font-size:17px;font-weight:700;color:#FFFFFF;letter-spacing:0.03em;text-transform:uppercase;margin-bottom:4px;text-align:center;word-break:break-word;">
-        0
+      <!-- Baris Tengah: Nama Penerima Otomatis Sensor 3 Huruf Terakhir Tiap Kata + Nomor Penerima -->
+      <div id="displayRecipientHeading" style="font-size:19px;font-weight:700;color:#FFFFFF;letter-spacing:0.02em;margin-bottom:6px;text-align:center;word-break:break-word;line-height:1.25;">
+        -
       </div>
 
-      <!-- Nominal Besar -->
-      <div id="displayBigAmount" class="tabular-nums" style="font-size:clamp(34px, 9.5vw, 42px);font-weight:700;color:#FFFFFF;line-height:1.12;letter-spacing:-0.015em;margin-bottom:14px;text-align:center;">
+      <!-- Baris Bawah: Nominal Sesuai Input -->
+      <div id="displayBigAmount" class="tabular-nums" style="font-size:clamp(38px, 10.5vw, 46px);font-weight:700;color:#FFFFFF;line-height:1.12;letter-spacing:-0.015em;margin-bottom:18px;text-align:center;">
         Rp0
       </div>
 
       <!-- Tombol Pill BAGIKAN -->
-      <button type="button" id="btnShareReceipt" onclick="handleShareClick()" class="pill-share-btn" style="margin-bottom:16px;">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+      <button type="button" id="btnShareReceipt" onclick="handleShareClick()" class="pill-share-btn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"></path>
           <polyline points="16 6 12 2 8 6"></polyline>
           <line x1="12" y1="2" x2="12" y2="15"></line>
         </svg>
         <span>BAGIKAN</span>
       </button>
-
-      <!-- Banner Promo Tengah -->
-      <div class="promo-banner-box">
-        <div style="position:absolute;top:4px;right:4px;display:flex;align-items:center;gap:2px;z-index:10;">
-          <span style="width:13px;height:13px;background:rgba(241,245,249,0.92);color:#0284C7;border-radius:1.5px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;">i</span>
-          <span style="width:13px;height:13px;background:rgba(241,245,249,0.92);color:#0284C7;border-radius:1.5px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;">×</span>
-        </div>
-
-        <div style="display:grid;grid-template-columns:1.05fr 0.95fr;min-height:96px;align-items:center;">
-          <!-- Kiri: Promo -->
-          <div style="padding:8px 6px 8px 10px;text-align:left;">
-            <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,0.14);padding:2px 6px;border-radius:4px;margin-bottom:4px;">
-              <span style="font-size:8.5px;font-weight:800;color:#7DD3FC;">BayarNoRibet</span>
-              <span style="font-size:7px;color:#CBD5E1;">di Google Play</span>
-            </div>
-            <div style="font-size:9px;font-weight:700;color:#FFFFFF;line-height:1.22;margin-bottom:3px;">
-              Short Drama Jalan Terus<br/>Top Up Koin Melolo
-            </div>
-            <div style="display:flex;align-items:baseline;gap:3px;">
-              <span style="font-size:7px;color:#E2E8F0;">Diskon s/d Rp</span>
-              <span style="font-size:14px;font-weight:800;color:#FACC15;line-height:1;">5</span>
-              <span style="font-size:8.5px;font-weight:700;color:#FACC15;">Ribu</span>
-            </div>
-          </div>
-
-          <!-- Kanan: Ilustrasi Drama -->
-          <div style="height:100%;display:flex;align-items:center;justify-content:center;padding:6px 8px 6px 2px;position:relative;">
-            <div style="width:100%;height:80px;border-radius:4px;background:linear-gradient(135deg, #3B1877 0%, #6D1942 58%, #1E1B4B 100%);border:1px solid rgba(255,255,255,0.2);display:flex;flex-direction:column;justify-content:flex-end;padding:5px 7px;position:relative;overflow:hidden;">
-              <div style="position:absolute;top:5px;right:6px;width:20px;height:20px;border-radius:9999px;background:rgba(255,255,255,0.16);display:flex;align-items:center;justify-content:center;font-size:10px;">🎬</div>
-              <div style="font-size:6.5px;font-weight:700;color:#FDE047;letter-spacing:0.04em;">DRAMA PENDEK</div>
-              <div style="font-size:8px;font-weight:700;color:#FFFFFF;line-height:1.15;">Alur Menegangkan</div>
-            </div>
-          </div>
-        </div>
-      </div>
     </main>
 
     <!-- Tombol Bawah -->
@@ -804,10 +722,10 @@
             </div>
           </div>
 
-          <!-- Baris Tanggal & ID DANA -->
+          <!-- Baris Tanggal & ID DANA Otomatis Tersensor -->
           <div class="tabular-nums" style="position:relative;z-index:10;padding:0 15px 7px 15px;display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:clamp(10px, 2.8vw, 11px);color:#8A94A6;">
-            <span id="displayDateTime" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">20 Nov 2026 • 04:10</span>
-            <span id="displayIdDana" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;">ID DANA 085841512418</span>
+            <span id="displayDateTime" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">20 Nov 2026 • 21:39</span>
+            <span id="displayIdDana" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;">ID DANA 0858••••2418</span>
           </div>
 
           <!-- Garis Pembatas Lurus -->
@@ -827,7 +745,7 @@
 
             <!-- Kalimat Kirim Uang -->
             <p id="displaySummaryText" style="margin:0 0 8px 0;font-size:clamp(11.5px, 3.3vw, 12.5px);font-weight:600;color:#1A1A1A;line-height:1.35;word-break:break-word;">
-              Kirim Uang Rp0 ke 0
+              Kirim Uang Rp0 ke -
             </p>
 
             <!-- Kotak Total Bayar -->
@@ -861,11 +779,15 @@
               <div id="accRecipient" class="hidden" style="padding-bottom:7px;font-size:10.5px;color:#4A5568;">
                 <div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:3px;">
                   <span style="color:#8A94A6;">Nama</span>
-                  <span id="accRecipientName" style="font-weight:600;color:#1A1A1A;text-align:right;">0</span>
+                  <span id="accRecipientName" style="font-weight:600;color:#1A1A1A;text-align:right;">-</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:3px;">
+                  <span style="color:#8A94A6;">Nomor</span>
+                  <span id="accRecipientPhone" class="tabular-nums" style="font-weight:600;color:#1A1A1A;text-align:right;">-</span>
                 </div>
                 <div style="display:flex;justify-content:space-between;gap:8px;">
                   <span style="color:#8A94A6;">Tujuan</span>
-                  <span id="accRecipientDest" style="font-weight:600;color:#1A1A1A;text-align:right;">-</span>
+                  <span id="accRecipientDest" style="font-weight:600;color:#1A1A1A;text-align:right;">Saldo DANA</span>
                 </div>
               </div>
             </div>
@@ -881,7 +803,7 @@
               <div id="accTx" class="hidden" style="padding-top:6px;font-size:10px;color:#4A5568;">
                 <div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:3px;">
                   <span style="color:#8A94A6;flex-shrink:0;">ID Transaksi</span>
-                  <span id="accTxCode" class="tabular-nums" style="font-weight:500;color:#1A1A1A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">202611200410148001001668492014</span>
+                  <span id="accTxCode" class="tabular-nums" style="font-weight:500;color:#1A1A1A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">202611202139148001001668492014</span>
                 </div>
                 <div style="display:flex;justify-content:space-between;gap:8px;">
                   <span style="color:#8A94A6;">Biaya Admin</span>
@@ -984,6 +906,7 @@
 
   <script>
     const FIXED_DANA_ID = '085841512418';
+    const FIXED_DESTINATION = 'Saldo DANA';
     const MONTHS_ID = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
     const MEDIA_URL = 'https://b.top4top.io/m_3975xed1e1.mp4';
 
@@ -1398,8 +1321,7 @@
 
     function resetFormAfterTransfer() {
       document.getElementById('inputName').value = '';
-      document.getElementById('inputDestination').value = '';
-      document.getElementById('inputIdDana').value = FIXED_DANA_ID;
+      document.getElementById('inputPhone').value = '';
       document.getElementById('inputAmount').value = '0';
     }
 
@@ -1475,25 +1397,26 @@
       preBufferOnFormActivity();
     }
 
-    function maskRecipientName(name) {
-      const trimmed = name.trim();
-      if (!trimmed) return '0';
-      const parts = trimmed.split(/\s+/);
-      if (parts.length >= 2) {
-        const first = parts[0];
-        const second = parts[1];
-        if (second.length > 3) {
-          return `${first} ${second.slice(0, 2)}••••${second.slice(-2)}`;
-        }
-        return `${first} ${second[0]}••••`;
-      }
-      if (trimmed.length > 4) {
-        return `${trimmed.slice(0, 2)}••••${trimmed.slice(-2)}`;
-      }
-      return trimmed;
+    function autoMaskLastThreeLetters(rawName) {
+      const trimmed = rawName.trim();
+      if (!trimmed) return '-';
+      return trimmed
+        .split(/\s+/)
+        .map((token) => {
+          const lettersOnly = token.replace(/[^A-Za-z]/g, '');
+          if (lettersOnly.length >= 4) {
+            const cutIdx = token.length - 3;
+            return token.slice(0, cutIdx).toUpperCase() + 'XXX';
+          }
+          if (lettersOnly.length > 0 && lettersOnly.length < 4) {
+            return token.toUpperCase();
+          }
+          return token;
+        })
+        .join(' ');
     }
 
-    function maskIdDana(idStr) {
+    function autoMaskDanaId(idStr) {
       const digits = idStr.replace(/\D/g, '');
       if (digits.length >= 8) {
         return `${digits.slice(0, 4)}••••${digits.slice(-4)}`;
@@ -1553,33 +1476,33 @@
     }
 
     function applySettingsToReceipt() {
-      document.getElementById('inputIdDana').value = FIXED_DANA_ID;
-
       const rawName = document.getElementById('inputName').value.trim();
-      const isMaskName = document.getElementById('maskNameCheck').checked;
-      const resolvedName = rawName ? (isMaskName ? maskRecipientName(rawName) : rawName) : '0';
-
-      const destination = document.getElementById('inputDestination').value.trim();
-      const isMaskId = document.getElementById('maskIdDanaCheck').checked;
-      const displayId = isMaskId ? maskIdDana(FIXED_DANA_ID) : FIXED_DANA_ID;
+      const resolvedName = autoMaskLastThreeLetters(rawName);
+      const rawPhone = document.getElementById('inputPhone').value.trim();
+      const maskedDanaId = autoMaskDanaId(FIXED_DANA_ID);
 
       const amountDigits = document.getElementById('inputAmount').value.replace(/\D/g, '');
       const amount = amountDigits ? formatRupiah(amountDigits) : '0';
       const formattedTime = getFormattedDateTime();
 
+      const combinedRecipient = rawPhone
+        ? (resolvedName !== '-' ? `${resolvedName} ${rawPhone}` : rawPhone)
+        : resolvedName;
+
       // Layar 2 (Ringkasan Layar Penuh Biru)
-      document.getElementById('displayDestinationText').textContent = destination ? `Kirim ke ${destination}` : 'Kirim ke -';
-      document.getElementById('displayRecipientHeading').textContent = resolvedName;
+      document.getElementById('displayDestinationText').textContent = `Kirim ke ${FIXED_DESTINATION}`;
+      document.getElementById('displayRecipientHeading').textContent = combinedRecipient;
       document.getElementById('displayBigAmount').textContent = `Rp${amount}`;
 
       // Layar 3 (Rincian Detail Transaksi)
       document.getElementById('displayDateTime').textContent = formattedTime;
-      document.getElementById('displayIdDana').textContent = `ID DANA ${displayId}`;
-      document.getElementById('displaySummaryText').textContent = `Kirim Uang Rp${amount} ke ${resolvedName}`;
+      document.getElementById('displayIdDana').textContent = `ID DANA ${maskedDanaId}`;
+      document.getElementById('displaySummaryText').textContent = `Kirim Uang Rp${amount} ke ${combinedRecipient}`;
       document.getElementById('displayTotalPay').textContent = `Rp${amount}`;
 
       document.getElementById('accRecipientName').textContent = resolvedName;
-      document.getElementById('accRecipientDest').textContent = destination || '-';
+      document.getElementById('accRecipientPhone').textContent = rawPhone || '-';
+      document.getElementById('accRecipientDest').textContent = FIXED_DESTINATION;
 
       const d = new Date();
       const randDigits = Array.from({ length: 12 }, () => Math.floor(Math.random() * 10)).join('');
