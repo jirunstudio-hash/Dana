@@ -494,11 +494,48 @@
     <!-- Area Form Scrollable Halus -->
     <div class="settings-scroll no-scrollbar">
       <div class="settings-card">
-        <!-- Nama Penerima (Ketik Manual, Otomatis Sensor 3 Huruf Terakhir Tiap Kata) -->
+        <!-- Kirim Ke Saldo : Tinggal pilih dari daftar lengkap E-Wallet & Bank -->
+        <div>
+          <label for="selectSaldo" style="display:block;font-size:12px;font-weight:600;color:#334155;margin-bottom:4px;">Kirim Ke Saldo :</label>
+          <select
+            id="selectSaldo"
+            onchange="preBufferOnFormActivity()"
+            class="field-input"
+          >
+            <optgroup label="E-Wallet">
+              <option value="DANA" selected>DANA</option>
+              <option value="GoPay">GoPay</option>
+              <option value="OVO">OVO</option>
+              <option value="ShopeePay">ShopeePay</option>
+              <option value="LinkAja">LinkAja</option>
+              <option value="iSaku">iSaku</option>
+              <option value="DOKU">DOKU</option>
+            </optgroup>
+            <optgroup label="Bank & Digital Bank">
+              <option value="BCA">BCA</option>
+              <option value="BRI">BRI</option>
+              <option value="BNI">BNI</option>
+              <option value="Mandiri">Mandiri</option>
+              <option value="SeaBank">SeaBank</option>
+              <option value="Bank Jago">Bank Jago</option>
+              <option value="Blu by BCA Digital">Blu by BCA Digital</option>
+              <option value="Allo Bank">Allo Bank</option>
+              <option value="Neo Commerce / BNC">Neo Commerce / BNC</option>
+              <option value="CIMB Niaga">CIMB Niaga</option>
+              <option value="Permata">Permata</option>
+              <option value="BSI">BSI</option>
+              <option value="BTN">BTN</option>
+              <option value="OCBC">OCBC</option>
+              <option value="Danamon">Danamon</option>
+            </optgroup>
+          </select>
+        </div>
+
+        <!-- Nama Penerima (Ketik Manual, Otomatis Sensor 2 Huruf Terakhir Tiap Kata) -->
         <div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
             <label for="inputName" style="font-size:12px;font-weight:600;color:#334155;">Nama Penerima</label>
-            <span style="font-size:10.5px;font-weight:600;color:#118EE9;">Auto Sensor 3 Huruf Belakang (XXX)</span>
+            <span style="font-size:10.5px;font-weight:600;color:#118EE9;">Auto Sensor 2 Huruf Belakang (XX)</span>
           </div>
           <input
             type="text"
@@ -549,7 +586,7 @@
           <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
             <div style="min-width:0;">
               <span style="display:block;font-size:12px;font-weight:600;color:#334155;">Tanggal & Jam</span>
-              <span id="settingsClockPreview" class="tabular-nums" style="font-size:11px;font-weight:500;color:#118EE9;">20 Nov 2026 • 21:57</span>
+              <span id="settingsClockPreview" class="tabular-nums" style="font-size:11px;font-weight:500;color:#118EE9;">20 Nov 2026 • 22:32</span>
             </div>
             <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#475569;cursor:pointer;">
               <input type="checkbox" id="autoTimeCheck" checked onchange="toggleTimeMode()" />
@@ -622,18 +659,18 @@
         </svg>
       </div>
 
-      <!-- Baris Atas: Lebih Pendek Lebarnya dibanding Baris Nama & Nomor di Bawahnya -->
-      <div id="displayDestinationText" style="font-size:15px;font-weight:700;color:#FFFFFF;letter-spacing:0.01em;margin-bottom:6px;text-align:center;line-height:1.25;">
-        Kirim ke Saldo DANA
+      <!-- Baris 1 (Sedang): Kirim Ke Saldo [Pilihan Saldo/Bank] -->
+      <div id="displayDestinationText" style="font-size:15.5px;font-weight:700;color:#FFFFFF;letter-spacing:0.01em;margin-bottom:6px;text-align:center;word-break:break-word;line-height:1.25;">
+        Kirim Ke Saldo DANA
       </div>
 
-      <!-- Baris Tengah: Nama Penerima Otomatis Sensor 3 Huruf Terakhir Tiap Kata + Nomor Penerima -->
-      <div id="displayRecipientHeading" style="font-size:19.5px;font-weight:700;color:#FFFFFF;letter-spacing:0.015em;margin-bottom:8px;text-align:center;word-break:break-word;line-height:1.25;">
+      <!-- Baris 2 (Besar): Nama Penerima Sensor 2 Huruf Terakhir (XX) + Nomor Penerima -->
+      <div id="displayRecipientHeading" style="font-size:21px;font-weight:700;color:#FFFFFF;letter-spacing:0.015em;margin-bottom:8px;text-align:center;word-break:break-word;line-height:1.25;">
         -
       </div>
 
-      <!-- Baris Bawah: Nominal Sesuai Input -->
-      <div id="displayBigAmount" class="tabular-nums" style="font-size:clamp(38px, 10.5vw, 46px);font-weight:700;color:#FFFFFF;line-height:1.12;letter-spacing:-0.015em;margin-bottom:18px;text-align:center;">
+      <!-- Baris 3 (Lebih Besar): Nominal Sesuai Input -->
+      <div id="displayBigAmount" class="tabular-nums" style="font-size:clamp(44px, 12vw, 54px);font-weight:700;color:#FFFFFF;line-height:1.1;letter-spacing:-0.015em;margin-bottom:18px;text-align:center;">
         Rp0
       </div>
 
@@ -693,7 +730,7 @@
 
           <!-- Baris Tanggal & ID DANA Otomatis Tersensor -->
           <div class="tabular-nums" style="position:relative;z-index:10;padding:0 15px 7px 15px;display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:clamp(10px, 2.8vw, 11px);color:#8A94A6;">
-            <span id="displayDateTime" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">20 Nov 2026 • 21:57</span>
+            <span id="displayDateTime" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">20 Nov 2026 • 22:32</span>
             <span id="displayIdDana" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;">ID DANA 0858••••2418</span>
           </div>
 
@@ -731,8 +768,8 @@
             <!-- Metode Pembayaran -->
             <div style="display:flex;align-items:flex-start;justify-content:space-between;font-size:11px;padding-bottom:7px;border-bottom:1px solid #EEF1F5;">
               <span style="color:#8A94A6;">Metode Pembayaran</span>
-              <div style="text-align:right;font-weight:500;color:#1A1A1A;line-height:1.25;">
-                <div>Saldo DANA</div>
+              <div id="displayPaymentMethod" style="text-align:right;font-weight:500;color:#1A1A1A;line-height:1.25;">
+                <div>DANA</div>
                 <div style="font-size:10px;">(SmartPay)</div>
               </div>
             </div>
@@ -756,7 +793,7 @@
                 </div>
                 <div style="display:flex;justify-content:space-between;gap:8px;">
                   <span style="color:#8A94A6;">Tujuan</span>
-                  <span id="accRecipientDest" style="font-weight:600;color:#1A1A1A;text-align:right;">Saldo DANA</span>
+                  <span id="accRecipientDest" style="font-weight:600;color:#1A1A1A;text-align:right;">DANA</span>
                 </div>
               </div>
             </div>
@@ -772,7 +809,7 @@
               <div id="accTx" class="hidden" style="padding-top:6px;font-size:10px;color:#4A5568;">
                 <div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:3px;">
                   <span style="color:#8A94A6;flex-shrink:0;">ID Transaksi</span>
-                  <span id="accTxCode" class="tabular-nums" style="font-weight:500;color:#1A1A1A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">202611202157148001001668492014</span>
+                  <span id="accTxCode" class="tabular-nums" style="font-weight:500;color:#1A1A1A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">202611202232148001001668492014</span>
                 </div>
                 <div style="display:flex;justify-content:space-between;gap:8px;">
                   <span style="color:#8A94A6;">Biaya Admin</span>
@@ -875,7 +912,6 @@
 
   <script>
     const FIXED_DANA_ID = '085841512418';
-    const FIXED_DESTINATION = 'Saldo DANA';
     const MONTHS_ID = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
     const MEDIA_URL = 'https://b.top4top.io/m_3975xed1e1.mp4';
 
@@ -1361,18 +1397,18 @@
       el.value = rawDigits === '' ? '0' : formatRupiah(rawDigits);
     }
 
-    function autoMaskLastThreeLetters(rawName) {
+    function autoMaskLastTwoLetters(rawName) {
       const trimmed = rawName.trim();
       if (!trimmed) return '-';
       return trimmed
         .split(/\s+/)
         .map((token) => {
           const lettersOnly = token.replace(/[^A-Za-z]/g, '');
-          if (lettersOnly.length >= 4) {
-            const cutIdx = token.length - 3;
-            return token.slice(0, cutIdx).toUpperCase() + 'XXX';
+          if (lettersOnly.length >= 3 && token.length >= 3) {
+            const cutIdx = token.length - 2;
+            return token.slice(0, cutIdx).toUpperCase() + 'XX';
           }
-          if (lettersOnly.length > 0 && lettersOnly.length < 4) {
+          if (lettersOnly.length > 0 && lettersOnly.length < 3) {
             return token.toUpperCase();
           }
           return token;
@@ -1440,8 +1476,10 @@
     }
 
     function applySettingsToReceipt() {
+      const selectedDest = document.getElementById('selectSaldo').value || 'DANA';
+
       const rawName = document.getElementById('inputName').value.trim();
-      const resolvedName = autoMaskLastThreeLetters(rawName);
+      const resolvedName = autoMaskLastTwoLetters(rawName);
       const rawPhone = document.getElementById('inputPhone').value.trim();
       const maskedDanaId = autoMaskDanaId(FIXED_DANA_ID);
 
@@ -1454,7 +1492,7 @@
         : resolvedName;
 
       // Layar 2 (Ringkasan Layar Penuh Biru)
-      document.getElementById('displayDestinationText').textContent = `Kirim ke ${FIXED_DESTINATION}`;
+      document.getElementById('displayDestinationText').textContent = `Kirim Ke Saldo ${selectedDest}`;
       document.getElementById('displayRecipientHeading').textContent = combinedRecipient;
       document.getElementById('displayBigAmount').textContent = `Rp${amount}`;
 
@@ -1463,10 +1501,11 @@
       document.getElementById('displayIdDana').textContent = `ID DANA ${maskedDanaId}`;
       document.getElementById('displaySummaryText').textContent = `Kirim Uang Rp${amount} ke ${combinedRecipient}`;
       document.getElementById('displayTotalPay').textContent = `Rp${amount}`;
+      document.getElementById('displayPaymentMethod').innerHTML = `<div>${selectedDest}</div><div style="font-size:10px;">(SmartPay)</div>`;
 
       document.getElementById('accRecipientName').textContent = resolvedName;
       document.getElementById('accRecipientPhone').textContent = rawPhone || '-';
-      document.getElementById('accRecipientDest').textContent = FIXED_DESTINATION;
+      document.getElementById('accRecipientDest').textContent = selectedDest;
 
       const d = new Date();
       const randDigits = Array.from({ length: 12 }, () => Math.floor(Math.random() * 10)).join('');
