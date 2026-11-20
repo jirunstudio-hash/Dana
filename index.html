@@ -230,7 +230,7 @@
       min-height: 0;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
-      padding: max(28px, env(safe-area-inset-top)) 20px 18px 20px;
+      padding: max(28px, env(safe-area-inset-top)) 16px 18px 16px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -276,25 +276,25 @@
       transform: scale(0.97);
     }
 
+    /* Footer hampir full lebar layar */
     .full-blue-footer {
       flex-shrink: 0;
       width: 100%;
-      padding: 8px 18px max(18px, env(safe-area-inset-bottom)) 18px;
+      padding: 8px 10px max(16px, env(safe-area-inset-bottom)) 10px;
       display: flex;
       flex-direction: column;
-      align-items: center;
+      align-items: stretch;
       gap: 10px;
     }
 
     .btn-solid-white {
       width: 100%;
-      max-width: 360px;
-      padding: 12.5px 14px;
-      border-radius: 5px;
+      padding: 13px 14px;
+      border-radius: 6px;
       border: 1.5px solid #FFFFFF;
-      background-color: rgba(255, 255, 255, 0.92);
+      background-color: rgba(255, 255, 255, 0.94);
       color: #118EE9;
-      font-size: 12px;
+      font-size: 12.5px;
       font-weight: 700;
       letter-spacing: 0.06em;
       cursor: pointer;
@@ -303,19 +303,18 @@
 
     .btn-solid-white:active {
       background-color: #FFFFFF;
-      transform: scale(0.985);
+      transform: scale(0.99);
     }
 
     .btn-outline-white {
       width: 100%;
-      max-width: 360px;
-      padding: 12.5px 14px;
-      border-radius: 5px;
-      border: 1.4px solid rgba(255, 255, 255, 0.85);
+      padding: 13px 14px;
+      border-radius: 6px;
+      border: 1.5px solid rgba(255, 255, 255, 0.88);
       background-color: transparent;
-      color: rgba(255, 255, 255, 0.95);
-      font-size: 12px;
-      font-weight: 600;
+      color: rgba(255, 255, 255, 0.96);
+      font-size: 12.5px;
+      font-weight: 700;
       letter-spacing: 0.06em;
       cursor: pointer;
       transition: background-color 0.15s ease, transform 0.1s ease;
@@ -323,7 +322,7 @@
 
     .btn-outline-white:active {
       background-color: rgba(255, 255, 255, 0.16);
-      transform: scale(0.985);
+      transform: scale(0.99);
     }
 
     /* Layar 3: Rincian Detail Transaksi */
@@ -550,7 +549,7 @@
           <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
             <div style="min-width:0;">
               <span style="display:block;font-size:12px;font-weight:600;color:#334155;">Tanggal & Jam</span>
-              <span id="settingsClockPreview" class="tabular-nums" style="font-size:11px;font-weight:500;color:#118EE9;">20 Nov 2026 • 21:48</span>
+              <span id="settingsClockPreview" class="tabular-nums" style="font-size:11px;font-weight:500;color:#118EE9;">20 Nov 2026 • 21:57</span>
             </div>
             <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#475569;cursor:pointer;">
               <input type="checkbox" id="autoTimeCheck" checked onchange="toggleTimeMode()" />
@@ -623,13 +622,13 @@
         </svg>
       </div>
 
-      <!-- Baris Atas: Tujuan Transfer Otomatis Saldo DANA (Ketebalan Sama dengan Nama & Nomor) -->
-      <div id="displayDestinationText" style="font-size:18.5px;font-weight:700;color:#FFFFFF;letter-spacing:0.015em;margin-bottom:6px;text-align:center;word-break:break-word;line-height:1.25;">
+      <!-- Baris Atas: Lebih Pendek Lebarnya dibanding Baris Nama & Nomor di Bawahnya -->
+      <div id="displayDestinationText" style="font-size:15px;font-weight:700;color:#FFFFFF;letter-spacing:0.01em;margin-bottom:6px;text-align:center;line-height:1.25;">
         Kirim ke Saldo DANA
       </div>
 
       <!-- Baris Tengah: Nama Penerima Otomatis Sensor 3 Huruf Terakhir Tiap Kata + Nomor Penerima -->
-      <div id="displayRecipientHeading" style="font-size:18.5px;font-weight:700;color:#FFFFFF;letter-spacing:0.015em;margin-bottom:8px;text-align:center;word-break:break-word;line-height:1.25;">
+      <div id="displayRecipientHeading" style="font-size:19.5px;font-weight:700;color:#FFFFFF;letter-spacing:0.015em;margin-bottom:8px;text-align:center;word-break:break-word;line-height:1.25;">
         -
       </div>
 
@@ -649,7 +648,7 @@
       </button>
     </main>
 
-    <!-- Tombol Bawah -->
+    <!-- Tombol Bawah Hampir Full Layar -->
     <div class="full-blue-footer">
       <button type="button" id="btnOpenDetailScreen" onclick="openDetailScreen()" class="btn-solid-white">
         DETAIL TRANSAKSI
@@ -694,7 +693,7 @@
 
           <!-- Baris Tanggal & ID DANA Otomatis Tersensor -->
           <div class="tabular-nums" style="position:relative;z-index:10;padding:0 15px 7px 15px;display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:clamp(10px, 2.8vw, 11px);color:#8A94A6;">
-            <span id="displayDateTime" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">20 Nov 2026 • 21:48</span>
+            <span id="displayDateTime" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">20 Nov 2026 • 21:57</span>
             <span id="displayIdDana" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;">ID DANA 0858••••2418</span>
           </div>
 
@@ -773,7 +772,7 @@
               <div id="accTx" class="hidden" style="padding-top:6px;font-size:10px;color:#4A5568;">
                 <div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:3px;">
                   <span style="color:#8A94A6;flex-shrink:0;">ID Transaksi</span>
-                  <span id="accTxCode" class="tabular-nums" style="font-weight:500;color:#1A1A1A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">202611202148148001001668492014</span>
+                  <span id="accTxCode" class="tabular-nums" style="font-weight:500;color:#1A1A1A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">202611202157148001001668492014</span>
                 </div>
                 <div style="display:flex;justify-content:space-between;gap:8px;">
                   <span style="color:#8A94A6;">Biaya Admin</span>
