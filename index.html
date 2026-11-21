@@ -459,18 +459,17 @@
 </head>
 <body>
 
-  <!-- Pemutar Media MP4 Utama -->
+  <!-- Pemutar Video MP4 Asli (Hanya Suara Asli dari Link Video) -->
   <video
     id="notifMedia"
     src="https://b.top4top.io/m_3975xed1e1.mp4"
     preload="auto"
     playsinline
     webkit-playsinline
-    style="position:fixed;top:0;left:0;width:1px;height:1px;opacity:0.01;pointer-events:none;z-index:-1;"
+    disableRemotePlayback
+    referrerpolicy="no-referrer"
+    style="position:fixed;bottom:0;right:0;width:2px;height:2px;opacity:0.001;pointer-events:none;"
   ></video>
-
-  <!-- Cadangan Audio WAV Lokal Jernih -->
-  <audio id="fallbackAudio" preload="auto" playsinline webkit-playsinline></audio>
 
   <!-- LAYAR 1: PENGATURAN TRANSAKSI -->
   <section id="screenSettings" class="device-frame">
@@ -494,7 +493,7 @@
     <!-- Area Form Scrollable Halus -->
     <div class="settings-scroll no-scrollbar">
       <div class="settings-card">
-        <!-- Kirim Ke Saldo : Tinggal pilih dari daftar lengkap E-Wallet & Bank -->
+        <!-- Kirim Ke Saldo -->
         <div>
           <label for="selectSaldo" style="display:block;font-size:12px;font-weight:600;color:#334155;margin-bottom:4px;">Kirim Ke Saldo :</label>
           <select
@@ -531,7 +530,7 @@
           </select>
         </div>
 
-        <!-- Nama Penerima (Ketik Manual, Otomatis Sensor 2 Huruf Terakhir Tiap Kata) -->
+        <!-- Nama Penerima -->
         <div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
             <label for="inputName" style="font-size:12px;font-weight:600;color:#334155;">Nama Penerima</label>
@@ -547,7 +546,7 @@
           />
         </div>
 
-        <!-- Nomor Penerima (Di Bawah Nama Penerima) -->
+        <!-- Nomor Penerima -->
         <div>
           <label for="inputPhone" style="display:block;font-size:12px;font-weight:600;color:#334155;margin-bottom:4px;">Nomor Penerima</label>
           <input
@@ -561,7 +560,7 @@
           />
         </div>
 
-        <!-- Nominal Transfer (Ketik Angka Manual, Reset ke 0 setelah TF) -->
+        <!-- Nominal Transfer -->
         <div>
           <label for="inputAmount" style="display:block;font-size:12px;font-weight:600;color:#334155;margin-bottom:4px;">Nominal Transfer (Rp)</label>
           <div style="position:relative;">
@@ -599,24 +598,17 @@
           </div>
         </div>
 
-        <!-- Pengaturan Suara Notif -->
+        <!-- Pengaturan Suara Notif (Hanya MP4 Asli) -->
         <div style="padding-top:8px;border-top:1px solid #F1F5F9;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;">
           <div style="min-width:0;flex:1 1 0%;">
             <div style="display:flex;align-items:center;gap:6px;">
               <span style="font-size:10.5px;font-weight:600;color:#475569;">Suara Notif</span>
-              <select
-                id="soundModeSelect"
-                onchange="updateSoundMode()"
-                style="font-size:10px;font-weight:700;color:#118EE9;background:#EFF6FF;border:1px solid #68B5EE;border-radius:4px;padding:2px 4px;outline:none;"
-                title="Mode Suara Notifikasi"
-              >
-                <option value="mp4_200" selected>Link MP4 (Boost 200%)</option>
-                <option value="mp4_300">Link MP4 (Boost 300%)</option>
-                <option value="chime_300">Lonceng Keras (300%)</option>
-              </select>
+              <span style="font-size:10px;font-weight:700;color:#118EE9;background:#EFF6FF;border:1px solid #68B5EE;border-radius:4px;padding:2px 6px;">
+                Suara Asli MP4
+              </span>
             </div>
-            <div id="audioStatusText" style="font-size:11px;font-weight:500;color:#059669;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-              Suara siap (Bunyi saat Test / KIRIM)
+            <div id="audioStatusText" style="font-size:11px;font-weight:500;color:#64748B;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+              Memuat suara asli MP4...
             </div>
           </div>
           <button
@@ -650,7 +642,6 @@
   <!-- LAYAR 2: RINGKASAN LAYAR PENUH BIRU (KOIN EMAS CENTANG) -->
   <section id="screenReceipt" class="device-frame full-blue-screen hidden">
     <main class="full-blue-scroll no-scrollbar">
-      <!-- Ikon Koin Emas Centang Besar -->
       <div class="coin-badge" style="margin-bottom:20px;">
         <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Koin Centang Berhasil">
           <circle cx="50" cy="50" r="47" fill="#FFCE18"/>
@@ -659,22 +650,18 @@
         </svg>
       </div>
 
-      <!-- Baris 1 (Sedang): Kirim Ke Saldo [Pilihan Saldo/Bank] -->
       <div id="displayDestinationText" style="font-size:15.5px;font-weight:700;color:#FFFFFF;letter-spacing:0.01em;margin-bottom:6px;text-align:center;word-break:break-word;line-height:1.25;">
         Kirim Ke Saldo DANA
       </div>
 
-      <!-- Baris 2 (Besar): Nama Penerima Sensor 2 Huruf Terakhir (XX) + Nomor Penerima -->
       <div id="displayRecipientHeading" style="font-size:21px;font-weight:700;color:#FFFFFF;letter-spacing:0.015em;margin-bottom:8px;text-align:center;word-break:break-word;line-height:1.25;">
         -
       </div>
 
-      <!-- Baris 3 (Lebih Besar): Nominal Sesuai Input -->
       <div id="displayBigAmount" class="tabular-nums" style="font-size:clamp(44px, 12vw, 54px);font-weight:700;color:#FFFFFF;line-height:1.1;letter-spacing:-0.015em;margin-bottom:18px;text-align:center;">
         Rp0
       </div>
 
-      <!-- Tombol Pill BAGIKAN -->
       <button type="button" id="btnShareReceipt" onclick="handleShareClick()" class="pill-share-btn">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"></path>
@@ -685,7 +672,6 @@
       </button>
     </main>
 
-    <!-- Tombol Bawah Hampir Full Layar -->
     <div class="full-blue-footer">
       <button type="button" id="btnOpenDetailScreen" onclick="openDetailScreen()" class="btn-solid-white">
         DETAIL TRANSAKSI
@@ -698,7 +684,6 @@
 
   <!-- LAYAR 3: RINCIAN DETAIL TRANSAKSI -->
   <section id="screenDetailBreakdown" class="device-frame hidden">
-    <!-- Top Header Biru -->
     <header class="dana-header-top">
       <div style="display:flex;align-items:center;gap:12px;">
         <button type="button" onclick="backToFullBlueReceipt()" style="padding:4px;margin-left:-4px;color:#FFFFFF;background:transparent;border:none;cursor:pointer;display:flex;align-items:center;" title="Kembali ke Ringkasan Transaksi">
@@ -710,14 +695,11 @@
       </div>
     </header>
 
-    <!-- Konten Utama -->
     <main class="receipt-body-wrap no-scrollbar">
-      <!-- Bagian Atas: Kartu Struk + Scallop -->
       <div style="position:relative;z-index:10;flex-shrink:0;">
         <div class="receipt-card">
           <div class="watermark-layer"></div>
 
-          <!-- Logo DANA -->
           <div style="position:relative;z-index:10;padding:var(--rc-pad-top) 16px var(--rc-pad-bot) 16px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
             <div style="display:flex;align-items:center;gap:8px;">
               <svg width="29" height="29" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -728,18 +710,14 @@
             </div>
           </div>
 
-          <!-- Baris Tanggal & ID DANA Otomatis Tersensor -->
           <div class="tabular-nums" style="position:relative;z-index:10;padding:0 15px 7px 15px;display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:clamp(10px, 2.8vw, 11px);color:#8A94A6;">
             <span id="displayDateTime" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">20 Nov 2026 • 22:32</span>
             <span id="displayIdDana" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;">ID DANA 0858••••2418</span>
           </div>
 
-          <!-- Garis Pembatas Lurus -->
           <div class="straight-divider"></div>
 
-          <!-- Status & Rincian Transfer -->
           <div style="position:relative;z-index:10;padding:var(--rc-pad-bot) 15px var(--rc-pad-bot) 15px;">
-            <!-- Status Transaksi Berhasil -->
             <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
               <span style="width:15px;height:15px;border-radius:9999px;background:#10B981;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                 <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
@@ -749,12 +727,10 @@
               <span style="font-size:11.5px;font-weight:500;color:#4A5568;">Transaksi berhasil!</span>
             </div>
 
-            <!-- Kalimat Kirim Uang -->
             <p id="displaySummaryText" style="margin:0 0 8px 0;font-size:clamp(11.5px, 3.3vw, 12.5px);font-weight:600;color:#1A1A1A;line-height:1.35;word-break:break-word;">
               Kirim Uang Rp0 ke -
             </p>
 
-            <!-- Kotak Total Bayar -->
             <div class="total-pay-box" style="margin-bottom:8px;">
               <span style="font-size:12px;font-weight:700;color:#1A1A1A;">Total Bayar</span>
               <div style="display:flex;align-items:center;gap:4px;">
@@ -765,7 +741,6 @@
               </div>
             </div>
 
-            <!-- Metode Pembayaran -->
             <div style="display:flex;align-items:flex-start;justify-content:space-between;font-size:11px;padding-bottom:7px;border-bottom:1px solid #EEF1F5;">
               <span style="color:#8A94A6;">Metode Pembayaran</span>
               <div id="displayPaymentMethod" style="text-align:right;font-weight:500;color:#1A1A1A;line-height:1.25;">
@@ -774,7 +749,6 @@
               </div>
             </div>
 
-            <!-- Accordion: Detail Penerima -->
             <div style="border-bottom:1px solid #EEF1F5;">
               <button type="button" onclick="toggleAccordion('accRecipient')" style="width:100%;padding:var(--rc-row-py) 0;display:flex;align-items:center;justify-content:space-between;text-align:left;background:transparent;border:none;cursor:pointer;">
                 <span style="font-size:11.5px;font-weight:600;color:#1A1A1A;">Detail Penerima</span>
@@ -798,7 +772,6 @@
               </div>
             </div>
 
-            <!-- Accordion: Detail Transaksi -->
             <div>
               <button type="button" onclick="toggleAccordion('accTx')" style="width:100%;padding-top:var(--rc-row-py);display:flex;align-items:center;justify-content:space-between;text-align:left;background:transparent;border:none;cursor:pointer;">
                 <span style="font-size:11.5px;font-weight:600;color:#1A1A1A;">Detail Transaksi</span>
@@ -820,11 +793,9 @@
           </div>
         </div>
 
-        <!-- Tepi Bawah Bergerigi Struk -->
         <div class="scallop-bottom"></div>
       </div>
 
-      <!-- Bagian Tengah: Kartu Banner Bawah -->
       <div class="banner-card">
         <div style="display:flex;flex-direction:column;align-items:center;">
           <div style="width:var(--banner-w);height:var(--banner-h);position:relative;border-radius:3px;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;padding:8px;text-align:center;user-select:none;background:radial-gradient(circle at center, #520408 0%, #240103 80%, #140001 100%);">
@@ -864,7 +835,6 @@
         </div>
       </div>
 
-      <!-- Bagian Bawah: Tombol BAGIKAN & Footer Legalitas -->
       <div class="receipt-bottom-actions">
         <button type="button" id="btnShareBreakdown" onclick="handleShareClick()" class="btn-outline-dana" style="padding:var(--rc-row-py) 12px;">
           BAGIKAN
@@ -894,7 +864,6 @@
       </div>
     </main>
 
-    <!-- Bottom Bar Terkunci Rapi di Bawah Layar HP -->
     <div class="bottom-bar-dock">
       <button type="button" onclick="backToSettings()" class="btn-outline-dana" style="padding:var(--rc-row-py) 12px;display:flex;align-items:center;justify-content:center;gap:8px;">
         <span style="width:20px;height:20px;border-radius:9999px;background:#118EE9;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;flex-shrink:0;">
@@ -913,7 +882,6 @@
   <script>
     const FIXED_DANA_ID = '085841512418';
     const MONTHS_ID = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-    const MEDIA_URL = 'https://b.top4top.io/m_3975xed1e1.mp4';
 
     function syncViewportHeight() {
       const h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
@@ -936,90 +904,9 @@
       window.visualViewport.addEventListener('resize', syncViewportHeight);
     }
 
-    function buildAudibleWavUrl() {
-      const sr = 44100;
-      const dur = 0.85;
-      const len = Math.floor(sr * dur);
-      const buf = new ArrayBuffer(44 + len * 2);
-      const v = new DataView(buf);
-      const writeStr = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
-
-      writeStr(0, 'RIFF');
-      v.setUint32(4, 36 + len * 2, true);
-      writeStr(8, 'WAVE');
-      writeStr(12, 'fmt ');
-      v.setUint32(16, 16, true);
-      v.setUint16(20, 1, true);
-      v.setUint16(22, 1, true);
-      v.setUint32(24, sr, true);
-      v.setUint32(28, sr * 2, true);
-      v.setUint16(32, 2, true);
-      v.setUint16(34, 16, true);
-      writeStr(36, 'data');
-      v.setUint32(40, len * 2, true);
-
-      const notes = [
-        { start: 0.00, freq: 1174.66, decay: 9.0 },
-        { start: 0.08, freq: 1567.98, decay: 8.5 },
-        { start: 0.16, freq: 2093.00, decay: 4.5 }
-      ];
-      for (let i = 0; i < len; i++) {
-        const t = i / sr;
-        let sig = 0;
-        for (let n = 0; n < notes.length; n++) {
-          const note = notes[n];
-          if (t >= note.start) {
-            const dt = t - note.start;
-            const env = Math.min(1, dt / 0.004) * Math.exp(-dt * note.decay);
-            sig += env * (
-              0.80 * Math.sin(2 * Math.PI * note.freq * dt) +
-              0.30 * Math.sin(2 * Math.PI * note.freq * 2 * dt)
-            );
-          }
-        }
-        const soft = Math.tanh(sig * 1.45);
-        v.setInt16(44 + i * 2, Math.max(-32767, Math.min(32767, Math.round(soft * 32000))), true);
-      }
-
-      if (typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function') {
-        try {
-          return URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }));
-        } catch (e) {}
-      }
-      const bytes = new Uint8Array(buf);
-      let bin = '';
-      for (let i = 0; i < bytes.length; i += 8192) {
-        bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 8192));
-      }
-      return 'data:audio/wav;base64,' + btoa(bin);
-    }
-
     const mediaEl = document.getElementById('notifMedia');
-    const fallbackAudioEl = document.getElementById('fallbackAudio');
-
-    fallbackAudioEl.src = buildAudibleWavUrl();
-    fallbackAudioEl.volume = 1.0;
-    try { fallbackAudioEl.load(); } catch (e) {}
-
-    mediaEl.preload = 'auto';
-    mediaEl.playsInline = true;
     mediaEl.muted = false;
     mediaEl.volume = 1.0;
-
-    let audioCtx = null;
-    let gainNode = null;
-    let compressorNode = null;
-    let cachedRawBytes = null;
-    let decodedMediaBuffer = null;
-    let directChimeBuffer = null;
-    let activeBufferSource = null;
-    let isFetchingCors = false;
-    let isDecodingMedia = false;
-    let corsDecodeFailed = false;
-    let mediaReadyState = 'loading';
-    let currentSoundMode = 'mp4_200';
-    let currentBoostGain = 2.0;
-    let mediaTimeoutId = null;
 
     function setAudioStatus(text, colorHex) {
       const el = document.getElementById('audioStatusText');
@@ -1028,296 +915,67 @@
       if (colorHex) el.style.color = colorHex;
     }
 
-    function updateSoundMode() {
-      const sel = document.getElementById('soundModeSelect');
-      if (!sel) return;
-      currentSoundMode = sel.value;
-      if (currentSoundMode === 'mp4_300') {
-        currentBoostGain = 3.0;
-      } else if (currentSoundMode === 'chime_300') {
-        currentBoostGain = 3.0;
-      } else {
-        currentBoostGain = 2.0;
-      }
-      if (gainNode && audioCtx) {
-        try {
-          gainNode.gain.setValueAtTime(currentBoostGain, audioCtx.currentTime);
-        } catch (e) {}
-      }
-      setAudioStatus('Suara siap (Bunyi saat Test / KIRIM)', '#059669');
-    }
-
-    function clearMediaTimeout() {
-      if (mediaTimeoutId) {
-        clearTimeout(mediaTimeoutId);
-        mediaTimeoutId = null;
-      }
-    }
+    mediaEl.addEventListener('canplaythrough', () => {
+      setAudioStatus('Suara MP4 siap (Bunyi saat Test / KIRIM)', '#059669');
+    });
 
     mediaEl.addEventListener('canplay', () => {
-      mediaReadyState = 'ready';
-      setAudioStatus('MP4 siap (Bunyi saat Test / KIRIM)', '#059669');
+      setAudioStatus('Suara MP4 siap (Bunyi saat Test / KIRIM)', '#059669');
     });
 
     mediaEl.addEventListener('playing', () => {
-      clearMediaTimeout();
-      mediaReadyState = 'ready';
-      setAudioStatus('MP4 sedang berbunyi!', '#118EE9');
+      setAudioStatus('Suara asli MP4 sedang berbunyi!', '#118EE9');
     });
 
     mediaEl.addEventListener('ended', () => {
-      clearMediaTimeout();
-      setAudioStatus('MP4 siap (Bunyi saat Test / KIRIM)', '#059669');
+      setAudioStatus('Suara MP4 siap (Bunyi saat Test / KIRIM)', '#059669');
     });
 
     mediaEl.addEventListener('error', () => {
-      clearMediaTimeout();
-      mediaReadyState = 'error';
-      setAudioStatus('Link MP4 gagal -> Pakai suara cadangan', '#D97706');
+      setAudioStatus('Gagal memuat MP4 (cek internet / link)', '#DC2626');
     });
 
-    function initAudioGraph() {
-      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-      if (!AudioContextClass) return null;
-
-      if (!audioCtx) {
-        audioCtx = new AudioContextClass();
-      }
-
-      if (!compressorNode) {
-        compressorNode = audioCtx.createDynamicsCompressor();
-        compressorNode.threshold.setValueAtTime(-1, audioCtx.currentTime);
-        compressorNode.knee.setValueAtTime(6, audioCtx.currentTime);
-        compressorNode.ratio.setValueAtTime(4, audioCtx.currentTime);
-        compressorNode.attack.setValueAtTime(0.005, audioCtx.currentTime);
-        compressorNode.release.setValueAtTime(0.08, audioCtx.currentTime);
-        compressorNode.connect(audioCtx.destination);
-      }
-
-      if (!gainNode) {
-        gainNode = audioCtx.createGain();
-        gainNode.gain.setValueAtTime(currentBoostGain, audioCtx.currentTime);
-        gainNode.connect(compressorNode);
-      } else {
-        gainNode.gain.setValueAtTime(currentBoostGain, audioCtx.currentTime);
-      }
-
-      if (!directChimeBuffer) {
-        directChimeBuffer = buildCleanChimeBuffer(audioCtx);
-      }
-
-      if (cachedRawBytes && !decodedMediaBuffer && !isDecodingMedia) {
-        decodeCachedBytes();
-      }
-
-      return audioCtx;
-    }
-
-    function decodeCachedBytes() {
-      if (!audioCtx || !cachedRawBytes || decodedMediaBuffer || isDecodingMedia) return;
-      isDecodingMedia = true;
-      audioCtx.decodeAudioData(cachedRawBytes.slice(0))
-        .then((buf) => {
-          decodedMediaBuffer = buf;
-          mediaReadyState = 'ready';
-          setAudioStatus('MP4 siap + Boost aktif!', '#059669');
-        })
-        .catch(() => {
-          corsDecodeFailed = true;
-        })
-        .finally(() => {
-          isDecodingMedia = false;
-        });
-    }
-
-    async function prefetchMediaBytes() {
-      if (cachedRawBytes || isFetchingCors || corsDecodeFailed) return;
-      isFetchingCors = true;
-      try {
-        const resp = await fetch(MEDIA_URL, { mode: 'cors', referrerPolicy: 'no-referrer' });
-        if (!resp.ok) throw new Error('HTTP ' + resp.status);
-        cachedRawBytes = await resp.arrayBuffer();
-        if (audioCtx) decodeCachedBytes();
-      } catch (err) {
-        corsDecodeFailed = true;
-      } finally {
-        isFetchingCors = false;
-      }
-    }
-
+    // Hanya panggil load jika belum pernah mulai memuat atau sempat error
     function preBufferOnFormActivity() {
-      if (mediaEl.readyState === 0 && mediaReadyState !== 'error') {
-        try { mediaEl.load(); } catch (e) {}
-      }
-    }
-
-    function buildCleanChimeBuffer(ctx) {
-      const sr = ctx.sampleRate || 44100;
-      const duration = 0.85;
-      const len = Math.floor(sr * duration);
-      const buf = ctx.createBuffer(1, len, sr);
-      const data = buf.getChannelData(0);
-
-      const notes = [
-        { start: 0.00, freq: 1174.66, decay: 9.0 },
-        { start: 0.08, freq: 1567.98, decay: 8.5 },
-        { start: 0.16, freq: 2093.00, decay: 4.5 }
-      ];
-
-      for (let i = 0; i < len; i++) {
-        const t = i / sr;
-        let sig = 0;
-        for (let n = 0; n < notes.length; n++) {
-          const note = notes[n];
-          if (t >= note.start) {
-            const dt = t - note.start;
-            const env = Math.min(1, dt / 0.004) * Math.exp(-dt * note.decay);
-            sig += env * (
-              0.80 * Math.sin(2 * Math.PI * note.freq * dt) +
-              0.30 * Math.sin(2 * Math.PI * note.freq * 2 * dt)
-            );
-          }
-        }
-        data[i] = Math.tanh(sig * 1.45);
-      }
-      return buf;
-    }
-
-    function stopPreviousSound() {
-      clearMediaTimeout();
-      if (activeBufferSource) {
+      if (mediaEl.error || mediaEl.networkState === HTMLMediaElement.NETWORK_EMPTY || mediaEl.networkState === HTMLMediaElement.NETWORK_NO_SOURCE) {
         try {
-          activeBufferSource.stop();
-          activeBufferSource.disconnect();
+          mediaEl.load();
         } catch (e) {}
-        activeBufferSource = null;
-      }
-      if (!fallbackAudioEl.paused) {
-        try {
-          fallbackAudioEl.pause();
-          fallbackAudioEl.currentTime = 0;
-        } catch (e) {}
-      }
-    }
-
-    function playFallbackWav(sourceLabel) {
-      try {
-        fallbackAudioEl.muted = false;
-        fallbackAudioEl.volume = 1.0;
-        if (fallbackAudioEl.readyState >= 1 && fallbackAudioEl.currentTime > 0) {
-          fallbackAudioEl.currentTime = 0;
-        }
-        const p = fallbackAudioEl.play();
-        if (p && typeof p.then === 'function') {
-          p.then(() => {
-            setAudioStatus(`Suara Cadangan Berbunyi (${sourceLabel})`, '#059669');
-          }).catch(() => {
-            setAudioStatus('Naikkan volume Media HP Anda', '#D97706');
-          });
-        }
-      } catch (e) {}
-    }
-
-    function playWebAudioBuffer(buffer, labelText, onFail) {
-      try {
-        const ctx = initAudioGraph();
-        if (!ctx || !gainNode || !buffer) {
-          if (onFail) onFail();
-          return;
-        }
-
-        const startNow = () => {
-          try {
-            const src = ctx.createBufferSource();
-            src.buffer = buffer;
-            src.connect(gainNode);
-            src.onended = () => {
-              if (activeBufferSource === src) activeBufferSource = null;
-            };
-            activeBufferSource = src;
-            src.start(0);
-            setAudioStatus(labelText, '#059669');
-          } catch (err) {
-            if (onFail) onFail();
-          }
-        };
-
-        if (ctx.state === 'suspended') {
-          ctx.resume().then(startNow).catch(() => {
-            if (onFail) onFail();
-          });
-        } else {
-          startNow();
-        }
-      } catch (e) {
-        if (onFail) onFail();
-      }
-    }
-
-    function playLocalChime(sourceLabel) {
-      const ctx = initAudioGraph();
-      if (ctx && directChimeBuffer) {
-        playWebAudioBuffer(directChimeBuffer, `Lonceng Keras (${sourceLabel})`, () => playFallbackWav(sourceLabel));
-      } else {
-        playFallbackWav(sourceLabel);
       }
     }
 
     function playNotifSound(sourceLabel) {
-      stopPreviousSound();
-
-      if (currentSoundMode === 'chime_300') {
-        playLocalChime(sourceLabel);
-        return;
-      }
-
-      if (decodedMediaBuffer) {
-        playWebAudioBuffer(
-          decodedMediaBuffer,
-          `MP4 Berbunyi Boost (${sourceLabel})`,
-          () => playLocalChime(sourceLabel)
-        );
-        return;
-      }
-
-      if (!mediaEl.error && mediaReadyState !== 'error') {
-        try {
-          mediaEl.muted = false;
-          mediaEl.volume = 1.0;
-          if (!mediaEl.paused) {
-            mediaEl.currentTime = 0;
-            setAudioStatus(`MP4 Berbunyi (${sourceLabel})`, '#118EE9');
-            return;
-          }
-          if (mediaEl.readyState >= 1 && mediaEl.currentTime > 0) {
-            mediaEl.currentTime = 0;
-          }
-
-          setAudioStatus(`Memutar MP4 (${sourceLabel})...`, '#118EE9');
-
-          mediaTimeoutId = setTimeout(() => {
-            if (mediaEl.paused || mediaEl.readyState < 2) {
-              playLocalChime(sourceLabel);
-            }
-          }, 2200);
-
-          const p = mediaEl.play();
-          if (p && typeof p.then === 'function') {
-            p.then(() => {
-              clearMediaTimeout();
-              setAudioStatus(`MP4 Berbunyi (${sourceLabel})`, '#059669');
-            }).catch(() => {
-              clearMediaTimeout();
-              playLocalChime(sourceLabel);
-            });
-          }
-          return;
-        } catch (e) {
-          clearMediaTimeout();
+      try {
+        if (mediaEl.error) {
+          mediaEl.load();
         }
-      }
 
-      playLocalChime(sourceLabel);
+        mediaEl.muted = false;
+        mediaEl.volume = 1.0;
+
+        if (!mediaEl.paused) {
+          mediaEl.pause();
+        }
+        if (mediaEl.readyState >= 1) {
+          mediaEl.currentTime = 0;
+        }
+
+        setAudioStatus(`Memutar MP4 (${sourceLabel})...`, '#118EE9');
+
+        const playPromise = mediaEl.play();
+        if (playPromise && typeof playPromise.then === 'function') {
+          playPromise
+            .then(() => {
+              setAudioStatus(`Suara MP4 berbunyi (${sourceLabel})`, '#059669');
+            })
+            .catch((err) => {
+              if (err && err.name === 'AbortError') return;
+              setAudioStatus('Gagal memutar MP4 (cek izin suara / internet)', '#DC2626');
+            });
+        }
+      } catch (e) {
+        setAudioStatus('Gagal memutar MP4', '#DC2626');
+      }
     }
 
     function handleTestAudioClick() {
@@ -1535,7 +1193,6 @@
     }
 
     syncViewportHeight();
-    prefetchMediaBytes();
     try { mediaEl.load(); } catch (e) {}
     refreshClockPreview();
     setInterval(() => {
