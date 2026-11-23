@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Realtime - Kamera & Lokasi</title>
+    <title>Admin Realtime - Daftar HP & Live View</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: #0f172a; color: #f8fafc; padding: 20px; }
@@ -32,12 +32,37 @@
         }
         .btn-primary { background: #3b82f6; color: white; }
         .btn-primary:hover { background: #2563eb; }
+        .btn-connect { background: #10b981; color: white; }
+        .btn-connect:hover { background: #059669; }
         .btn-cam { background: #6366f1; color: white; }
         .btn-cam:hover { background: #4f46e5; }
-        .btn-photo { background: #10b981; color: white; }
-        .btn-photo:hover { background: #059669; }
+        .btn-photo { background: #0ea5e9; color: white; }
+        .btn-photo:hover { background: #0284c7; }
         .btn-rec { background: #ef4444; color: white; }
         .btn-rec:hover { background: #dc2626; }
+
+        .devices-box {
+            background: #1e293b; border: 1px solid #334155;
+            border-radius: 14px; padding: 16px; margin-bottom: 20px;
+        }
+        .devices-title { font-size: 15px; margin-bottom: 12px; color: #e2e8f0; }
+        .quick-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+        .quick-row input {
+            flex: 1; min-width: 220px; padding: 10px 12px; border-radius: 8px;
+            border: 1px solid #475569; background: #0f172a; color: #fff; font-size: 13px;
+        }
+        .device-list { display: grid; gap: 10px; }
+        .device-item {
+            background: #0f172a; border: 1px solid #334155; border-radius: 10px;
+            padding: 12px 14px; display: flex; justify-content: space-between;
+            align-items: center; flex-wrap: wrap; gap: 10px;
+        }
+        .device-item strong { font-size: 14px; color: #fff; }
+        .device-item small { display: block; font-size: 11px; color: #94a3b8; margin-top: 2px; }
+        .badge-ready {
+            display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 999px;
+            background: rgba(34, 197, 94, 0.16); color: #4ade80; margin-left: 6px;
+        }
 
         .stage {
             background: #1e293b; border: 1px solid #334155;
@@ -101,11 +126,20 @@
     <div id="dashboard">
         <div class="header">
             <div>
-                <h1>📹 Live View Realtime</h1>
+                <h1>📹 Panel Kontrol Perangkat</h1>
             </div>
             <div>
-                <button class="btn-primary" onclick="connectToMember()">🔌 Hubungkan ke Perangkat</button>
+                <button class="btn-primary" onclick="saveAndConnectManual()">🔌 Hubungkan</button>
             </div>
+        </div>
+
+        <div class="devices-box">
+            <h2 class="devices-title">📱 Perangkat HP Tersimpan / Terdeteksi</h2>
+            <div class="quick-row">
+                <input type="text" id="manualPeerInput" placeholder="ID perangkat (otomatis terisi dari HP yang pernah konek)">
+                <button class="btn-connect" onclick="saveAndConnectManual()">Hubungkan ke ID Ini</button>
+            </div>
+            <div id="deviceList" class="device-list"></div>
         </div>
 
         <div class="stage">
@@ -118,7 +152,7 @@
                     <span class="pill" id="recBadge" style="display:none;background:#dc2626;color:#fff;">● MEREKAM</span>
                 </div>
                 <video id="remoteVideo" autoplay playsinline></video>
-                <span id="placeholderText" style="color:#64748b;font-size:13px;">Klik "Hubungkan ke Perangkat" saat halaman member terbuka.</span>
+                <span id="placeholderText" style="color:#64748b;font-size:13px;">Pilih perangkat HP di atas lalu klik Hubungkan.</span>
             </div>
 
             <div class="meta-bar">
@@ -135,20 +169,22 @@
             <div id="statusMsg" class="info-text">Status: Siap.</div>
         </div>
 
-        <h2 style="font-size:16px;margin-bottom:12px;">Hasil Foto & Rekaman Lokal (Sesi Ini)</h2>
+        <h2 style="font-size:16px;margin-bottom:12px;">Hasil Foto & Rekaman Lokal</h2>
         <div id="capturesList" class="captures-grid"></div>
     </div>
 </div>
 
 <script>
     const ADMIN_PIN = "123456";
-    const ROOM_ID = "jirun-live-room-9988";
+    const PREFIX_ID = "jirun-hp-";
 
     let peer = null;
     let dataConn = null;
+    let currentCall = null;
     let currentMediaStream = null;
     let currentCamLabel = "-";
     let currentLoc = null;
+    let targetPeerId = localStorage.getItem("jirun_last_target_peer") || "";
 
     const remoteVideo = document.getElementById("remoteVideo");
     const placeholderText = document.getElementById("placeholderText");
@@ -159,16 +195,84 @@
     const mapLinkWrap = document.getElementById("mapLinkWrap");
     const statusMsg = document.getElementById("statusMsg");
     const capturesList = document.getElementById("capturesList");
+    const deviceListEl = document.getElementById("deviceList");
+    const manualPeerInput = document.getElementById("manualPeerInput");
 
     function checkPin() {
         const val = document.getElementById("pinInput").value;
         if (val === ADMIN_PIN) {
             document.getElementById("loginScreen").style.display = "none";
             document.getElementById("dashboard").style.display = "block";
-            connectToMember();
+            manualPeerInput.value = targetPeerId;
+            renderKnownDevices();
+            if (targetPeerId) {
+                connectToPeer(targetPeerId);
+            }
         } else {
             alert("PIN salah!");
         }
+    }
+
+    function getKnownDevices() {
+        try {
+            return JSON.parse(localStorage.getItem("jirun_known_devices") || "{}");
+        } catch (e) {
+            return {};
+        }
+    }
+
+    function saveKnownDevice(peerId, name) {
+        const map = getKnownDevices();
+        map[peerId] = {
+            peerId: peerId,
+            name: name || "HP Saya",
+            lastSeen: Date.now()
+        };
+        localStorage.setItem("jirun_known_devices", JSON.stringify(map));
+        localStorage.setItem("jirun_last_target_peer", peerId);
+        renderKnownDevices();
+    }
+
+    function renderKnownDevices() {
+        const map = getKnownDevices();
+        const items = Object.values(map).sort((a, b) => (b.lastSeen || 0) - (a.lastSeen || 0));
+
+        if (items.length === 0) {
+            deviceListEl.innerHTML = `
+                <div class="device-item">
+                    <div>
+                        <strong>HP Saya</strong> <span class="badge-ready">Menunggu buka halaman di HP</span>
+                        <small>Setelah halaman member dibuka & diizinkan di HP, masukkan ID-nya sekali saja lalu tersimpan otomatis di sini.</small>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
+        deviceListEl.innerHTML = items.map(dev => `
+            <div class="device-item">
+                <div>
+                    <strong>${escapeHtml(dev.name)}</strong> <span class="badge-ready">Siap Dikoneksikan</span>
+                    <small>ID: ${escapeHtml(dev.peerId)}</small>
+                </div>
+                <button class="btn-connect" onclick="connectToPeer('${escapeHtml(dev.peerId)}')">Hubungkan</button>
+            </div>
+        `).join("");
+    }
+
+    function saveAndConnectManual() {
+        let raw = manualPeerInput.value.trim();
+        if (!raw) {
+            alert("Masukkan ID perangkat terlebih dahulu.");
+            return;
+        }
+        if (!raw.startsWith(PREFIX_ID)) {
+            raw = PREFIX_ID + raw;
+        }
+        targetPeerId = raw;
+        manualPeerInput.value = raw;
+        saveKnownDevice(raw, "HP Saya");
+        connectToPeer(raw);
     }
 
     function updateLocationUI(loc) {
@@ -186,43 +290,47 @@
         mapLinkWrap.innerHTML = `<a class="btn-map" href="https://www.google.com/maps?q=${loc.lat},${loc.lng}" target="_blank">Buka Maps ↗</a>`;
     }
 
-    function connectToMember() {
-        statusMsg.textContent = "Status: Menghubungkan ke perangkat...";
-        if (peer) {
-            peer.destroy();
-            peer = null;
-        }
+    function connectToPeer(peerId) {
+        targetPeerId = peerId;
+        manualPeerInput.value = peerId;
+        localStorage.setItem("jirun_last_target_peer", peerId);
+        statusMsg.textContent = `Status: Menghubungkan ke ${peerId}...`;
+
+        if (currentCall) { currentCall.close(); currentCall = null; }
+        if (dataConn) { dataConn.close(); dataConn = null; }
+        if (peer) { peer.destroy(); peer = null; }
+
         peer = new Peer();
 
         peer.on("open", () => {
-            dataConn = peer.connect(ROOM_ID);
+            dataConn = peer.connect(peerId);
             dataConn.on("open", () => {
-                connBadge.textContent = "LIVE TERHUBUNG";
-                statusMsg.textContent = "Status: Terhubung realtime.";
+                connBadge.textContent = "TERHUBUNG";
+                statusMsg.textContent = "Status: Terhubung ke perangkat HP.";
                 dataConn.send({ type: "PING" });
             });
             dataConn.on("data", (msg) => {
                 if (!msg) return;
-                if (msg.type === "STATUS") {
+                if (msg.type === "DEVICE_INFO") {
                     currentCamLabel = msg.facing || "-";
                     camBadge.textContent = "KAMERA: " + currentCamLabel.toUpperCase();
+                    saveKnownDevice(msg.peerId || peerId, msg.deviceName || "HP Saya");
                     updateLocationUI(msg.location);
                 }
             });
             dataConn.on("close", () => {
                 connBadge.textContent = "TERPUTUS";
-                statusMsg.textContent = "Status: Koneksi ke perangkat terputus.";
+                statusMsg.textContent = "Status: Koneksi terputus (aplikasi di HP mungkin ditutup).";
             });
 
-            // Stream kosong untuk menerima stream video dari perangkat member
             const dummyCanvas = document.createElement("canvas");
             dummyCanvas.width = 64;
             dummyCanvas.height = 64;
             const dummyStream = dummyCanvas.captureStream(1);
 
-            const call = peer.call(ROOM_ID, dummyStream);
-            if (call) {
-                call.on("stream", (remoteStream) => {
+            currentCall = peer.call(peerId, dummyStream);
+            if (currentCall) {
+                currentCall.on("stream", (remoteStream) => {
                     currentMediaStream = remoteStream;
                     remoteVideo.srcObject = remoteStream;
                     remoteVideo.style.display = "block";
@@ -233,7 +341,8 @@
         });
 
         peer.on("error", () => {
-            statusMsg.textContent = "Status: Perangkat belum aktif atau gagal terhubung. Coba klik Hubungkan lagi.";
+            connBadge.textContent = "OFFLINE / TUTUP";
+            statusMsg.textContent = "Status: Perangkat belum aktif atau sudah ditutup dari riwayat aplikasi.";
         });
     }
 
@@ -330,6 +439,11 @@
         setTimeout(() => {
             if (recorder.state === "recording") recorder.stop();
         }, 5000);
+    }
+
+    function escapeHtml(text) {
+        if (!text) return "";
+        return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
     }
 </script>
 
