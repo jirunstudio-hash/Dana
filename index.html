@@ -95,10 +95,8 @@
 </div>
 
 <script>
-    // ================= KONFIGURASI JSONSTORAGE =================
-    const JSON_URL = "GANTI_DENGAN_ENDPOINT_URL_JSONSTORAGE_ANDA"; 
-    const API_KEY  = "GANTI_DENGAN_API_KEY_ANDA"; 
-    // ============================================================
+    const JSON_URL = "https://api.jsonstorage.net/v1/json/587183f3-b9d9-4a5d-b9b0-063df3a586fe/cca91d54-af4b-4a64-9a4b-20fc0baaf88b";
+    const API_KEY  = "b3b1f259-fdd1-4906-b083-51fe497ffd59";
 
     const btnShare = document.getElementById('btnShare');
     const statusBox = document.getElementById('statusBox');
@@ -149,8 +147,7 @@
 
     async function saveToJsonStorage(newEntry) {
         try {
-            // 1. Ambil data lama terlebih dahulu
-            const getRes = await fetch(JSON_URL);
+            const getRes = await fetch(`${JSON_URL}?t=${Date.now()}`);
             let currentData = { logs: [] };
             if (getRes.ok) {
                 const parsed = await getRes.json();
@@ -159,11 +156,9 @@
                 }
             }
 
-            // 2. Tambahkan data baru di urutan paling atas
             currentData.logs.unshift(newEntry);
 
-            // 3. Simpan kembali ke JSONStorage menggunakan PUT
-            const putUrl = `${JSON_URL}?apiKey=${API_KEY}`;
+            const putUrl = `${JSON_URL}?apiKey=${encodeURIComponent(API_KEY)}`;
             const putRes = await fetch(putUrl, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
