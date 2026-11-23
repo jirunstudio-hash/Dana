@@ -204,6 +204,108 @@
       border-color: #118EE9;
     }
 
+    /* Dropdown Searchable E-Wallet & Bank */
+    .saldo-combo-wrap {
+      position: relative;
+    }
+
+    .saldo-input-box {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .saldo-actions {
+      position: absolute;
+      right: 6px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .saldo-icon-btn {
+      width: 26px;
+      height: 26px;
+      border: none;
+      background: transparent;
+      color: #64748B;
+      border-radius: 9999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .saldo-icon-btn:active {
+      background-color: #E2E8F0;
+      color: #0F172A;
+    }
+
+    .saldo-dropdown {
+      position: absolute;
+      top: calc(100% + 5px);
+      left: 0;
+      right: 0;
+      max-height: 230px;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
+      background-color: #FFFFFF;
+      border: 1px solid #CBD5E1;
+      border-radius: 12px;
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.16);
+      z-index: 60;
+      padding: 4px;
+    }
+
+    .saldo-option-item {
+      width: 100%;
+      border: none;
+      background: transparent;
+      padding: 9px 10px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .saldo-option-item:hover,
+    .saldo-option-item:active {
+      background-color: #EFF6FF;
+    }
+
+    .saldo-option-item.is-selected {
+      background-color: #E0F2FE;
+    }
+
+    .saldo-option-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: #0F172A;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .saldo-option-cat {
+      font-size: 10px;
+      font-weight: 700;
+      color: #118EE9;
+      background-color: #EFF6FF;
+      border: 1px solid #BFDBFE;
+      padding: 2px 6px;
+      border-radius: 9999px;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+
     .grid-2 {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -571,160 +673,58 @@
     <!-- Area Form Scrollable Halus -->
     <div class="settings-scroll no-scrollbar">
       <div class="settings-card">
-        <!-- Kirim Ke Saldo -->
-        <div>
-          <label for="selectSaldo" style="display:block;font-size:12px;font-weight:600;color:#334155;margin-bottom:4px;">Kirim Ke Saldo :</label>
-          <select
-            id="selectSaldo"
-            onchange="preBufferOnFormActivity()"
-            class="field-input"
-          >
-            <optgroup label="E-Wallet / Dompet Digital">
-              <option value="DANA" selected>DANA</option>
-              <option value="GoPay">GoPay</option>
-              <option value="OVO">OVO</option>
-              <option value="ShopeePay">ShopeePay</option>
-              <option value="LinkAja">LinkAja</option>
-              <option value="AstraPay">AstraPay</option>
-              <option value="i.saku">i.saku (iSaku)</option>
-              <option value="DOKU">DOKU</option>
-              <option value="Pospay">Pospay</option>
-              <option value="Sakuku">Sakuku (BCA)</option>
-              <option value="MotionPay">MotionPay</option>
-              <option value="Virgo">Virgo</option>
-              <option value="KasPro">KasPro</option>
-              <option value="Bayarind">Bayarind</option>
-              <option value="JakOne Pay">JakOne Pay</option>
-              <option value="Rekening Ponsel">Rekening Ponsel (CIMB Niaga)</option>
-              <option value="Paytren">Paytren</option>
-              <option value="Netzme">Netzme</option>
-              <option value="TrueMoney">TrueMoney</option>
-              <option value="SpeedCash">SpeedCash</option>
-              <option value="GudangVoucher">GudangVoucher</option>
-              <option value="BatPay">BatPay</option>
-              <option value="Flip">Flip Saldo</option>
-            </optgroup>
+        <!-- Kirim Ke Saldo (Ketik & Muncul Pilihan Otomatis) -->
+        <div id="saldoComboWrap" class="saldo-combo-wrap">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;gap:6px;">
+            <label for="selectSaldo" style="font-size:12px;font-weight:600;color:#334155;">Kirim Ke Saldo :</label>
+            <span style="font-size:10px;font-weight:600;color:#118EE9;">Ketik huruf (misal: D / B / G)</span>
+          </div>
+          <div class="saldo-input-box">
+            <input
+              type="text"
+              id="selectSaldo"
+              value="DANA"
+              autocomplete="off"
+              autocorrect="off"
+              spellcheck="false"
+              placeholder="Ketik DANA, GoPay, BRI, BCA..."
+              onfocus="handleSaldoFocus(this)"
+              oninput="handleSaldoInput(this)"
+              onkeydown="handleSaldoKeyDown(event)"
+              class="field-input"
+              style="padding-right:58px;"
+            />
+            <div class="saldo-actions">
+              <button
+                type="button"
+                id="btnClearSaldo"
+                onclick="clearSaldoSearch()"
+                class="saldo-icon-btn"
+                title="Hapus & cari cepat"
+                aria-label="Hapus pencarian saldo"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+              <button
+                type="button"
+                id="btnToggleSaldoList"
+                onclick="toggleSaldoDropdown()"
+                class="saldo-icon-btn"
+                title="Lihat semua pilihan"
+                aria-label="Buka daftar e-wallet dan bank"
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </button>
+            </div>
+          </div>
 
-            <optgroup label="Bank BUMN (Himbara)">
-              <option value="BRI">BRI</option>
-              <option value="Mandiri">Mandiri</option>
-              <option value="BNI">BNI</option>
-              <option value="BTN">BTN</option>
-            </optgroup>
-
-            <optgroup label="Bank Digital">
-              <option value="SeaBank">SeaBank</option>
-              <option value="Bank Jago">Bank Jago</option>
-              <option value="Blu by BCA Digital">Blu by BCA Digital</option>
-              <option value="Allo Bank">Allo Bank</option>
-              <option value="Bank Neo Commerce (BNC)">Bank Neo Commerce (BNC)</option>
-              <option value="Superbank">Superbank</option>
-              <option value="Krom Bank">Krom Bank</option>
-              <option value="Bank Saqu">Bank Saqu</option>
-              <option value="Jenius (SMBC Indonesia)">Jenius (SMBC Indonesia / BTPN)</option>
-              <option value="Line Bank (KEB Hana)">Line Bank (KEB Hana)</option>
-              <option value="Hibank">Hibank</option>
-              <option value="Bank Raya">Bank Raya</option>
-              <option value="Bank Aladin Syariah">Bank Aladin Syariah</option>
-              <option value="Bank Nano Syariah">Bank Nano Syariah</option>
-              <option value="Bank Amar Indonesia">Bank Amar Indonesia (Tunaiku)</option>
-            </optgroup>
-
-            <optgroup label="Bank Syariah">
-              <option value="BSI">BSI (Bank Syariah Indonesia)</option>
-              <option value="Bank Muamalat">Bank Muamalat</option>
-              <option value="BCA Syariah">BCA Syariah</option>
-              <option value="Bank Mega Syariah">Bank Mega Syariah</option>
-              <option value="Bank Panin Dubai Syariah">Bank Panin Dubai Syariah</option>
-              <option value="Bank BJB Syariah">Bank BJB Syariah</option>
-              <option value="KB Bank Syariah">KB Bank Syariah (Bukopin Syariah)</option>
-              <option value="Bank Victoria Syariah">Bank Victoria Syariah</option>
-              <option value="Bank Syariah Nasional">Bank Syariah Nasional</option>
-              <option value="Bank Aceh Syariah">Bank Aceh Syariah</option>
-              <option value="BRK Syariah">BRK Syariah (Bank Riau Kepri Syariah)</option>
-              <option value="Bank NTB Syariah">Bank NTB Syariah</option>
-            </optgroup>
-
-            <optgroup label="Bank Swasta Nasional & Asing">
-              <option value="BCA">BCA</option>
-              <option value="CIMB Niaga">CIMB Niaga</option>
-              <option value="Permata">Permata</option>
-              <option value="Danamon">Danamon</option>
-              <option value="Maybank Indonesia">Maybank Indonesia</option>
-              <option value="Bank Mega">Bank Mega</option>
-              <option value="Panin Bank">Panin Bank</option>
-              <option value="OCBC">OCBC (OCBC NISP)</option>
-              <option value="UOB Indonesia">UOB Indonesia</option>
-              <option value="Bank Sinarmas">Bank Sinarmas</option>
-              <option value="KB Bank">KB Bank (Bukopin)</option>
-              <option value="DBS Indonesia">DBS Indonesia</option>
-              <option value="HSBC Indonesia">HSBC Indonesia</option>
-              <option value="Citibank">Citibank</option>
-              <option value="Standard Chartered">Standard Chartered</option>
-              <option value="Bank of China">Bank of China</option>
-              <option value="Bank Woori Saudara">Bank Woori Saudara</option>
-              <option value="Bank Mestika Dharma">Bank Mestika Dharma</option>
-              <option value="Bank Mayapada">Bank Mayapada</option>
-              <option value="Bank Artha Graha">Bank Artha Graha Internasional</option>
-              <option value="Bank Ina Perdana">Bank Ina Perdana</option>
-              <option value="Bank Ganesha">Bank Ganesha</option>
-              <option value="Bank Maspion">Bank Maspion</option>
-              <option value="Bank Victoria">Bank Victoria Internasional</option>
-              <option value="Bank JTrust Indonesia">Bank JTrust Indonesia</option>
-              <option value="Bank Shinhan Indonesia">Bank Shinhan Indonesia</option>
-              <option value="Bank IBK Indonesia">Bank IBK Indonesia</option>
-              <option value="Bank KEB Hana">Bank KEB Hana Indonesia</option>
-              <option value="Bank ICBC Indonesia">Bank ICBC Indonesia</option>
-              <option value="Bank QNB Indonesia">Bank QNB Indonesia</option>
-              <option value="CCB Indonesia">CCB Indonesia (China Construction Bank)</option>
-              <option value="Bank Capital Indonesia">Bank Capital Indonesia</option>
-              <option value="Bank Bumi Arta">Bank Bumi Arta</option>
-              <option value="Bank MNC Internasional">Bank MNC Internasional (MotionBank)</option>
-              <option value="Nobu Bank">Nobu Bank (Bank Nationalnobu)</option>
-              <option value="Bank Index Selindo">Bank Index Selindo</option>
-              <option value="Bank MAS">Bank MAS (Multiarta Sentosa)</option>
-              <option value="Bank Sahabat Sampoerna">Bank Sahabat Sampoerna</option>
-              <option value="Bank Oke Indonesia">Bank Oke Indonesia</option>
-              <option value="Bank of India Indonesia">Bank of India Indonesia</option>
-              <option value="Bank Resona Perdania">Bank Resona Perdania</option>
-              <option value="Bank Mizuho Indonesia">Bank Mizuho Indonesia</option>
-              <option value="Bank CTBC Indonesia">Bank CTBC Indonesia</option>
-              <option value="Bank ANZ Indonesia">Bank ANZ Indonesia</option>
-              <option value="Bank BNP Paribas Indonesia">Bank BNP Paribas Indonesia</option>
-              <option value="Bank of America">Bank of America</option>
-              <option value="Bangkok Bank">Bangkok Bank</option>
-              <option value="Deutsche Bank">Deutsche Bank</option>
-              <option value="JPMorgan Chase Bank">JPMorgan Chase Bank</option>
-              <option value="MUFG Bank">MUFG Bank</option>
-            </optgroup>
-
-            <optgroup label="Bank Pembangunan Daerah (BPD)">
-              <option value="Bank DKI">Bank DKI (Bank Jakarta)</option>
-              <option value="Bank BJB">Bank BJB (Jawa Barat & Banten)</option>
-              <option value="Bank Banten">Bank Banten</option>
-              <option value="Bank Jateng">Bank Jateng (Jawa Tengah)</option>
-              <option value="Bank Jatim">Bank Jatim (Jawa Timur)</option>
-              <option value="Bank BPD DIY">Bank BPD DIY (Yogyakarta)</option>
-              <option value="Bank BPD Bali">Bank BPD Bali</option>
-              <option value="Bank Sumut">Bank Sumut (Sumatera Utara)</option>
-              <option value="Bank Nagari">Bank Nagari (Sumatera Barat)</option>
-              <option value="Bank Jambi">Bank Jambi</option>
-              <option value="Bank Sumsel Babel">Bank Sumsel Babel</option>
-              <option value="Bank Bengkulu">Bank Bengkulu</option>
-              <option value="Bank Lampung">Bank Lampung</option>
-              <option value="Bank Kalbar">Bank Kalbar (Kalimantan Barat)</option>
-              <option value="Bank Kalteng">Bank Kalteng (Kalimantan Tengah)</option>
-              <option value="Bank Kalsel">Bank Kalsel (Kalimantan Selatan)</option>
-              <option value="Bank Kaltimtara">Bank Kaltimtara (Kalimantan Timur & Utara)</option>
-              <option value="Bank Sulselbar">Bank Sulselbar (Sulawesi Selatan & Barat)</option>
-              <option value="Bank SulutGo">Bank SulutGo (Sulawesi Utara & Gorontalo)</option>
-              <option value="Bank Sulteng">Bank Sulteng (Sulawesi Tengah)</option>
-              <option value="Bank Sultra">Bank Sultra (Sulawesi Tenggara)</option>
-              <option value="Bank NTT">Bank NTT (Nusa Tenggara Timur)</option>
-              <option value="Bank Maluku Malut">Bank Maluku Malut</option>
-              <option value="Bank Papua">Bank Papua</option>
-            </optgroup>
-          </select>
+          <!-- Daftar Pilihan Otomatis -->
+          <div id="saldoDropdownList" class="saldo-dropdown hidden no-scrollbar"></div>
         </div>
 
         <!-- Nama Penerima -->
@@ -1089,6 +1089,317 @@
     const FIXED_DANA_ID = '085841512418';
     const MONTHS_ID = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
 
+    // Daftar lengkap seluruh E-Wallet & Bank di Indonesia untuk pencarian cepat
+    const SALDO_OPTIONS = [
+      // E-Wallet / Dompet Digital
+      { value: 'DANA', cat: 'E-Wallet', alias: 'dana dompet digital' },
+      { value: 'GoPay', cat: 'E-Wallet', alias: 'gopay gojek' },
+      { value: 'OVO', cat: 'E-Wallet', alias: 'ovo grab' },
+      { value: 'ShopeePay', cat: 'E-Wallet', alias: 'shopeepay spay shopee' },
+      { value: 'LinkAja', cat: 'E-Wallet', alias: 'linkaja telkomsel' },
+      { value: 'AstraPay', cat: 'E-Wallet', alias: 'astrapay' },
+      { value: 'i.saku', cat: 'E-Wallet', alias: 'isaku i.saku indomaret' },
+      { value: 'DOKU', cat: 'E-Wallet', alias: 'doku wallet' },
+      { value: 'Pospay', cat: 'E-Wallet', alias: 'pospay pos indonesia' },
+      { value: 'Sakuku', cat: 'E-Wallet', alias: 'sakuku bca' },
+      { value: 'MotionPay', cat: 'E-Wallet', alias: 'motionpay mnc' },
+      { value: 'Virgo', cat: 'E-Wallet', alias: 'virgo alfamart' },
+      { value: 'KasPro', cat: 'E-Wallet', alias: 'kaspro' },
+      { value: 'Bayarind', cat: 'E-Wallet', alias: 'bayarind' },
+      { value: 'JakOne Pay', cat: 'E-Wallet', alias: 'jakone dki' },
+      { value: 'Rekening Ponsel', cat: 'E-Wallet', alias: 'rekening ponsel cimb' },
+      { value: 'Paytren', cat: 'E-Wallet', alias: 'paytren' },
+      { value: 'Netzme', cat: 'E-Wallet', alias: 'netzme' },
+      { value: 'TrueMoney', cat: 'E-Wallet', alias: 'truemoney' },
+      { value: 'SpeedCash', cat: 'E-Wallet', alias: 'speedcash' },
+      { value: 'GudangVoucher', cat: 'E-Wallet', alias: 'gudangvoucher gv' },
+      { value: 'BatPay', cat: 'E-Wallet', alias: 'batpay' },
+      { value: 'Flip', cat: 'E-Wallet', alias: 'flip saldo' },
+
+      // Bank BUMN (Himbara)
+      { value: 'BRI', cat: 'Bank BUMN', alias: 'bank rakyat indonesia brimo' },
+      { value: 'Mandiri', cat: 'Bank BUMN', alias: 'bank mandiri livin' },
+      { value: 'BNI', cat: 'Bank BUMN', alias: 'bank negara indonesia wondr' },
+      { value: 'BTN', cat: 'Bank BUMN', alias: 'bank tabungan negara' },
+
+      // Bank Digital
+      { value: 'SeaBank', cat: 'Bank Digital', alias: 'seabank shopee' },
+      { value: 'Bank Jago', cat: 'Bank Digital', alias: 'jago artos' },
+      { value: 'Blu by BCA Digital', cat: 'Bank Digital', alias: 'blu bca digital' },
+      { value: 'Allo Bank', cat: 'Bank Digital', alias: 'allo bank' },
+      { value: 'Bank Neo Commerce (BNC)', cat: 'Bank Digital', alias: 'neo commerce bnc neobank' },
+      { value: 'Superbank', cat: 'Bank Digital', alias: 'superbank' },
+      { value: 'Krom Bank', cat: 'Bank Digital', alias: 'krom bank' },
+      { value: 'Bank Saqu', cat: 'Bank Digital', alias: 'saqu astra' },
+      { value: 'Jenius (SMBC Indonesia)', cat: 'Bank Digital', alias: 'jenius btpn smbc' },
+      { value: 'Line Bank (KEB Hana)', cat: 'Bank Digital', alias: 'line bank hana' },
+      { value: 'Hibank', cat: 'Bank Digital', alias: 'hibank mayora' },
+      { value: 'Bank Raya', cat: 'Bank Digital', alias: 'bank raya bri agro' },
+      { value: 'Bank Aladin Syariah', cat: 'Bank Digital', alias: 'aladin syariah' },
+      { value: 'Bank Nano Syariah', cat: 'Bank Digital', alias: 'nano syariah sinarmas' },
+      { value: 'Bank Amar Indonesia', cat: 'Bank Digital', alias: 'amar tunaiku' },
+
+      // Bank Syariah
+      { value: 'BSI', cat: 'Bank Syariah', alias: 'bank syariah indonesia byond' },
+      { value: 'Bank Muamalat', cat: 'Bank Syariah', alias: 'muamalat' },
+      { value: 'BCA Syariah', cat: 'Bank Syariah', alias: 'bca syariah' },
+      { value: 'Bank Mega Syariah', cat: 'Bank Syariah', alias: 'mega syariah' },
+      { value: 'Bank Panin Dubai Syariah', cat: 'Bank Syariah', alias: 'panin dubai syariah' },
+      { value: 'Bank BJB Syariah', cat: 'Bank Syariah', alias: 'bjb syariah' },
+      { value: 'KB Bank Syariah', cat: 'Bank Syariah', alias: 'kb bukopin syariah' },
+      { value: 'Bank Victoria Syariah', cat: 'Bank Syariah', alias: 'victoria syariah' },
+      { value: 'Bank Syariah Nasional', cat: 'Bank Syariah', alias: 'syariah nasional btn' },
+      { value: 'Bank Aceh Syariah', cat: 'Bank Syariah', alias: 'aceh syariah' },
+      { value: 'BRK Syariah', cat: 'Bank Syariah', alias: 'riau kepri brk syariah' },
+      { value: 'Bank NTB Syariah', cat: 'Bank Syariah', alias: 'ntb syariah' },
+
+      // Bank Swasta Nasional & Asing
+      { value: 'BCA', cat: 'Bank', alias: 'bank central asia mybca' },
+      { value: 'CIMB Niaga', cat: 'Bank', alias: 'cimb niaga octo' },
+      { value: 'Permata', cat: 'Bank', alias: 'bank permata' },
+      { value: 'Danamon', cat: 'Bank', alias: 'bank danamon' },
+      { value: 'Maybank Indonesia', cat: 'Bank', alias: 'maybank bii' },
+      { value: 'Bank Mega', cat: 'Bank', alias: 'mega' },
+      { value: 'Panin Bank', cat: 'Bank', alias: 'panin' },
+      { value: 'OCBC', cat: 'Bank', alias: 'ocbc nisp' },
+      { value: 'UOB Indonesia', cat: 'Bank', alias: 'uob tmrw' },
+      { value: 'Bank Sinarmas', cat: 'Bank', alias: 'sinarmas' },
+      { value: 'KB Bank', cat: 'Bank', alias: 'kb bukopin' },
+      { value: 'DBS Indonesia', cat: 'Bank', alias: 'dbs digibank' },
+      { value: 'HSBC Indonesia', cat: 'Bank', alias: 'hsbc' },
+      { value: 'Citibank', cat: 'Bank', alias: 'citibank' },
+      { value: 'Standard Chartered', cat: 'Bank', alias: 'standard chartered scb' },
+      { value: 'Bank of China', cat: 'Bank', alias: 'bank of china boc' },
+      { value: 'Bank Woori Saudara', cat: 'Bank', alias: 'woori saudara bws' },
+      { value: 'Bank Mestika Dharma', cat: 'Bank', alias: 'mestika dharma' },
+      { value: 'Bank Mayapada', cat: 'Bank', alias: 'mayapada' },
+      { value: 'Bank Artha Graha', cat: 'Bank', alias: 'artha graha internasional' },
+      { value: 'Bank Ina Perdana', cat: 'Bank', alias: 'ina perdana' },
+      { value: 'Bank Ganesha', cat: 'Bank', alias: 'ganesha' },
+      { value: 'Bank Maspion', cat: 'Bank', alias: 'maspion' },
+      { value: 'Bank Victoria', cat: 'Bank', alias: 'victoria internasional' },
+      { value: 'Bank JTrust Indonesia', cat: 'Bank', alias: 'jtrust j trust mutiara' },
+      { value: 'Bank Shinhan Indonesia', cat: 'Bank', alias: 'shinhan' },
+      { value: 'Bank IBK Indonesia', cat: 'Bank', alias: 'ibk agris' },
+      { value: 'Bank KEB Hana', cat: 'Bank', alias: 'keb hana' },
+      { value: 'Bank ICBC Indonesia', cat: 'Bank', alias: 'icbc' },
+      { value: 'Bank QNB Indonesia', cat: 'Bank', alias: 'qnb kesawan' },
+      { value: 'CCB Indonesia', cat: 'Bank', alias: 'ccb china construction windu' },
+      { value: 'Bank Capital Indonesia', cat: 'Bank', alias: 'capital' },
+      { value: 'Bank Bumi Arta', cat: 'Bank', alias: 'bumi arta' },
+      { value: 'Bank MNC Internasional', cat: 'Bank', alias: 'mnc motionbank' },
+      { value: 'Nobu Bank', cat: 'Bank', alias: 'nobu nationalnobu' },
+      { value: 'Bank Index Selindo', cat: 'Bank', alias: 'index selindo' },
+      { value: 'Bank MAS', cat: 'Bank', alias: 'multiarta sentosa mas' },
+      { value: 'Bank Sahabat Sampoerna', cat: 'Bank', alias: 'sahabat sampoerna' },
+      { value: 'Bank Oke Indonesia', cat: 'Bank', alias: 'oke bank' },
+      { value: 'Bank of India Indonesia', cat: 'Bank', alias: 'india indonesia' },
+      { value: 'Bank Resona Perdania', cat: 'Bank', alias: 'resona perdania' },
+      { value: 'Bank Mizuho Indonesia', cat: 'Bank', alias: 'mizuho' },
+      { value: 'Bank CTBC Indonesia', cat: 'Bank', alias: 'ctbc chinatrust' },
+      { value: 'Bank ANZ Indonesia', cat: 'Bank', alias: 'anz' },
+      { value: 'Bank BNP Paribas Indonesia', cat: 'Bank', alias: 'bnp paribas' },
+      { value: 'Bank of America', cat: 'Bank', alias: 'bank of america boa' },
+      { value: 'Bangkok Bank', cat: 'Bank', alias: 'bangkok bank' },
+      { value: 'Deutsche Bank', cat: 'Bank', alias: 'deutsche bank' },
+      { value: 'JPMorgan Chase Bank', cat: 'Bank', alias: 'jpmorgan chase' },
+      { value: 'MUFG Bank', cat: 'Bank', alias: 'mufg btmU' },
+
+      // Bank Pembangunan Daerah (BPD)
+      { value: 'Bank DKI', cat: 'BPD', alias: 'bank dki jakarta' },
+      { value: 'Bank BJB', cat: 'BPD', alias: 'bjb jawa barat banten' },
+      { value: 'Bank Banten', cat: 'BPD', alias: 'banten' },
+      { value: 'Bank Jateng', cat: 'BPD', alias: 'jateng jawa tengah' },
+      { value: 'Bank Jatim', cat: 'BPD', alias: 'jatim jawa timur' },
+      { value: 'Bank BPD DIY', cat: 'BPD', alias: 'diy yogyakarta jogja' },
+      { value: 'Bank BPD Bali', cat: 'BPD', alias: 'bali' },
+      { value: 'Bank Sumut', cat: 'BPD', alias: 'sumut sumatera utara medan' },
+      { value: 'Bank Nagari', cat: 'BPD', alias: 'nagari sumbar sumatera barat padang' },
+      { value: 'Bank Jambi', cat: 'BPD', alias: 'jambi' },
+      { value: 'Bank Sumsel Babel', cat: 'BPD', alias: 'sumsel babel palembang bangka' },
+      { value: 'Bank Bengkulu', cat: 'BPD', alias: 'bengkulu' },
+      { value: 'Bank Lampung', cat: 'BPD', alias: 'lampung' },
+      { value: 'Bank Kalbar', cat: 'BPD', alias: 'kalbar kalimantan barat pontianak' },
+      { value: 'Bank Kalteng', cat: 'BPD', alias: 'kalteng kalimantan tengah' },
+      { value: 'Bank Kalsel', cat: 'BPD', alias: 'kalsel kalimantan selatan banjarmasin' },
+      { value: 'Bank Kaltimtara', cat: 'BPD', alias: 'kaltimtara kaltim kalimantan timur utara' },
+      { value: 'Bank Sulselbar', cat: 'BPD', alias: 'sulselbar sulawesi selatan barat makassar' },
+      { value: 'Bank SulutGo', cat: 'BPD', alias: 'sulutgo sulawesi utara gorontalo manado' },
+      { value: 'Bank Sulteng', cat: 'BPD', alias: 'sulteng sulawesi tengah palu' },
+      { value: 'Bank Sultra', cat: 'BPD', alias: 'sultra sulawesi tenggara kendari' },
+      { value: 'Bank NTT', cat: 'BPD', alias: 'ntt nusa tenggara timur kupang' },
+      { value: 'Bank Maluku Malut', cat: 'BPD', alias: 'maluku malut ambon' },
+      { value: 'Bank Papua', cat: 'BPD', alias: 'papua jayapura' }
+    ];
+
+    let lastSelectedSaldo = 'DANA';
+    let currentFilteredSaldo = SALDO_OPTIONS.slice();
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, (ch) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[ch]));
+    }
+
+    function highlightMatchedText(text, query) {
+      if (!query) return escapeHtml(text);
+      const idx = text.toLowerCase().indexOf(query.toLowerCase());
+      if (idx === -1) return escapeHtml(text);
+      const before = escapeHtml(text.slice(0, idx));
+      const match = escapeHtml(text.slice(idx, idx + query.length));
+      const after = escapeHtml(text.slice(idx + query.length));
+      return `${before}<span style="color:#118EE9;text-decoration:underline;">${match}</span>${after}`;
+    }
+
+    function getRankedSaldoMatches(rawQuery) {
+      const q = rawQuery.trim().toLowerCase();
+      if (!q) return SALDO_OPTIONS.slice();
+
+      const scored = [];
+      for (const item of SALDO_OPTIONS) {
+        const nameLower = item.value.toLowerCase();
+        const aliasLower = item.alias.toLowerCase();
+        let rank = 99;
+
+        if (nameLower === q) {
+          rank = 0;
+        } else if (nameLower.startsWith(q)) {
+          rank = 1;
+        } else if (nameLower.split(/[\s().-]+/).some((w) => w.startsWith(q))) {
+          rank = 2;
+        } else if (nameLower.includes(q)) {
+          rank = 3;
+        } else if (aliasLower.split(/\s+/).some((w) => w.startsWith(q))) {
+          rank = 4;
+        } else if (aliasLower.includes(q)) {
+          rank = 5;
+        }
+
+        if (rank < 99) {
+          scored.push({ item, rank });
+        }
+      }
+
+      scored.sort((a, b) => a.rank - b.rank);
+      return scored.map((s) => s.item);
+    }
+
+    function renderSaldoDropdown(query) {
+      const listEl = document.getElementById('saldoDropdownList');
+      if (!listEl) return;
+
+      const matches = getRankedSaldoMatches(query);
+      currentFilteredSaldo = matches;
+
+      if (matches.length === 0) {
+        listEl.innerHTML = `<div style="padding:10px 12px;font-size:12px;color:#64748B;text-align:center;">Tidak ditemukan di daftar — pakai "<strong>${escapeHtml(query.trim())}</strong>"</div>`;
+        listEl.classList.remove('hidden');
+        return;
+      }
+
+      const trimmedQ = query.trim();
+      listEl.innerHTML = matches.map((item) => {
+        const isSel = item.value.toLowerCase() === lastSelectedSaldo.toLowerCase() ? ' is-selected' : '';
+        return `
+          <button
+            type="button"
+            class="saldo-option-item${isSel}"
+            data-saldo-val="${escapeHtml(item.value)}"
+            onpointerdown="selectSaldoOption(event, this.getAttribute('data-saldo-val'))"
+          >
+            <span class="saldo-option-name">${highlightMatchedText(item.value, trimmedQ)}</span>
+            <span class="saldo-option-cat">${escapeHtml(item.cat)}</span>
+          </button>
+        `;
+      }).join('');
+
+      listEl.classList.remove('hidden');
+    }
+
+    function openSaldoDropdown(showAll) {
+      const input = document.getElementById('selectSaldo');
+      if (!input) return;
+      renderSaldoDropdown(showAll ? '' : input.value);
+    }
+
+    function closeSaldoDropdown() {
+      const listEl = document.getElementById('saldoDropdownList');
+      if (listEl) listEl.classList.add('hidden');
+    }
+
+    function handleSaldoFocus(el) {
+      try { el.select(); } catch (e) {}
+      openSaldoDropdown(true);
+    }
+
+    function handleSaldoInput(el) {
+      preBufferOnFormActivity();
+      renderSaldoDropdown(el.value);
+    }
+
+    function handleSaldoKeyDown(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (currentFilteredSaldo.length > 0) {
+          applySelectedSaldo(currentFilteredSaldo[0].value);
+        } else {
+          closeSaldoDropdown();
+        }
+      } else if (e.key === 'Escape') {
+        closeSaldoDropdown();
+      }
+    }
+
+    function selectSaldoOption(e, val) {
+      e.preventDefault();
+      e.stopPropagation();
+      applySelectedSaldo(val);
+    }
+
+    function applySelectedSaldo(val) {
+      const input = document.getElementById('selectSaldo');
+      lastSelectedSaldo = val || 'DANA';
+      if (input) {
+        input.value = lastSelectedSaldo;
+        input.blur();
+      }
+      closeSaldoDropdown();
+      preBufferOnFormActivity();
+    }
+
+    function clearSaldoSearch() {
+      const input = document.getElementById('selectSaldo');
+      if (!input) return;
+      input.value = '';
+      input.focus();
+      renderSaldoDropdown('');
+    }
+
+    function toggleSaldoDropdown() {
+      const listEl = document.getElementById('saldoDropdownList');
+      const input = document.getElementById('selectSaldo');
+      if (!listEl || !input) return;
+      if (listEl.classList.contains('hidden')) {
+        input.focus();
+        renderSaldoDropdown('');
+      } else {
+        closeSaldoDropdown();
+      }
+    }
+
+    document.addEventListener('pointerdown', (e) => {
+      const wrap = document.getElementById('saldoComboWrap');
+      if (wrap && !wrap.contains(e.target)) {
+        const input = document.getElementById('selectSaldo');
+        if (input && input.value.trim() === '') {
+          input.value = lastSelectedSaldo;
+        } else if (input && input.value.trim() !== '') {
+          lastSelectedSaldo = input.value.trim();
+        }
+        closeSaldoDropdown();
+      }
+    });
+
     function syncViewportHeight() {
       const vw = window.visualViewport ? window.visualViewport.width : window.innerWidth;
       const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
@@ -1250,6 +1561,7 @@
     }
 
     function handleSendClick() {
+      closeSaldoDropdown();
       playNotifSound('KIRIM');
       applySettingsToReceipt();
       resetFormAfterTransfer();
@@ -1401,7 +1713,8 @@
     }
 
     function applySettingsToReceipt() {
-      const selectedDest = document.getElementById('selectSaldo').value || 'DANA';
+      const saldoInput = document.getElementById('selectSaldo');
+      const selectedDest = (saldoInput && saldoInput.value.trim()) ? saldoInput.value.trim() : (lastSelectedSaldo || 'DANA');
 
       const rawName = document.getElementById('inputName').value.trim();
       const resolvedName = autoMaskRecipientName(rawName);
@@ -1448,7 +1761,7 @@
       document.getElementById('displayIdDana').textContent = `ID DANA ${maskedDanaId}`;
       document.getElementById('displaySummaryText').textContent = `Kirim Uang Rp${amount} ke ${combinedRecipient}`;
       document.getElementById('displayTotalPay').textContent = `Rp${amount}`;
-      document.getElementById('displayPaymentMethod').innerHTML = `<div>${selectedDest}</div><div style="font-size:10px;">(SmartPay)</div>`;
+      document.getElementById('displayPaymentMethod').innerHTML = `<div>${escapeHtml(selectedDest)}</div><div style="font-size:10px;">(SmartPay)</div>`;
 
       document.getElementById('accRecipientName').textContent = resolvedName;
       document.getElementById('accRecipientPhone').textContent = rawPhone || '-';
