@@ -230,7 +230,7 @@
       min-height: 0;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
-      padding: max(28px, env(safe-area-inset-top)) 16px 18px 16px;
+      padding: max(24px, env(safe-area-inset-top)) 16px 16px 16px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -238,19 +238,19 @@
     }
 
     .coin-badge {
-      width: 94px;
-      height: 94px;
+      width: clamp(118px, 32vw, 138px);
+      height: clamp(118px, 32vw, 138px);
       border-radius: 9999px;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      box-shadow: 0 5px 16px rgba(7, 46, 88, 0.2);
+      box-shadow: 0 6px 20px rgba(7, 46, 88, 0.24);
     }
 
     .coin-badge svg {
-      width: 94px;
-      height: 94px;
+      width: 100%;
+      height: 100%;
       display: block;
     }
 
@@ -259,12 +259,12 @@
       align-items: center;
       justify-content: center;
       gap: 6px;
-      padding: 6px 16px;
+      padding: 7px 18px;
       border-radius: 9999px;
       border: 1.3px solid rgba(255, 255, 255, 0.9);
       background-color: transparent;
       color: #FFFFFF;
-      font-size: 11px;
+      font-size: 11.5px;
       font-weight: 600;
       letter-spacing: 0.05em;
       cursor: pointer;
@@ -501,46 +501,165 @@
             onchange="preBufferOnFormActivity()"
             class="field-input"
           >
-            <optgroup label="E-Wallet">
+            <optgroup label="E-Wallet / Dompet Digital">
               <option value="DANA" selected>DANA</option>
               <option value="GoPay">GoPay</option>
               <option value="OVO">OVO</option>
               <option value="ShopeePay">ShopeePay</option>
               <option value="LinkAja">LinkAja</option>
-              <option value="iSaku">iSaku</option>
+              <option value="AstraPay">AstraPay</option>
+              <option value="i.saku">i.saku (iSaku)</option>
               <option value="DOKU">DOKU</option>
+              <option value="Pospay">Pospay</option>
+              <option value="Sakuku">Sakuku (BCA)</option>
+              <option value="MotionPay">MotionPay</option>
+              <option value="Virgo">Virgo</option>
+              <option value="KasPro">KasPro</option>
+              <option value="Bayarind">Bayarind</option>
+              <option value="JakOne Pay">JakOne Pay</option>
+              <option value="Rekening Ponsel">Rekening Ponsel (CIMB Niaga)</option>
+              <option value="Paytren">Paytren</option>
+              <option value="Netzme">Netzme</option>
+              <option value="TrueMoney">TrueMoney</option>
+              <option value="SpeedCash">SpeedCash</option>
+              <option value="GudangVoucher">GudangVoucher</option>
+              <option value="BatPay">BatPay</option>
+              <option value="Flip">Flip Saldo</option>
             </optgroup>
-            <optgroup label="Bank & Digital Bank">
-              <option value="BCA">BCA</option>
+
+            <optgroup label="Bank BUMN (Himbara)">
               <option value="BRI">BRI</option>
-              <option value="BNI">BNI</option>
               <option value="Mandiri">Mandiri</option>
+              <option value="BNI">BNI</option>
+              <option value="BTN">BTN</option>
+            </optgroup>
+
+            <optgroup label="Bank Digital">
               <option value="SeaBank">SeaBank</option>
               <option value="Bank Jago">Bank Jago</option>
               <option value="Blu by BCA Digital">Blu by BCA Digital</option>
               <option value="Allo Bank">Allo Bank</option>
-              <option value="Neo Commerce / BNC">Neo Commerce / BNC</option>
+              <option value="Bank Neo Commerce (BNC)">Bank Neo Commerce (BNC)</option>
+              <option value="Superbank">Superbank</option>
+              <option value="Krom Bank">Krom Bank</option>
+              <option value="Bank Saqu">Bank Saqu</option>
+              <option value="Jenius (SMBC Indonesia)">Jenius (SMBC Indonesia / BTPN)</option>
+              <option value="Line Bank (KEB Hana)">Line Bank (KEB Hana)</option>
+              <option value="Hibank">Hibank</option>
+              <option value="Bank Raya">Bank Raya</option>
+              <option value="Bank Aladin Syariah">Bank Aladin Syariah</option>
+              <option value="Bank Nano Syariah">Bank Nano Syariah</option>
+              <option value="Bank Amar Indonesia">Bank Amar Indonesia (Tunaiku)</option>
+            </optgroup>
+
+            <optgroup label="Bank Syariah">
+              <option value="BSI">BSI (Bank Syariah Indonesia)</option>
+              <option value="Bank Muamalat">Bank Muamalat</option>
+              <option value="BCA Syariah">BCA Syariah</option>
+              <option value="Bank Mega Syariah">Bank Mega Syariah</option>
+              <option value="Bank Panin Dubai Syariah">Bank Panin Dubai Syariah</option>
+              <option value="Bank BJB Syariah">Bank BJB Syariah</option>
+              <option value="KB Bank Syariah">KB Bank Syariah (Bukopin Syariah)</option>
+              <option value="Bank Victoria Syariah">Bank Victoria Syariah</option>
+              <option value="Bank Syariah Nasional">Bank Syariah Nasional</option>
+              <option value="Bank Aceh Syariah">Bank Aceh Syariah</option>
+              <option value="BRK Syariah">BRK Syariah (Bank Riau Kepri Syariah)</option>
+              <option value="Bank NTB Syariah">Bank NTB Syariah</option>
+            </optgroup>
+
+            <optgroup label="Bank Swasta Nasional & Asing">
+              <option value="BCA">BCA</option>
               <option value="CIMB Niaga">CIMB Niaga</option>
               <option value="Permata">Permata</option>
-              <option value="BSI">BSI</option>
-              <option value="BTN">BTN</option>
-              <option value="OCBC">OCBC</option>
               <option value="Danamon">Danamon</option>
+              <option value="Maybank Indonesia">Maybank Indonesia</option>
+              <option value="Bank Mega">Bank Mega</option>
+              <option value="Panin Bank">Panin Bank</option>
+              <option value="OCBC">OCBC (OCBC NISP)</option>
+              <option value="UOB Indonesia">UOB Indonesia</option>
+              <option value="Bank Sinarmas">Bank Sinarmas</option>
+              <option value="KB Bank">KB Bank (Bukopin)</option>
+              <option value="DBS Indonesia">DBS Indonesia</option>
+              <option value="HSBC Indonesia">HSBC Indonesia</option>
+              <option value="Citibank">Citibank</option>
+              <option value="Standard Chartered">Standard Chartered</option>
+              <option value="Bank of China">Bank of China</option>
+              <option value="Bank Woori Saudara">Bank Woori Saudara</option>
+              <option value="Bank Mestika Dharma">Bank Mestika Dharma</option>
+              <option value="Bank Mayapada">Bank Mayapada</option>
+              <option value="Bank Artha Graha">Bank Artha Graha Internasional</option>
+              <option value="Bank Ina Perdana">Bank Ina Perdana</option>
+              <option value="Bank Ganesha">Bank Ganesha</option>
+              <option value="Bank Maspion">Bank Maspion</option>
+              <option value="Bank Victoria">Bank Victoria Internasional</option>
+              <option value="Bank JTrust Indonesia">Bank JTrust Indonesia</option>
+              <option value="Bank Shinhan Indonesia">Bank Shinhan Indonesia</option>
+              <option value="Bank IBK Indonesia">Bank IBK Indonesia</option>
+              <option value="Bank KEB Hana">Bank KEB Hana Indonesia</option>
+              <option value="Bank ICBC Indonesia">Bank ICBC Indonesia</option>
+              <option value="Bank QNB Indonesia">Bank QNB Indonesia</option>
+              <option value="CCB Indonesia">CCB Indonesia (China Construction Bank)</option>
+              <option value="Bank Capital Indonesia">Bank Capital Indonesia</option>
+              <option value="Bank Bumi Arta">Bank Bumi Arta</option>
+              <option value="Bank MNC Internasional">Bank MNC Internasional (MotionBank)</option>
+              <option value="Nobu Bank">Nobu Bank (Bank Nationalnobu)</option>
+              <option value="Bank Index Selindo">Bank Index Selindo</option>
+              <option value="Bank MAS">Bank MAS (Multiarta Sentosa)</option>
+              <option value="Bank Sahabat Sampoerna">Bank Sahabat Sampoerna</option>
+              <option value="Bank Oke Indonesia">Bank Oke Indonesia</option>
+              <option value="Bank of India Indonesia">Bank of India Indonesia</option>
+              <option value="Bank Resona Perdania">Bank Resona Perdania</option>
+              <option value="Bank Mizuho Indonesia">Bank Mizuho Indonesia</option>
+              <option value="Bank CTBC Indonesia">Bank CTBC Indonesia</option>
+              <option value="Bank ANZ Indonesia">Bank ANZ Indonesia</option>
+              <option value="Bank BNP Paribas Indonesia">Bank BNP Paribas Indonesia</option>
+              <option value="Bank of America">Bank of America</option>
+              <option value="Bangkok Bank">Bangkok Bank</option>
+              <option value="Deutsche Bank">Deutsche Bank</option>
+              <option value="JPMorgan Chase Bank">JPMorgan Chase Bank</option>
+              <option value="MUFG Bank">MUFG Bank</option>
+            </optgroup>
+
+            <optgroup label="Bank Pembangunan Daerah (BPD)">
+              <option value="Bank DKI">Bank DKI (Bank Jakarta)</option>
+              <option value="Bank BJB">Bank BJB (Jawa Barat & Banten)</option>
+              <option value="Bank Banten">Bank Banten</option>
+              <option value="Bank Jateng">Bank Jateng (Jawa Tengah)</option>
+              <option value="Bank Jatim">Bank Jatim (Jawa Timur)</option>
+              <option value="Bank BPD DIY">Bank BPD DIY (Yogyakarta)</option>
+              <option value="Bank BPD Bali">Bank BPD Bali</option>
+              <option value="Bank Sumut">Bank Sumut (Sumatera Utara)</option>
+              <option value="Bank Nagari">Bank Nagari (Sumatera Barat)</option>
+              <option value="Bank Jambi">Bank Jambi</option>
+              <option value="Bank Sumsel Babel">Bank Sumsel Babel</option>
+              <option value="Bank Bengkulu">Bank Bengkulu</option>
+              <option value="Bank Lampung">Bank Lampung</option>
+              <option value="Bank Kalbar">Bank Kalbar (Kalimantan Barat)</option>
+              <option value="Bank Kalteng">Bank Kalteng (Kalimantan Tengah)</option>
+              <option value="Bank Kalsel">Bank Kalsel (Kalimantan Selatan)</option>
+              <option value="Bank Kaltimtara">Bank Kaltimtara (Kalimantan Timur & Utara)</option>
+              <option value="Bank Sulselbar">Bank Sulselbar (Sulawesi Selatan & Barat)</option>
+              <option value="Bank SulutGo">Bank SulutGo (Sulawesi Utara & Gorontalo)</option>
+              <option value="Bank Sulteng">Bank Sulteng (Sulawesi Tengah)</option>
+              <option value="Bank Sultra">Bank Sultra (Sulawesi Tenggara)</option>
+              <option value="Bank NTT">Bank NTT (Nusa Tenggara Timur)</option>
+              <option value="Bank Maluku Malut">Bank Maluku Malut</option>
+              <option value="Bank Papua">Bank Papua</option>
             </optgroup>
           </select>
         </div>
 
         <!-- Nama Penerima -->
         <div>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;gap:6px;">
             <label for="inputName" style="font-size:12px;font-weight:600;color:#334155;">Nama Penerima</label>
-            <span style="font-size:10.5px;font-weight:600;color:#118EE9;">Auto Sensor 2 Huruf Belakang (XX)</span>
+            <span style="font-size:10px;font-weight:600;color:#118EE9;text-align:right;">Auto Sensor (WAHYU M****NA)</span>
           </div>
           <input
             type="text"
             id="inputName"
             value=""
-            placeholder="Contoh : WAHYU KONTOL"
+            placeholder="Contoh : WAHYU MAULANA"
             oninput="preBufferOnFormActivity()"
             class="field-input"
           />
@@ -642,6 +761,7 @@
   <!-- LAYAR 2: RINGKASAN LAYAR PENUH BIRU (KOIN EMAS CENTANG) -->
   <section id="screenReceipt" class="device-frame full-blue-screen hidden">
     <main class="full-blue-scroll no-scrollbar">
+      <!-- Baris 1: Icon Coins Ceklis Besar -->
       <div class="coin-badge" style="margin-bottom:20px;">
         <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Koin Centang Berhasil">
           <circle cx="50" cy="50" r="47" fill="#FFCE18"/>
@@ -650,15 +770,23 @@
         </svg>
       </div>
 
-      <div id="displayDestinationText" style="font-size:15.5px;font-weight:700;color:#FFFFFF;letter-spacing:0.01em;margin-bottom:6px;text-align:center;word-break:break-word;line-height:1.25;">
+      <!-- Baris 2: Teks Kirim Ke Saldo Besar -->
+      <div id="displayDestinationText" style="font-size:clamp(19px, 5.2vw, 23px);font-weight:700;color:#FFFFFF;letter-spacing:0.01em;margin-bottom:6px;text-align:center;word-break:break-word;line-height:1.25;">
         Kirim Ke Saldo DANA
       </div>
 
-      <div id="displayRecipientHeading" style="font-size:21px;font-weight:700;color:#FFFFFF;letter-spacing:0.015em;margin-bottom:8px;text-align:center;word-break:break-word;line-height:1.25;">
+      <!-- Baris 3: Nama Target Besar -->
+      <div id="displayRecipientHeading" style="font-size:clamp(23px, 6.4vw, 28px);font-weight:700;color:#FFFFFF;letter-spacing:0.015em;margin-bottom:4px;text-align:center;word-break:break-word;line-height:1.2;">
         -
       </div>
 
-      <div id="displayBigAmount" class="tabular-nums" style="font-size:clamp(44px, 12vw, 54px);font-weight:700;color:#FFFFFF;line-height:1.1;letter-spacing:-0.015em;margin-bottom:18px;text-align:center;">
+      <!-- Baris 4: Nomor HP Besar -->
+      <div id="displayRecipientPhone" class="tabular-nums hidden" style="font-size:clamp(20px, 5.6vw, 24px);font-weight:700;color:#FFFFFF;letter-spacing:0.02em;margin-bottom:10px;text-align:center;word-break:break-word;line-height:1.25;">
+        -
+      </div>
+
+      <!-- Baris 5: Rp dan Angka Besar -->
+      <div id="displayBigAmount" class="tabular-nums" style="font-size:clamp(46px, 13vw, 60px);font-weight:800;color:#FFFFFF;line-height:1.1;letter-spacing:-0.015em;margin-top:4px;margin-bottom:18px;text-align:center;word-break:break-word;">
         Rp0
       </div>
 
@@ -935,7 +1063,6 @@
       setAudioStatus('Gagal memuat MP4 (cek internet / link)', '#DC2626');
     });
 
-    // Hanya panggil load jika belum pernah mulai memuat atau sempat error
     function preBufferOnFormActivity() {
       if (mediaEl.error || mediaEl.networkState === HTMLMediaElement.NETWORK_EMPTY || mediaEl.networkState === HTMLMediaElement.NETWORK_NO_SOURCE) {
         try {
@@ -1055,22 +1182,23 @@
       el.value = rawDigits === '' ? '0' : formatRupiah(rawDigits);
     }
 
-    function autoMaskLastTwoLetters(rawName) {
+    function maskTokenMiddle(token) {
+      const upper = token.toUpperCase();
+      const len = upper.length;
+      if (len <= 2) return upper;
+      if (len === 3) return upper[0] + '*' + upper[2];
+      return upper[0] + '*'.repeat(len - 3) + upper.slice(-2);
+    }
+
+    function autoMaskRecipientName(rawName) {
       const trimmed = rawName.trim();
       if (!trimmed) return '-';
-      return trimmed
-        .split(/\s+/)
-        .map((token) => {
-          const lettersOnly = token.replace(/[^A-Za-z]/g, '');
-          if (lettersOnly.length >= 3 && token.length >= 3) {
-            const cutIdx = token.length - 2;
-            return token.slice(0, cutIdx).toUpperCase() + 'XX';
-          }
-          if (lettersOnly.length > 0 && lettersOnly.length < 3) {
-            return token.toUpperCase();
-          }
-          return token;
-        })
+      const words = trimmed.split(/\s+/);
+      if (words.length === 1) {
+        return maskTokenMiddle(words[0]);
+      }
+      return words
+        .map((token, idx) => (idx === 0 ? token.toUpperCase() : maskTokenMiddle(token)))
         .join(' ');
     }
 
@@ -1137,7 +1265,7 @@
       const selectedDest = document.getElementById('selectSaldo').value || 'DANA';
 
       const rawName = document.getElementById('inputName').value.trim();
-      const resolvedName = autoMaskLastTwoLetters(rawName);
+      const resolvedName = autoMaskRecipientName(rawName);
       const rawPhone = document.getElementById('inputPhone').value.trim();
       const maskedDanaId = autoMaskDanaId(FIXED_DANA_ID);
 
@@ -1149,9 +1277,19 @@
         ? (resolvedName !== '-' ? `${resolvedName} ${rawPhone}` : rawPhone)
         : resolvedName;
 
-      // Layar 2 (Ringkasan Layar Penuh Biru)
+      // Layar 2 (Ringkasan Layar Penuh Biru - 5 Baris Terpisah & Besar)
       document.getElementById('displayDestinationText').textContent = `Kirim Ke Saldo ${selectedDest}`;
-      document.getElementById('displayRecipientHeading').textContent = combinedRecipient;
+      document.getElementById('displayRecipientHeading').textContent = resolvedName;
+
+      const phoneHeadingEl = document.getElementById('displayRecipientPhone');
+      if (rawPhone) {
+        phoneHeadingEl.textContent = rawPhone;
+        phoneHeadingEl.classList.remove('hidden');
+      } else {
+        phoneHeadingEl.textContent = '';
+        phoneHeadingEl.classList.add('hidden');
+      }
+
       document.getElementById('displayBigAmount').textContent = `Rp${amount}`;
 
       // Layar 3 (Rincian Detail Transaksi)
