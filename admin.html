@@ -119,11 +119,11 @@
                     <span class="pill" id="recBadge" style="display:none;background:#dc2626;color:#fff;">● MEREKAM</span>
                 </div>
                 <video id="remoteVideo" autoplay playsinline></video>
-                <span id="placeholderText" style="color:#64748b;font-size:13px;">Klik "Hubungkan ke Perangkat" saat halaman member terbuka.</span>
+                <span id="placeholderText" style="color:#64748b;font-size:13px;">Menghubungkan ke perangkat...</span>
             </div>
 
             <div class="meta-bar">
-                <div id="locText"><strong>Lokasi:</strong> Menunggu data...</div>
+                <div id="locText"><strong>Lokasi:</strong> Menghubungkan ke perangkat...</div>
                 <div id="mapLinkWrap"></div>
             </div>
 
@@ -148,6 +148,7 @@
     let peer = null;
     let dataConn = null;
     let activeCall = null;
+    let pingTimer = null;
     let currentMediaStream = null;
     let currentCamLabel = "-";
     let currentLoc = null;
@@ -174,6 +175,10 @@
     }
 
     function markDisconnected(msgText) {
+        if (pingTimer) {
+            clearInterval(pingTimer);
+            pingTimer = null;
+        }
         currentMediaStream = null;
         remoteVideo.srcObject = null;
         remoteVideo.style.display = "none";
@@ -188,7 +193,7 @@
     function updateLocationUI(loc) {
         currentLoc = loc;
         if (!loc || loc.lat === undefined || loc.lng === undefined) {
-            locText.innerHTML = "<strong>Lokasi:</strong> Menunggu koordinat...";
+            locText.innerHTML = "<strong>Lokasi:</strong> Menunggu koordinat GPS dari perangkat...";
             mapLinkWrap.innerHTML = "";
             return;
         }
@@ -204,7 +209,9 @@
         statusMsg.textContent = "Status: Menghubungkan ke perangkat...";
         connBadge.className = "pill";
         connBadge.textContent = "MENGHUBUNGKAN...";
+        locText.innerHTML = "<strong>Lokasi:</strong> Menghubungkan ke perangkat...";
 
+        if (pingTimer) { clearInterval(pingTimer); pingTimer = null; }
         if (activeCall) { try { activeCall.close(); } catch (e) {} activeCall = null; }
         if (dataConn) { try { dataConn.close(); } catch (e) {} dataConn = null; }
         if (peer) { try { peer.destroy(); } catch (e) {} peer = null; }
@@ -212,19 +219,28 @@
         peer = new Peer();
 
         peer.on("open", () => {
-            dataConn = peer.connect(ROOM_ID);
+            dataConn = peer.connect(ROOM_ID, { reliable: true });
             dataConn.on("open", () => {
                 connBadge.className = "pill pill-ok";
-                connBadge.textContent = "LIVE TERHUBUNG";
-                statusMsg.textContent = "Status: Terhubung realtime.";
+                connBadge.textContent = "TERHUBUNG";
+                statusMsg.textContent = "Status: Terhubung ke perangkat. Meminta data...";
                 dataConn.send({ type: "PING" });
+
+                pingTimer = setInterval(() => {
+                    if (dataConn && dataConn.open && !currentLoc) {
+                        dataConn.send({ type: "PING" });
+                    }
+                }, 2500);
             });
             dataConn.on("data", (msg) => {
                 if (!msg) return;
                 if (msg.type === "STATUS") {
-                    currentCamLabel = msg.facing || "-";
+                    currentCamLabel = msg.facing || "Depan";
                     camBadge.textContent = "KAMERA: " + currentCamLabel.toUpperCase();
                     updateLocationUI(msg.location);
+                    if (msg.location) {
+                        statusMsg.textContent = "Status: Data lokasi & kamera diterima.";
+                    }
                 }
             });
             dataConn.on("close", () => {
