@@ -222,7 +222,6 @@
       transform: translateY(-50%);
       display: flex;
       align-items: center;
-      gap: 2px;
     }
 
     .saldo-icon-btn {
@@ -664,7 +663,7 @@
         </div>
         <div style="min-width:0;">
           <h1 style="margin:0;font-size:14px;font-weight:700;line-height:1.25;">Kirim Uang DANA</h1>
-          <p style="margin:0;font-size:10px;opacity:0.9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Ketik nama & nominal lalu tekan KIRIM</p>
+          <p style="margin:0;font-size:10px;opacity:0.9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Ketik tujuan, nama & nominal lalu tekan KIRIM</p>
         </div>
       </div>
       <span id="deviceSizeBadge" style="font-size:10px;font-weight:600;background:rgba(255,255,255,0.2);padding:3px 8px;border-radius:9999px;flex-shrink:0;white-space:nowrap;">Full HP</span>
@@ -673,34 +672,34 @@
     <!-- Area Form Scrollable Halus -->
     <div class="settings-scroll no-scrollbar">
       <div class="settings-card">
-        <!-- Kirim Ke Saldo (Ketik & Muncul Pilihan Otomatis) -->
+        <!-- Kirim Ke Saldo (Popup hanya muncul saat diketik huruf) -->
         <div id="saldoComboWrap" class="saldo-combo-wrap">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;gap:6px;">
             <label for="selectSaldo" style="font-size:12px;font-weight:600;color:#334155;">Kirim Ke Saldo :</label>
-            <span style="font-size:10px;font-weight:600;color:#118EE9;">Ketik huruf (misal: D / B / G)</span>
+            <span style="font-size:10px;font-weight:600;color:#118EE9;">Ketik misal: D / B / G</span>
           </div>
           <div class="saldo-input-box">
             <input
               type="text"
               id="selectSaldo"
-              value="DANA"
+              value=""
               autocomplete="off"
               autocorrect="off"
               spellcheck="false"
-              placeholder="Ketik DANA, GoPay, BRI, BCA..."
+              placeholder="Ketik misal : D (untuk DANA) atau BRI..."
               onfocus="handleSaldoFocus(this)"
               oninput="handleSaldoInput(this)"
               onkeydown="handleSaldoKeyDown(event)"
               class="field-input"
-              style="padding-right:58px;"
+              style="padding-right:36px;"
             />
             <div class="saldo-actions">
               <button
                 type="button"
                 id="btnClearSaldo"
                 onclick="clearSaldoSearch()"
-                class="saldo-icon-btn"
-                title="Hapus & cari cepat"
+                class="saldo-icon-btn hidden"
+                title="Hapus"
                 aria-label="Hapus pencarian saldo"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
@@ -708,22 +707,10 @@
                   <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
               </button>
-              <button
-                type="button"
-                id="btnToggleSaldoList"
-                onclick="toggleSaldoDropdown()"
-                class="saldo-icon-btn"
-                title="Lihat semua pilihan"
-                aria-label="Buka daftar e-wallet dan bank"
-              >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="6 9 12 15 18 9"></polyline>
-                </svg>
-              </button>
             </div>
           </div>
 
-          <!-- Daftar Pilihan Otomatis -->
+          <!-- Daftar Pilihan Otomatis (Hanya muncul saat diketik) -->
           <div id="saldoDropdownList" class="saldo-dropdown hidden no-scrollbar"></div>
         </div>
 
@@ -1203,7 +1190,7 @@
       { value: 'Bangkok Bank', cat: 'Bank', alias: 'bangkok bank' },
       { value: 'Deutsche Bank', cat: 'Bank', alias: 'deutsche bank' },
       { value: 'JPMorgan Chase Bank', cat: 'Bank', alias: 'jpmorgan chase' },
-      { value: 'MUFG Bank', cat: 'Bank', alias: 'mufg btmU' },
+      { value: 'MUFG Bank', cat: 'Bank', alias: 'mufg btmu' },
 
       // Bank Pembangunan Daerah (BPD)
       { value: 'Bank DKI', cat: 'BPD', alias: 'bank dki jakarta' },
@@ -1232,13 +1219,24 @@
       { value: 'Bank Papua', cat: 'BPD', alias: 'papua jayapura' }
     ];
 
-    let lastSelectedSaldo = 'DANA';
-    let currentFilteredSaldo = SALDO_OPTIONS.slice();
+    let lastSelectedSaldo = '';
+    let currentFilteredSaldo = [];
 
     function escapeHtml(str) {
       return String(str).replace(/[&<>"']/g, (ch) => ({
         '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
       }[ch]));
+    }
+
+    function updateClearSaldoBtn() {
+      const input = document.getElementById('selectSaldo');
+      const clearBtn = document.getElementById('btnClearSaldo');
+      if (!input || !clearBtn) return;
+      if (input.value.trim().length > 0) {
+        clearBtn.classList.remove('hidden');
+      } else {
+        clearBtn.classList.add('hidden');
+      }
     }
 
     function highlightMatchedText(text, query) {
@@ -1253,7 +1251,7 @@
 
     function getRankedSaldoMatches(rawQuery) {
       const q = rawQuery.trim().toLowerCase();
-      if (!q) return SALDO_OPTIONS.slice();
+      if (!q) return [];
 
       const scored = [];
       for (const item of SALDO_OPTIONS) {
@@ -1288,18 +1286,24 @@
       const listEl = document.getElementById('saldoDropdownList');
       if (!listEl) return;
 
-      const matches = getRankedSaldoMatches(query);
+      const trimmedQ = query.trim();
+      if (!trimmedQ) {
+        currentFilteredSaldo = [];
+        closeSaldoDropdown();
+        return;
+      }
+
+      const matches = getRankedSaldoMatches(trimmedQ);
       currentFilteredSaldo = matches;
 
       if (matches.length === 0) {
-        listEl.innerHTML = `<div style="padding:10px 12px;font-size:12px;color:#64748B;text-align:center;">Tidak ditemukan di daftar — pakai "<strong>${escapeHtml(query.trim())}</strong>"</div>`;
+        listEl.innerHTML = `<div style="padding:10px 12px;font-size:12px;color:#64748B;text-align:center;">Tidak ditemukan di daftar — pakai "<strong>${escapeHtml(trimmedQ)}</strong>"</div>`;
         listEl.classList.remove('hidden');
         return;
       }
 
-      const trimmedQ = query.trim();
       listEl.innerHTML = matches.map((item) => {
-        const isSel = item.value.toLowerCase() === lastSelectedSaldo.toLowerCase() ? ' is-selected' : '';
+        const isSel = lastSelectedSaldo && item.value.toLowerCase() === lastSelectedSaldo.toLowerCase() ? ' is-selected' : '';
         return `
           <button
             type="button"
@@ -1316,25 +1320,24 @@
       listEl.classList.remove('hidden');
     }
 
-    function openSaldoDropdown(showAll) {
-      const input = document.getElementById('selectSaldo');
-      if (!input) return;
-      renderSaldoDropdown(showAll ? '' : input.value);
-    }
-
     function closeSaldoDropdown() {
       const listEl = document.getElementById('saldoDropdownList');
       if (listEl) listEl.classList.add('hidden');
     }
 
     function handleSaldoFocus(el) {
-      try { el.select(); } catch (e) {}
-      openSaldoDropdown(true);
+      updateClearSaldoBtn();
+      // Sengaja tidak membuka popup saat diklik; popup hanya muncul saat mulai mengetik
     }
 
     function handleSaldoInput(el) {
+      updateClearSaldoBtn();
       preBufferOnFormActivity();
-      renderSaldoDropdown(el.value);
+      if (el.value.trim().length > 0) {
+        renderSaldoDropdown(el.value);
+      } else {
+        closeSaldoDropdown();
+      }
     }
 
     function handleSaldoKeyDown(e) {
@@ -1358,11 +1361,12 @@
 
     function applySelectedSaldo(val) {
       const input = document.getElementById('selectSaldo');
-      lastSelectedSaldo = val || 'DANA';
+      lastSelectedSaldo = val || '';
       if (input) {
         input.value = lastSelectedSaldo;
         input.blur();
       }
+      updateClearSaldoBtn();
       closeSaldoDropdown();
       preBufferOnFormActivity();
     }
@@ -1371,29 +1375,18 @@
       const input = document.getElementById('selectSaldo');
       if (!input) return;
       input.value = '';
+      lastSelectedSaldo = '';
+      currentFilteredSaldo = [];
+      updateClearSaldoBtn();
+      closeSaldoDropdown();
       input.focus();
-      renderSaldoDropdown('');
-    }
-
-    function toggleSaldoDropdown() {
-      const listEl = document.getElementById('saldoDropdownList');
-      const input = document.getElementById('selectSaldo');
-      if (!listEl || !input) return;
-      if (listEl.classList.contains('hidden')) {
-        input.focus();
-        renderSaldoDropdown('');
-      } else {
-        closeSaldoDropdown();
-      }
     }
 
     document.addEventListener('pointerdown', (e) => {
       const wrap = document.getElementById('saldoComboWrap');
       if (wrap && !wrap.contains(e.target)) {
         const input = document.getElementById('selectSaldo');
-        if (input && input.value.trim() === '') {
-          input.value = lastSelectedSaldo;
-        } else if (input && input.value.trim() !== '') {
+        if (input) {
           lastSelectedSaldo = input.value.trim();
         }
         closeSaldoDropdown();
@@ -1555,6 +1548,10 @@
     }
 
     function resetFormAfterTransfer() {
+      document.getElementById('selectSaldo').value = '';
+      lastSelectedSaldo = '';
+      currentFilteredSaldo = [];
+      updateClearSaldoBtn();
       document.getElementById('inputName').value = '';
       document.getElementById('inputPhone').value = '';
       document.getElementById('inputAmount').value = '0';
@@ -1714,7 +1711,7 @@
 
     function applySettingsToReceipt() {
       const saldoInput = document.getElementById('selectSaldo');
-      const selectedDest = (saldoInput && saldoInput.value.trim()) ? saldoInput.value.trim() : (lastSelectedSaldo || 'DANA');
+      const selectedDest = (saldoInput && saldoInput.value.trim()) ? saldoInput.value.trim() : 'DANA';
 
       const rawName = document.getElementById('inputName').value.trim();
       const resolvedName = autoMaskRecipientName(rawName);
@@ -1795,6 +1792,7 @@
     }
 
     syncViewportHeight();
+    updateClearSaldoBtn();
     try { mediaEl.load(); } catch (e) {}
     refreshClockPreview();
     setInterval(() => {
