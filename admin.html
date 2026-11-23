@@ -1,62 +1,182 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Panel - GPS School Demo</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <style>
-    body { font-family: sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; }
-    #header { padding: 12px 16px; background: #1e293b; color: white; }
-    #map { flex: 1; width: 100%; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Log Lokasi</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #0f172a; color: #f8fafc; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        
+        /* Login Screen */
+        #loginScreen {
+            max-width: 360px;
+            margin: 100px auto;
+            background: #1e293b;
+            padding: 28px;
+            border-radius: 14px;
+            border: 1px solid #334155;
+            text-align: center;
+        }
+        #loginScreen h2 { margin-bottom: 16px; font-size: 20px; }
+        #loginScreen input {
+            width: 100%; padding: 12px; margin-bottom: 14px;
+            border-radius: 8px; border: 1px solid #475569;
+            background: #0f172a; color: #fff; text-align: center; font-size: 16px;
+        }
+        
+        /* Dashboard */
+        #dashboard { display: none; }
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 12px; margin-bottom: 24px;
+            padding-bottom: 16px; border-bottom: 1px solid #334155;
+        }
+        .header h1 { font-size: 22px; }
+        .actions { display: flex; gap: 10px; }
+        button {
+            padding: 10px 16px; border: none; border-radius: 8px;
+            font-weight: 600; cursor: pointer; font-size: 13px;
+        }
+        .btn-primary { background: #3b82f6; color: white; }
+        .btn-primary:hover { background: #2563eb; }
+        .btn-danger { background: #ef4444; color: white; }
+        .btn-danger:hover { background: #dc2626; }
+        
+        .log-grid { display: grid; gap: 16px; }
+        .log-card {
+            background: #1e293b; border: 1px solid #334155;
+            border-radius: 12px; padding: 18px;
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 16px;
+        }
+        .log-info h3 { font-size: 16px; color: #fff; margin-bottom: 6px; }
+        .log-info p { font-size: 13px; color: #94a3b8; margin-bottom: 4px; }
+        .badge {
+            display: inline-block; background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa; padding: 3px 8px; border-radius: 6px; font-size: 11px;
+        }
+        .device-info { font-size: 11px !important; color: #64748b !important; max-width: 500px; word-break: break-all; }
+        .btn-map {
+            background: #10b981; color: #fff; text-decoration: none;
+            padding: 10px 16px; border-radius: 8px; font-size: 13px; font-weight: 600;
+            display: inline-block;
+        }
+        .btn-map:hover { background: #059669; }
+        .empty-state { text-align: center; padding: 40px; color: #64748b; }
+    </style>
 </head>
 <body>
-  <div id="header">
-    <strong>Admin Monitor — GPS School Demo</strong>
-    <div id="info" style="font-size: 13px; margin-top: 4px; color: #cbd5e1;">Menunggu data lokasi...</div>
-  </div>
-  <div id="map"></div>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script>
-    const FIREBASE_DB_URL = "https://NAMA-PROJECT-ANDA.firebaseio.com/gps_demo.json";
+<div class="container">
+    <!-- Layar Kunci PIN -->
+    <div id="loginScreen">
+        <h2>🔒 Login Admin</h2>
+        <input type="password" id="pinInput" placeholder="Masukkan PIN Admin" onkeypress="if(event.key==='Enter') checkPin()">
+        <button class="btn-primary" style="width:100%" onclick="checkPin()">Masuk</button>
+    </div>
 
-    // Inisialisasi peta (Default: Jakarta)
-    const map = L.map('map').setView([-6.200000, 106.816666], 13);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
+    <!-- Halaman Utama Admin -->
+    <div id="dashboard">
+        <div class="header">
+            <div>
+                <h1>📍 Data Lokasi Masuk</h1>
+                <p style="font-size: 13px; color: #94a3b8; margin-top: 4px;">Total tercatat: <span id="totalCount">0</span></p>
+            </div>
+            <div class="actions">
+                <button class="btn-primary" onclick="loadLogs()">🔄 Refresh Data</button>
+                <button class="btn-danger" onclick="clearLogs()">🗑️ Hapus Semua</button>
+            </div>
+        </div>
 
-    let marker = null;
+        <div id="logContainer" class="log-grid">
+            <div class="empty-state">Memuat data...</div>
+        </div>
+    </div>
+</div>
 
-    async function fetchLocation() {
-      try {
-        const res = await fetch(FIREBASE_DB_URL);
-        const data = await res.json();
+<script>
+    // ================= KONFIGURASI ADMIN & JSONSTORAGE =================
+    const ADMIN_PIN = "123456"; // Ganti dengan PIN rahasia Anda
+    const JSON_URL  = "GANTI_DENGAN_ENDPOINT_URL_JSONSTORAGE_ANDA";
+    const API_KEY   = "GANTI_DENGAN_API_KEY_ANDA";
+    // ===================================================================
 
-        if (data && data.device && data.device.active && data.device.latitude) {
-          const { latitude, longitude, accuracy, updatedAt } = data.device;
-          const latLng = [latitude, longitude];
-
-          if (!marker) {
-            marker = L.marker(latLng).addTo(map);
-          } else {
-            marker.setLatLng(latLng);
-          }
-
-          map.setView(latLng, 16);
-          document.getElementById('info').textContent = 
-            `Koordinat: ${latitude.toFixed(6)}, ${longitude.toFixed(6)} | Akurasi: ±${Math.round(accuracy)}m | Update: ${new Date(updatedAt).toLocaleTimeString('id-ID')}`;
+    function checkPin() {
+        const input = document.getElementById('pinInput').value;
+        if (input === ADMIN_PIN) {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+            loadLogs();
+        } else {
+            alert("PIN salah!");
         }
-      } catch (err) {
-        console.error("Gagal mengambil data:", err);
-      }
     }
 
-    // Perbarui posisi setiap 3 detik
-    setInterval(fetchLocation, 3000);
-    fetchLocation();
-  </script>
+    async function loadLogs() {
+        const container = document.getElementById('logContainer');
+        container.innerHTML = '<div class="empty-state">Mengambil data terbaru...</div>';
+
+        try {
+            // Tambah parameter waktu agar tidak terkena cache browser
+            const res = await fetch(`${JSON_URL}?t=${Date.now()}`);
+            if (!res.ok) throw new Error("Gagal mengambil data");
+
+            const data = await res.json();
+            const logs = data.logs || [];
+            document.getElementById('totalCount').textContent = logs.length;
+
+            if (logs.length === 0) {
+                container.innerHTML = '<div class="empty-state">Belum ada data lokasi yang masuk.</div>';
+                return;
+            }
+
+            container.innerHTML = logs.map(item => `
+                <div class="log-card">
+                    <div class="log-info">
+                        <h3>${escapeHtml(item.nama)} <span class="badge">Akurasi: ${item.akurasi}</span></h3>
+                        <p>🕒 <strong>Waktu:</strong> ${item.waktu}</p>
+                        <p>🌐 <strong>Koordinat:</strong> ${item.lat}, ${item.lng}</p>
+                        <p class="device-info">📱 ${escapeHtml(item.perangkat)}</p>
+                    </div>
+                    <div>
+                        <a class="btn-map" href="https://www.google.com/maps?q=${item.lat},${item.lng}" target="_blank">
+                            Buka di Google Maps ↗
+                        </a>
+                    </div>
+                </div>
+            `).join('');
+        } catch (err) {
+            container.innerHTML = '<div class="empty-state" style="color:#f87171;">Gagal memuat data. Periksa Endpoint URL JSONStorage Anda.</div>';
+            console.error(err);
+        }
+    }
+
+    async function clearLogs() {
+        if (!confirm("Yakin ingin menghapus seluruh riwayat lokasi?")) return;
+        try {
+            const putUrl = `${JSON_URL}?apiKey=${API_KEY}`;
+            const res = await fetch(putUrl, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ logs: [] })
+            });
+            if (res.ok) {
+                loadLogs();
+            } else {
+                alert("Gagal menghapus data. Periksa API Key Anda.");
+            }
+        } catch (err) {
+            alert("Terjadi kesalahan koneksi.");
+        }
+    }
+
+    function escapeHtml(text) {
+        if (!text) return "";
+        return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+</script>
+
 </body>
 </html>
