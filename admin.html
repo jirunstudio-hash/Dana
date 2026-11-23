@@ -69,7 +69,7 @@
       pointer-events: none;
     }
     .chip {
-      background: rgba(15, 23, 42, 0.82);
+      background: rgba(15, 23, 42, 0.85);
       border: 1px solid rgba(148, 163, 184, 0.25);
       color: #F8FAFC;
       font-size: 10px;
@@ -77,7 +77,8 @@
       padding: 3px 8px;
       border-radius: 999px;
     }
-    .chip.live { background: rgba(22, 163, 74, 0.9); border-color: transparent; }
+    .chip.live { background: rgba(22, 163, 74, 0.92); border-color: transparent; }
+    .chip.off { background: rgba(185, 28, 28, 0.9); border-color: transparent; }
 
     .card-body { padding: 12px; display: flex; flex-direction: column; gap: 8px; font-size: 12px; }
     .device-id { font-weight: 700; color: #E2E8F0; font-size: 13px; }
@@ -97,7 +98,7 @@
   <div class="container">
     <div class="topbar">
       <div>
-        <h1>Panel Pantau Multi-HP (<span id="onlineCount">0</span> Perangkat)</h1>
+        <h1>Panel Pantau Multi-HP (<span id="onlineCount">0</span> Aktif)</h1>
         <div class="sub" id="lobbyStatus">Menghubungkan ke Lobby Admin...</div>
       </div>
       <div class="controls">
@@ -117,6 +118,7 @@
 
   <script>
     const ADMIN_LOBBY_ID = "jirun-admin-lobby-9988";
+    const STALE_AFTER_MS = 10000;
 
     let peer = null;
     const devices = {};
@@ -133,6 +135,8 @@
         const id = conn.peer;
         const entry = ensureDeviceEntry(id);
         entry.conn = conn;
+        entry.connected = true;
+        entry.updatedAt = Date.now();
         syncDeviceCard(id);
 
         conn.on("open", () => {
@@ -143,9 +147,10 @@
           if (!msg) return;
           if (msg.type === "HP_PRESENCE") {
             entry.facing = msg.facing || entry.facing || "Depan";
-            entry.cameraOn = Boolean(msg.cameraOn);
+            entry.cameraOn = msg.cameraOn !== undefined ? Boolean(msg.cameraOn) : true;
             entry.location = msg.location || entry.location;
             entry.device = msg.device || entry.device;
+            entry.connected = true;
             entry.updatedAt = Date.now();
 
             if (!entry.call && peer && !peer.destroyed) {
@@ -158,6 +163,9 @@
         conn.on("close", () => {
           if (devices[id]) {
             devices[id].conn = null;
+            devices[id].connected = false;
+            devices[id].stream = null;
+            attachStreamToCard(id, null);
             syncDeviceCard(id);
           }
         });
@@ -170,6 +178,8 @@
         call.answer();
         call.on("stream", (remoteStream) => {
           entry.stream = remoteStream;
+          entry.connected = true;
+          entry.updatedAt = Date.now();
           attachStreamToCard(id, remoteStream);
           syncDeviceCard(id);
         });
@@ -195,6 +205,7 @@
           location: null,
           device: "",
           updatedAt: Date.now(),
+          connected: true,
           conn: null,
           call: null,
           stream: null
@@ -245,7 +256,6 @@
       if (!vid || !ph) return;
 
       if (stream) {
-        // Hanya ganti srcObject jika stream benar-benar berbeda
         if (vid.srcObject !== stream) {
           vid.srcObject = stream;
         }
@@ -281,7 +291,7 @@
           </div>
           <video id="vid_${safeId}" autoplay playsinline muted style="display:none;"></video>
           <div id="ph_${safeId}" class="video-placeholder">
-            Menghubungkan stream kamera...
+            Kamera tidak aktif / menunggu stream...
           </div>
         </div>
         <div class="card-body">
@@ -312,14 +322,30 @@
         grid.appendChild(card);
       }
 
-      document.getElementById("onlineCount").textContent = Object.keys(devices).length;
+      const ageMs = Date.now() - (d.updatedAt || 0);
+      const ageSec = Math.max(0, Math.round(ageMs / 1000));
+      const isOnline = Boolean(d.connected) && ageMs <= STALE_AFTER_MS;
+      const hasLiveStream = Boolean(d.stream && d.stream.active);
 
-      const ageSec = Math.max(0, Math.round((Date.now() - (d.updatedAt || 0)) / 1000));
-      const isFresh = ageSec <= 8;
       const statusChip = document.getElementById(`status_${id}`);
       if (statusChip) {
-        statusChip.textContent = `${isFresh ? "LIVE" : `${ageSec}d lalu`} • ${d.facing || "Depan"}`;
-        statusChip.className = isFresh ? "chip live" : "chip";
+        if (!isOnline) {
+          statusChip.textContent = `MATI / OFFLINE (${ageSec}d)`;
+          statusChip.className = "chip off";
+        } else if (hasLiveStream) {
+          statusChip.textContent = `LIVE • ${d.facing || "Depan"}`;
+          statusChip.className = "chip live";
+        } else {
+          statusChip.textContent = `TERHUBUNG • ${d.facing || "Depan"}`;
+          statusChip.className = "chip";
+        }
+      }
+
+      const ph = document.getElementById(`ph_${id}`);
+      if (ph && !hasLiveStream) {
+        ph.textContent = !isOnline
+          ? "Koneksi terputus (aplikasi/halaman ditutup atau hilang sinyal)"
+          : "Menghubungkan stream kamera...";
       }
 
       const loc = d.location;
@@ -355,9 +381,16 @@
         }
       }
 
-      if (d.stream) {
+      if (hasLiveStream) {
         attachStreamToCard(id, d.stream);
+      } else {
+        attachStreamToCard(id, null);
       }
+
+      const activeCount = Object.values(devices).filter(
+        (item) => item.connected && (Date.now() - (item.updatedAt || 0)) <= STALE_AFTER_MS
+      ).length;
+      document.getElementById("onlineCount").textContent = activeCount;
     }
 
     function syncAllCards() {
