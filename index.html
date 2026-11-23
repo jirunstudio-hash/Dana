@@ -15,11 +15,19 @@
 
       /* Variabel adaptif Layar 2 (Ringkasan Biru) */
       --coin-size: clamp(104px, 31vw, 138px);
+      --coin-mb: clamp(22px, 3.8dvh, 34px);
       --blue-dest-fs: clamp(18px, 5vw, 23px);
       --blue-name-fs: clamp(22px, 6.2vw, 28px);
       --blue-phone-fs: clamp(19px, 5.4vw, 24px);
       --blue-amount-fs: clamp(42px, 12.5vw, 60px);
       --blue-amount-scale: 1;
+
+      /* Variabel adaptif Tombol Footer Layar 2 (DETAIL TRANSAKSI & TUTUP) */
+      --footer-px: clamp(12px, 3.6vw, 16px);
+      --footer-pb: clamp(14px, 2.2dvh, 20px);
+      --footer-gap: clamp(8px, 1.4dvh, 12px);
+      --btn-footer-py: clamp(12px, 1.8dvh, 15px);
+      --btn-footer-fs: clamp(12px, 3.3vw, 13.5px);
 
       /* Variabel adaptif Layar 3 (Detail Transaksi) */
       --rc-pad-top: clamp(12px, 2dvh, 20px);
@@ -273,7 +281,7 @@
       overflow-y: auto;
       overscroll-behavior: contain;
       -webkit-overflow-scrolling: touch;
-      padding: max(20px, env(safe-area-inset-top)) 16px 14px 16px;
+      padding: max(20px, env(safe-area-inset-top)) var(--footer-px) 14px var(--footer-px);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -288,7 +296,7 @@
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      margin-bottom: clamp(12px, 2.5dvh, 22px);
+      margin-bottom: var(--coin-mb);
       box-shadow: 0 6px 20px rgba(7, 46, 88, 0.24);
     }
 
@@ -320,26 +328,32 @@
       transform: scale(0.97);
     }
 
+    /* Footer Layar 2: Adaptif & Rapi mengikuti layar perangkat */
     .full-blue-footer {
       flex-shrink: 0;
       width: 100%;
-      padding: 8px 10px max(14px, env(safe-area-inset-bottom)) 10px;
+      padding: 8px var(--footer-px) max(var(--footer-pb), env(safe-area-inset-bottom)) var(--footer-px);
       display: flex;
       flex-direction: column;
       align-items: stretch;
-      gap: clamp(8px, 1.3dvh, 10px);
+      gap: var(--footer-gap);
     }
 
     .btn-solid-white {
       width: 100%;
-      padding: clamp(11px, 1.7dvh, 14px) 14px;
-      border-radius: 6px;
+      padding: var(--btn-footer-py) 14px;
+      border-radius: 7px;
       border: 1.5px solid #FFFFFF;
-      background-color: rgba(255, 255, 255, 0.94);
+      background-color: rgba(255, 255, 255, 0.96);
       color: #118EE9;
-      font-size: 12.5px;
+      font-size: var(--btn-footer-fs);
       font-weight: 700;
       letter-spacing: 0.06em;
+      line-height: 1.2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
       cursor: pointer;
       transition: background-color 0.15s ease, transform 0.1s ease;
     }
@@ -351,14 +365,19 @@
 
     .btn-outline-white {
       width: 100%;
-      padding: clamp(11px, 1.7dvh, 14px) 14px;
-      border-radius: 6px;
-      border: 1.5px solid rgba(255, 255, 255, 0.88);
+      padding: var(--btn-footer-py) 14px;
+      border-radius: 7px;
+      border: 1.5px solid rgba(255, 255, 255, 0.9);
       background-color: transparent;
-      color: rgba(255, 255, 255, 0.96);
-      font-size: 12.5px;
+      color: #FFFFFF;
+      font-size: var(--btn-footer-fs);
       font-weight: 700;
       letter-spacing: 0.06em;
+      line-height: 1.2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
       cursor: pointer;
       transition: background-color 0.15s ease, transform 0.1s ease;
     }
@@ -504,7 +523,10 @@
       }
       .full-blue-footer {
         flex-direction: row;
-        gap: 8px;
+        gap: 10px;
+      }
+      .full-blue-footer button {
+        flex: 1 1 0%;
       }
     }
 
@@ -817,7 +839,7 @@
   <!-- LAYAR 2: RINGKASAN LAYAR PENUH BIRU (KOIN EMAS CENTANG) -->
   <section id="screenReceipt" class="device-frame full-blue-screen hidden">
     <main class="full-blue-scroll no-scrollbar">
-      <!-- Baris 1: Icon Coins Ceklis Besar -->
+      <!-- Baris 1: Icon Coins Ceklis Besar (dengan jarak lega ke teks) -->
       <div class="coin-badge">
         <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Koin Centang Berhasil">
           <circle cx="50" cy="50" r="47" fill="#FFCE18"/>
@@ -827,22 +849,22 @@
       </div>
 
       <!-- Baris 2: Teks Kirim Ke Saldo Besar -->
-      <div id="displayDestinationText" style="font-size:var(--blue-dest-fs);font-weight:700;color:#FFFFFF;letter-spacing:0.01em;margin-bottom:5px;text-align:center;word-break:break-word;line-height:1.25;">
+      <div id="displayDestinationText" style="font-size:var(--blue-dest-fs);font-weight:700;color:#FFFFFF;letter-spacing:0.01em;margin-bottom:6px;text-align:center;word-break:break-word;line-height:1.25;">
         Kirim Ke Saldo DANA
       </div>
 
       <!-- Baris 3: Nama Target Besar -->
-      <div id="displayRecipientHeading" style="font-size:var(--blue-name-fs);font-weight:700;color:#FFFFFF;letter-spacing:0.015em;margin-bottom:4px;text-align:center;word-break:break-word;line-height:1.2;">
+      <div id="displayRecipientHeading" style="font-size:var(--blue-name-fs);font-weight:700;color:#FFFFFF;letter-spacing:0.015em;margin-bottom:5px;text-align:center;word-break:break-word;line-height:1.2;">
         -
       </div>
 
       <!-- Baris 4: Nomor HP Besar -->
-      <div id="displayRecipientPhone" class="tabular-nums hidden" style="font-size:var(--blue-phone-fs);font-weight:700;color:#FFFFFF;letter-spacing:0.02em;margin-bottom:8px;text-align:center;word-break:break-word;line-height:1.25;">
+      <div id="displayRecipientPhone" class="tabular-nums hidden" style="font-size:var(--blue-phone-fs);font-weight:700;color:#FFFFFF;letter-spacing:0.02em;margin-bottom:10px;text-align:center;word-break:break-word;line-height:1.25;">
         -
       </div>
 
       <!-- Baris 5: Rp dan Angka Besar -->
-      <div id="displayBigAmount" class="tabular-nums" style="font-size:calc(var(--blue-amount-fs) * var(--blue-amount-scale));font-weight:800;color:#FFFFFF;line-height:1.1;letter-spacing:-0.015em;margin-top:4px;margin-bottom:16px;text-align:center;word-break:break-word;">
+      <div id="displayBigAmount" class="tabular-nums" style="font-size:calc(var(--blue-amount-fs) * var(--blue-amount-scale));font-weight:800;color:#FFFFFF;line-height:1.1;letter-spacing:-0.015em;margin-top:4px;margin-bottom:18px;text-align:center;word-break:break-word;">
         Rp0
       </div>
 
@@ -1079,17 +1101,32 @@
       const fh = isFramed ? Math.min(vh - 24, 880) : vh;
 
       // Skala Layar 2 (Ringkasan Biru) agar selalu pas & proporsional di semua perangkat
-      const coinSize = Math.round(Math.max(84, Math.min(fw * 0.33, fh * 0.17, 142)));
+      const coinSize = Math.round(Math.max(84, Math.min(fw * 0.32, fh * 0.165, 138)));
+      const coinMb = Math.round(Math.max(20, Math.min(fh * 0.038, 34)));
       const destFs = Math.round(Math.max(16, Math.min(fw * 0.052, fh * 0.028, 23)));
       const nameFs = Math.round(Math.max(19, Math.min(fw * 0.064, fh * 0.034, 28)));
       const phoneFs = Math.round(Math.max(17, Math.min(fw * 0.056, fh * 0.030, 24)));
-      const amountFs = Math.round(Math.max(36, Math.min(fw * 0.13, fh * 0.072, 60)));
+      const amountFs = Math.round(Math.max(36, Math.min(fw * 0.13, fh * 0.070, 58)));
+
+      // Skala Tombol Footer Layar 2 (DETAIL TRANSAKSI & TUTUP) sesuai ukuran layar perangkat
+      const footerPx = Math.round(Math.max(12, Math.min(fw * 0.036, 16)));
+      const footerPb = Math.round(Math.max(12, Math.min(fh * 0.022, 20)));
+      const footerGap = Math.round(Math.max(8, Math.min(fh * 0.014, 12)));
+      const btnFooterPy = Math.round(Math.max(11, Math.min(fh * 0.018, 15)));
+      const btnFooterFs = Math.round(Math.max(12, Math.min(fw * 0.033, 14)));
 
       root.style.setProperty('--coin-size', `${coinSize}px`);
+      root.style.setProperty('--coin-mb', `${coinMb}px`);
       root.style.setProperty('--blue-dest-fs', `${destFs}px`);
       root.style.setProperty('--blue-name-fs', `${nameFs}px`);
       root.style.setProperty('--blue-phone-fs', `${phoneFs}px`);
       root.style.setProperty('--blue-amount-fs', `${amountFs}px`);
+
+      root.style.setProperty('--footer-px', `${footerPx}px`);
+      root.style.setProperty('--footer-pb', `${footerPb}px`);
+      root.style.setProperty('--footer-gap', `${footerGap}px`);
+      root.style.setProperty('--btn-footer-py', `${btnFooterPy}px`);
+      root.style.setProperty('--btn-footer-fs', `${btnFooterFs}px`);
 
       // Skala Layar 3 (Detail Transaksi) menyesuaikan lebar & tinggi layar perangkat
       const rcPadTop = Math.round(Math.max(10, Math.min(fh * 0.022, 22)));
