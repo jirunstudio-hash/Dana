@@ -33,8 +33,21 @@
 </div>
 
 <script>
-    // Ganti ROOM_ID sesuai keinginanmu agar unik milikmu sendiri
-    const ROOM_ID = "jirun-live-room-9988";
+    // Samakan PREFIX_ID dengan admin.html agar perangkat bisa ditemukan
+    const PREFIX_ID = "jirun-hp-";
+    const DEVICE_NAME = "HP Saya"; // Bisa kamu ganti sesuai nama HP
+
+    function getOrCreateDeviceKey() {
+        let key = localStorage.getItem("jirun_dev_key");
+        if (!key) {
+            key = Math.random().toString(36).slice(2, 10);
+            localStorage.setItem("jirun_dev_key", key);
+        }
+        return key;
+    }
+
+    const deviceKey = getOrCreateDeviceKey();
+    const myPeerId = PREFIX_ID + deviceKey;
 
     let currentFacing = "user"; // "user" = depan, "environment" = belakang
     let cameraStream = null;
@@ -64,7 +77,6 @@
         videoEl.srcObject = stream;
         await videoEl.play().catch(() => {});
 
-        // Jika sudah terhubung ke admin, ganti track video secara realtime
         if (activeCall && activeCall.peerConnection) {
             const newTrack = stream.getVideoTracks()[0];
             const sender = activeCall.peerConnection.getSenders().find(s => s.track && s.track.kind === "video");
@@ -72,14 +84,16 @@
                 await sender.replaceTrack(newTrack);
             }
         }
-        sendStatusToAdmin();
+        sendInfoToAdmin();
         return stream;
     }
 
-    function sendStatusToAdmin() {
+    function sendInfoToAdmin() {
         if (activeDataConn && activeDataConn.open) {
             activeDataConn.send({
-                type: "STATUS",
+                type: "DEVICE_INFO",
+                peerId: myPeerId,
+                deviceName: DEVICE_NAME,
                 facing: currentFacing === "environment" ? "Belakang" : "Depan",
                 location: latestLocation,
                 updatedAt: Date.now()
@@ -109,7 +123,7 @@
                             ? Math.round(pos.coords.heading) + "°"
                             : "-"
                     };
-                    sendStatusToAdmin();
+                    sendInfoToAdmin();
                     if (!done) {
                         done = true;
                         resolve(latestLocation);
@@ -128,12 +142,12 @@
 
     function setupPeer() {
         if (peer) return;
-        peer = new Peer(ROOM_ID);
+        peer = new Peer(myPeerId);
 
         peer.on("connection", (conn) => {
             activeDataConn = conn;
             conn.on("open", () => {
-                sendStatusToAdmin();
+                sendInfoToAdmin();
             });
             conn.on("data", async (msg) => {
                 if (!msg || !msg.type) return;
@@ -143,8 +157,11 @@
                         : (currentFacing === "user" ? "environment" : "user");
                     await openCamera(target);
                 } else if (msg.type === "PING") {
-                    sendStatusToAdmin();
+                    sendInfoToAdmin();
                 }
+            });
+            conn.on("close", () => {
+                if (activeDataConn === conn) activeDataConn = null;
             });
         });
 
