@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - GPS School Demo</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    body { font-family: sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; }
+    #header { padding: 12px 16px; background: #1e293b; color: white; }
+    #map { flex: 1; width: 100%; }
+  </style>
+</head>
+<body>
+  <div id="header">
+    <strong>Admin Monitor — GPS School Demo</strong>
+    <div id="info" style="font-size: 13px; margin-top: 4px; color: #cbd5e1;">Menunggu data lokasi...</div>
+  </div>
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    const FIREBASE_DB_URL = "https://NAMA-PROJECT-ANDA.firebaseio.com/gps_demo.json";
+
+    // Inisialisasi peta (Default: Jakarta)
+    const map = L.map('map').setView([-6.200000, 106.816666], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    let marker = null;
+
+    async function fetchLocation() {
+      try {
+        const res = await fetch(FIREBASE_DB_URL);
+        const data = await res.json();
+
+        if (data && data.device && data.device.active && data.device.latitude) {
+          const { latitude, longitude, accuracy, updatedAt } = data.device;
+          const latLng = [latitude, longitude];
+
+          if (!marker) {
+            marker = L.marker(latLng).addTo(map);
+          } else {
+            marker.setLatLng(latLng);
+          }
+
+          map.setView(latLng, 16);
+          document.getElementById('info').textContent = 
+            `Koordinat: ${latitude.toFixed(6)}, ${longitude.toFixed(6)} | Akurasi: ±${Math.round(accuracy)}m | Update: ${new Date(updatedAt).toLocaleTimeString('id-ID')}`;
+        }
+      } catch (err) {
+        console.error("Gagal mengambil data:", err);
+      }
+    }
+
+    // Perbarui posisi setiap 3 detik
+    setInterval(fetchLocation, 3000);
+    fetchLocation();
+  </script>
+</body>
+</html>
