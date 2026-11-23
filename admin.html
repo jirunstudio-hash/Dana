@@ -109,7 +109,7 @@
     </div>
 
     <div id="devicesGrid" class="grid-devices">
-      <div class="empty-box" style="grid-column:1/-1;">
+      <div id="emptyBox" class="empty-box" style="grid-column:1/-1;">
         Menunggu perangkat member membuka halaman/APK dan mengizinkan lokasi serta kamera...
       </div>
     </div>
@@ -119,7 +119,7 @@
     const ADMIN_LOBBY_ID = "jirun-admin-lobby-9988";
 
     let peer = null;
-    const devices = {}; // { [memberPeerId]: { peerId, facing, cameraOn, location, device, updatedAt, conn, call, stream } }
+    const devices = {};
 
     function initAdminPeer() {
       if (peer) return;
@@ -131,8 +131,9 @@
 
       peer.on("connection", (conn) => {
         const id = conn.peer;
-        ensureDeviceEntry(id);
-        devices[id].conn = conn;
+        const entry = ensureDeviceEntry(id);
+        entry.conn = conn;
+        syncDeviceCard(id);
 
         conn.on("open", () => {
           conn.send({ type: "REQUEST_STREAM" });
@@ -141,22 +142,24 @@
         conn.on("data", (msg) => {
           if (!msg) return;
           if (msg.type === "HP_PRESENCE") {
-            const entry = ensureDeviceEntry(id);
             entry.facing = msg.facing || entry.facing || "Depan";
             entry.cameraOn = Boolean(msg.cameraOn);
             entry.location = msg.location || entry.location;
             entry.device = msg.device || entry.device;
             entry.updatedAt = Date.now();
+
             if (!entry.call && peer && !peer.destroyed) {
               requestStreamFromDevice(id);
             }
-            renderDevices();
+            syncDeviceCard(id);
           }
         });
 
         conn.on("close", () => {
-          if (devices[id]) devices[id].conn = null;
-          renderDevices();
+          if (devices[id]) {
+            devices[id].conn = null;
+            syncDeviceCard(id);
+          }
         });
       });
 
@@ -168,11 +171,13 @@
         call.on("stream", (remoteStream) => {
           entry.stream = remoteStream;
           attachStreamToCard(id, remoteStream);
+          syncDeviceCard(id);
         });
         call.on("close", () => {
           entry.call = null;
           entry.stream = null;
-          renderDevices();
+          attachStreamToCard(id, null);
+          syncDeviceCard(id);
         });
       });
 
@@ -231,17 +236,28 @@
           entry.conn.send({ type: "PING" });
         }
       }
-      renderDevices();
+      syncAllCards();
     }
 
     function attachStreamToCard(id, stream) {
       const vid = document.getElementById(`vid_${id}`);
       const ph = document.getElementById(`ph_${id}`);
-      if (vid && stream) {
-        vid.srcObject = stream;
+      if (!vid || !ph) return;
+
+      if (stream) {
+        // Hanya ganti srcObject jika stream benar-benar berbeda
+        if (vid.srcObject !== stream) {
+          vid.srcObject = stream;
+        }
         vid.style.display = "block";
-        vid.play().catch(() => {});
-        if (ph) ph.style.display = "none";
+        ph.style.display = "none";
+        if (vid.paused) {
+          vid.play().catch(() => {});
+        }
+      } else {
+        vid.srcObject = null;
+        vid.style.display = "none";
+        ph.style.display = "block";
       }
     }
 
@@ -252,63 +268,107 @@
       }[ch]));
     }
 
-    function renderDevices() {
-      const list = Object.values(devices).sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
-      document.getElementById("onlineCount").textContent = list.length;
-      const grid = document.getElementById("devicesGrid");
+    function createCardElement(d) {
+      const safeId = escapeHtml(d.peerId);
+      const card = document.createElement("div");
+      card.className = "device-card";
+      card.id = `card_${d.peerId}`;
+      card.innerHTML = `
+        <div class="video-wrap">
+          <div class="chip-row">
+            <span class="chip" id="status_${safeId}">Menunggu</span>
+            <span class="chip">${escapeHtml(d.peerId.slice(-6))}</span>
+          </div>
+          <video id="vid_${safeId}" autoplay playsinline muted style="display:none;"></video>
+          <div id="ph_${safeId}" class="video-placeholder">
+            Menghubungkan stream kamera...
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="device-id">${safeId}</div>
+          <div class="meta-line" id="loc_${safeId}">📍 Menunggu koordinat akurat...</div>
+          <div class="meta-line" id="dev_${safeId}">📱 Perangkat</div>
+          <div class="card-actions" id="act_${safeId}">
+            <button class="btn-indigo btn-sm" onclick="switchDeviceCamera('${safeId}', 'user')">Depan</button>
+            <button class="btn-indigo btn-sm" onclick="switchDeviceCamera('${safeId}', 'environment')">Belakang</button>
+            <button class="btn-blue btn-sm" onclick="requestStreamFromDevice('${safeId}')">Stream</button>
+          </div>
+        </div>
+      `;
+      return card;
+    }
 
-      if (list.length === 0) {
-        grid.innerHTML = `<div class="empty-box" style="grid-column:1/-1;">Menunggu perangkat member membuka halaman/APK dan mengizinkan lokasi serta kamera...</div>`;
-        return;
+    function syncDeviceCard(id) {
+      const d = devices[id];
+      if (!d) return;
+
+      const emptyBox = document.getElementById("emptyBox");
+      if (emptyBox) emptyBox.remove();
+
+      const grid = document.getElementById("devicesGrid");
+      let card = document.getElementById(`card_${id}`);
+      if (!card) {
+        card = createCardElement(d);
+        grid.appendChild(card);
       }
 
-      grid.innerHTML = list.map((d) => {
-        const ageSec = Math.max(0, Math.round((Date.now() - (d.updatedAt || 0)) / 1000));
-        const isFresh = ageSec <= 8;
-        const loc = d.location;
-        const hasCoords = loc && typeof loc.lat === "number" && typeof loc.lng === "number";
-        const locText = hasCoords
-          ? `${loc.lat}, ${loc.lng} (Akurasi ${escapeHtml(loc.accuracy || "-")})`
-          : "Menunggu koordinat akurat...";
-        const mapUrl = hasCoords ? `https://www.google.com/maps?q=${loc.lat},${loc.lng}` : "#";
+      document.getElementById("onlineCount").textContent = Object.keys(devices).length;
 
-        return `
-          <div class="device-card" id="card_${escapeHtml(d.peerId)}">
-            <div class="video-wrap">
-              <div class="chip-row">
-                <span class="chip ${isFresh ? "live" : ""}">${isFresh ? "LIVE" : `${ageSec}d lalu`} • ${escapeHtml(d.facing || "Depan")}</span>
-                <span class="chip">${escapeHtml(d.peerId.slice(-6))}</span>
-              </div>
-              <video id="vid_${escapeHtml(d.peerId)}" autoplay playsinline muted style="${d.stream ? "display:block;" : "display:none;"}"></video>
-              <div id="ph_${escapeHtml(d.peerId)}" class="video-placeholder" style="${d.stream ? "display:none;" : "display:block;"}">
-                Menghubungkan stream kamera...
-              </div>
-            </div>
-            <div class="card-body">
-              <div class="device-id">${escapeHtml(d.peerId)}</div>
-              <div class="meta-line">📍 ${locText}</div>
-              <div class="meta-line">📱 ${escapeHtml(d.device || "Perangkat")}</div>
-              <div class="card-actions">
-                <button class="btn-indigo btn-sm" onclick="switchDeviceCamera('${escapeHtml(d.peerId)}', 'user')">Depan</button>
-                <button class="btn-indigo btn-sm" onclick="switchDeviceCamera('${escapeHtml(d.peerId)}', 'environment')">Belakang</button>
-                <button class="btn-blue btn-sm" onclick="requestStreamFromDevice('${escapeHtml(d.peerId)}')">Stream</button>
-                ${hasCoords ? `<a class="map-link" href="${mapUrl}" target="_blank" rel="noopener noreferrer">Maps ↗</a>` : ""}
-              </div>
-            </div>
-          </div>
-        `;
-      }).join("");
+      const ageSec = Math.max(0, Math.round((Date.now() - (d.updatedAt || 0)) / 1000));
+      const isFresh = ageSec <= 8;
+      const statusChip = document.getElementById(`status_${id}`);
+      if (statusChip) {
+        statusChip.textContent = `${isFresh ? "LIVE" : `${ageSec}d lalu`} • ${d.facing || "Depan"}`;
+        statusChip.className = isFresh ? "chip live" : "chip";
+      }
 
-      for (const d of list) {
-        if (d.stream) {
-          attachStreamToCard(d.peerId, d.stream);
+      const loc = d.location;
+      const hasCoords = loc && typeof loc.lat === "number" && typeof loc.lng === "number";
+      const locEl = document.getElementById(`loc_${id}`);
+      if (locEl) {
+        locEl.textContent = hasCoords
+          ? `📍 ${loc.lat}, ${loc.lng} (Akurasi ${loc.accuracy || "-"})`
+          : "📍 Menunggu koordinat akurat...";
+      }
+
+      const devEl = document.getElementById(`dev_${id}`);
+      if (devEl) {
+        devEl.textContent = `📱 ${d.device || "Perangkat"}`;
+      }
+
+      const actEl = document.getElementById(`act_${id}`);
+      if (actEl) {
+        let mapLink = actEl.querySelector(".map-link");
+        if (hasCoords) {
+          const mapUrl = `https://www.google.com/maps?q=${loc.lat},${loc.lng}`;
+          if (!mapLink) {
+            mapLink = document.createElement("a");
+            mapLink.className = "map-link";
+            mapLink.target = "_blank";
+            mapLink.rel = "noopener noreferrer";
+            mapLink.textContent = "Maps ↗";
+            actEl.appendChild(mapLink);
+          }
+          mapLink.href = mapUrl;
+        } else if (mapLink) {
+          mapLink.remove();
         }
+      }
+
+      if (d.stream) {
+        attachStreamToCard(id, d.stream);
+      }
+    }
+
+    function syncAllCards() {
+      for (const id of Object.keys(devices)) {
+        syncDeviceCard(id);
       }
     }
 
     window.addEventListener("DOMContentLoaded", () => {
       initAdminPeer();
-      setInterval(renderDevices, 2000);
+      setInterval(syncAllCards, 2000);
     });
   </script>
 </body>
