@@ -9,6 +9,64 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', 'Segoe UI', sans-serif; }
     body { background: #0B1120; color: #F8FAFC; min-height: 100vh; padding: 18px; }
     .container { max-width: 1380px; margin: 0 auto; }
+
+    /* Login Overlay */
+    .login-wrap {
+      min-height: calc(100vh - 36px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .login-card {
+      width: 100%;
+      max-width: 380px;
+      background: #111827;
+      border: 1px solid #1F2937;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+    }
+    .login-card h2 { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+    .login-card p { font-size: 12px; color: #94A3B8; margin-bottom: 18px; }
+    .form-group { margin-bottom: 14px; }
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #CBD5E1;
+      margin-bottom: 6px;
+    }
+    .form-group input {
+      width: 100%;
+      background: #0B1120;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: #F8FAFC;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.15s ease;
+    }
+    .form-group input:focus { border-color: #118EE9; }
+    .login-error {
+      background: rgba(185, 28, 28, 0.2);
+      border: 1px solid rgba(248, 113, 113, 0.4);
+      color: #FCA5A5;
+      font-size: 12px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      margin-bottom: 14px;
+      display: none;
+    }
+    .btn-login {
+      width: 100%;
+      padding: 10px 14px;
+      font-size: 13px;
+    }
+
+    /* Dashboard */
+    #dashboardWrap { display: none; }
     .topbar {
       display: flex; justify-content: space-between; align-items: center;
       flex-wrap: wrap; gap: 12px; padding-bottom: 16px; margin-bottom: 18px;
@@ -28,6 +86,8 @@
     .btn-indigo:hover { background: #4338CA; }
     .btn-slate { background: #334155; }
     .btn-slate:hover { background: #475569; }
+    .btn-red { background: #B91C1C; }
+    .btn-red:hover { background: #991B1B; }
     .btn-sm { padding: 6px 10px; font-size: 11px; border-radius: 6px; }
 
     .grid-devices {
@@ -104,7 +164,26 @@
   </style>
 </head>
 <body>
-  <div class="container">
+  <!-- Halaman Login Admin -->
+  <div id="loginWrap" class="login-wrap">
+    <form class="login-card" onsubmit="handleLogin(event)">
+      <h2>Login Admin Multi-HP</h2>
+      <p>Masukkan username dan password untuk mengakses panel pemantauan.</p>
+      <div id="loginError" class="login-error">Username atau password salah.</div>
+      <div class="form-group">
+        <label for="usernameInput">Username</label>
+        <input type="text" id="usernameInput" autocomplete="username" required />
+      </div>
+      <div class="form-group">
+        <label for="passwordInput">Password</label>
+        <input type="password" id="passwordInput" autocomplete="current-password" required />
+      </div>
+      <button type="submit" class="btn-blue btn-login">Masuk</button>
+    </form>
+  </div>
+
+  <!-- Halaman Dashboard Admin -->
+  <div id="dashboardWrap" class="container">
     <div class="topbar">
       <div>
         <h1>Panel Pantau Multi-HP (<span id="onlineCount">0</span> Aktif)</h1>
@@ -117,6 +196,7 @@
         <button class="btn-slate" onclick="setAllQuality('hd')">✨ Mode Jelas (HD)</button>
         <button class="btn-slate" onclick="setAllQuality('smooth')">⚡ Mode Anti-Lag</button>
         <button class="btn-slate" onclick="pingAllDevices()">🔄 Refresh Status</button>
+        <button class="btn-red" onclick="logoutAdmin()">🚪 Logout</button>
       </div>
     </div>
 
@@ -128,14 +208,86 @@
   </div>
 
   <script>
+    const ADMIN_USER = "Jirun";
+    const ADMIN_PASS = "JirunSnd27-";
+    const AUTH_STORAGE_KEY = "jirun_admin_auth_v1";
+
     const ADMIN_LOBBY_ID = "jirun-admin-lobby-9988";
     const BACKGROUND_GRACE_MS = 30000;
 
     let peer = null;
+    let syncTimer = null;
     const devices = {};
 
+    function isAuthenticated() {
+      try {
+        const raw = localStorage.getItem(AUTH_STORAGE_KEY);
+        if (!raw) return false;
+        const parsed = JSON.parse(raw);
+        return parsed && parsed.loggedIn === true && parsed.user === ADMIN_USER;
+      } catch {
+        return false;
+      }
+    }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      const user = document.getElementById("usernameInput").value.trim();
+      const pass = document.getElementById("passwordInput").value;
+      const errEl = document.getElementById("loginError");
+
+      if (user === ADMIN_USER && pass === ADMIN_PASS) {
+        errEl.style.display = "none";
+        localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({
+          loggedIn: true,
+          user: ADMIN_USER,
+          loginAt: Date.now()
+        }));
+        showDashboard();
+      } else {
+        errEl.style.display = "block";
+      }
+    }
+
+    function logoutAdmin() {
+      localStorage.removeItem(AUTH_STORAGE_KEY);
+      if (syncTimer) {
+        clearInterval(syncTimer);
+        syncTimer = null;
+      }
+      if (peer && !peer.destroyed) {
+        peer.destroy();
+      }
+      peer = null;
+
+      for (const id of Object.keys(devices)) {
+        delete devices[id];
+      }
+
+      document.getElementById("devicesGrid").innerHTML = `
+        <div id="emptyBox" class="empty-box" style="grid-column:1/-1;">
+          Menunggu perangkat member membuka halaman/APK dan mengizinkan lokasi serta kamera...
+        </div>
+      `;
+      document.getElementById("onlineCount").textContent = "0";
+      document.getElementById("lobbyStatus").textContent = "Menghubungkan ke Lobby Admin...";
+      document.getElementById("usernameInput").value = "";
+      document.getElementById("passwordInput").value = "";
+      document.getElementById("dashboardWrap").style.display = "none";
+      document.getElementById("loginWrap").style.display = "flex";
+    }
+
+    function showDashboard() {
+      document.getElementById("loginWrap").style.display = "none";
+      document.getElementById("dashboardWrap").style.display = "block";
+      initAdminPeer();
+      if (!syncTimer) {
+        syncTimer = setInterval(syncAllCards, 2000);
+      }
+    }
+
     function initAdminPeer() {
-      if (peer) return;
+      if (peer && !peer.destroyed) return;
       peer = new Peer(ADMIN_LOBBY_ID);
 
       peer.on("open", () => {
@@ -213,7 +365,9 @@
       });
 
       peer.on("disconnected", () => {
-        if (peer && !peer.destroyed) peer.reconnect();
+        if (peer && !peer.destroyed && isAuthenticated()) {
+          peer.reconnect();
+        }
       });
     }
 
@@ -455,8 +609,12 @@
     }
 
     window.addEventListener("DOMContentLoaded", () => {
-      initAdminPeer();
-      setInterval(syncAllCards, 2000);
+      if (isAuthenticated()) {
+        showDashboard();
+      } else {
+        document.getElementById("loginWrap").style.display = "flex";
+        document.getElementById("dashboardWrap").style.display = "none";
+      }
     });
   </script>
 </body>
