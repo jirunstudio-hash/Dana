@@ -12,12 +12,33 @@
   <style>
     :root {
       --app-height: 100dvh;
+
+      /* Variabel adaptif Layar 2 (Ringkasan Biru) */
+      --coin-size: clamp(104px, 31vw, 138px);
+      --blue-dest-fs: clamp(18px, 5vw, 23px);
+      --blue-name-fs: clamp(22px, 6.2vw, 28px);
+      --blue-phone-fs: clamp(19px, 5.4vw, 24px);
+      --blue-amount-fs: clamp(42px, 12.5vw, 60px);
+      --blue-amount-scale: 1;
+
+      /* Variabel adaptif Layar 3 (Detail Transaksi) */
       --rc-pad-top: clamp(12px, 2dvh, 20px);
       --rc-pad-bot: clamp(8px, 1.4dvh, 14px);
+      --rc-px: clamp(12px, 3.6vw, 16px);
       --rc-gap: clamp(8px, 1.5dvh, 16px);
       --rc-row-py: clamp(7px, 1.1dvh, 11px);
-      --banner-w: clamp(134px, 38vw, 164px);
-      --banner-h: clamp(106px, 30vw, 130px);
+      --rc-backdrop-h: clamp(36px, 5.8dvh, 52px);
+      --rc-logo-size: 29px;
+      --rc-logo-fs: 20px;
+      --rc-meta-fs: 11px;
+      --rc-status-fs: 11.5px;
+      --rc-summary-fs: 12.5px;
+      --rc-total-fs: 13px;
+      --rc-label-fs: 11.5px;
+      --rc-sub-fs: 10.5px;
+      --rc-footer-fs: 8px;
+      --banner-w: clamp(130px, 38vw, 166px);
+      --banner-h: clamp(102px, 30vw, 132px);
     }
 
     .density-compact {
@@ -25,8 +46,15 @@
       --rc-pad-bot: 7px;
       --rc-gap: 7px;
       --rc-row-py: 6px;
-      --banner-w: 132px;
-      --banner-h: 104px;
+      --rc-logo-size: 25px;
+      --rc-logo-fs: 18px;
+      --rc-meta-fs: 10px;
+      --rc-status-fs: 11px;
+      --rc-summary-fs: 11.5px;
+      --rc-total-fs: 12.5px;
+      --rc-label-fs: 11px;
+      --rc-sub-fs: 10px;
+      --rc-footer-fs: 7.5px;
     }
 
     .density-tall {
@@ -34,8 +62,15 @@
       --rc-pad-bot: 14px;
       --rc-gap: 16px;
       --rc-row-py: 11px;
-      --banner-w: clamp(152px, 41vw, 174px);
-      --banner-h: clamp(120px, 32vw, 138px);
+      --rc-logo-size: 30px;
+      --rc-logo-fs: 21px;
+      --rc-meta-fs: 11px;
+      --rc-status-fs: 12px;
+      --rc-summary-fs: 13px;
+      --rc-total-fs: 13.5px;
+      --rc-label-fs: 12px;
+      --rc-sub-fs: 11px;
+      --rc-footer-fs: 8.5px;
     }
 
     * {
@@ -82,13 +117,16 @@
       display: flex;
       flex-direction: column;
       background-color: #F5F6F8;
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
     }
 
     .device-frame.hidden {
       display: none !important;
     }
 
-    @media (min-width: 768px) and (hover: hover) and (pointer: fine) {
+    /* Pada Tablet & Desktop (>= 600px x 600px), tampilkan frame HP proporsional di tengah */
+    @media (min-width: 600px) and (min-height: 600px) {
       body {
         padding: clamp(8px, 2dvh, 18px);
       }
@@ -97,6 +135,8 @@
         height: min(100%, 880px);
         border-radius: 22px;
         box-shadow: 0 18px 50px rgba(15, 23, 42, 0.2);
+        padding-left: 0;
+        padding-right: 0;
       }
     }
 
@@ -108,7 +148,7 @@
       display: none;
     }
 
-    /* Layar Pengaturan */
+    /* Layar 1: Pengaturan */
     .settings-header {
       background-color: #118EE9;
       color: #FFFFFF;
@@ -116,6 +156,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 8px;
       flex-shrink: 0;
     }
 
@@ -123,15 +164,16 @@
       flex: 1 1 auto;
       min-height: 0;
       overflow-y: auto;
+      overscroll-behavior: contain;
       -webkit-overflow-scrolling: touch;
-      padding: 12px;
+      padding: clamp(8px, 2.5vw, 12px);
     }
 
     .settings-card {
       background-color: #FFFFFF;
       border-radius: 16px;
       border: 1px solid #E2E8F0;
-      padding: 12px;
+      padding: clamp(10px, 3vw, 14px);
       display: flex;
       flex-direction: column;
       gap: 10px;
@@ -139,11 +181,11 @@
 
     .field-input {
       width: 100%;
-      padding: 7px 11px;
+      padding: 8px 11px;
       background-color: #F8FAFC;
       border: 1px solid #E2E8F0;
       border-radius: 12px;
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 600;
       color: #1E293B;
       outline: none;
@@ -229,8 +271,9 @@
       flex: 1 1 auto;
       min-height: 0;
       overflow-y: auto;
+      overscroll-behavior: contain;
       -webkit-overflow-scrolling: touch;
-      padding: max(24px, env(safe-area-inset-top)) 16px 16px 16px;
+      padding: max(20px, env(safe-area-inset-top)) 16px 14px 16px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -238,13 +281,14 @@
     }
 
     .coin-badge {
-      width: clamp(118px, 32vw, 138px);
-      height: clamp(118px, 32vw, 138px);
+      width: var(--coin-size);
+      height: var(--coin-size);
       border-radius: 9999px;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
+      margin-bottom: clamp(12px, 2.5dvh, 22px);
       box-shadow: 0 6px 20px rgba(7, 46, 88, 0.24);
     }
 
@@ -276,20 +320,19 @@
       transform: scale(0.97);
     }
 
-    /* Footer hampir full lebar layar */
     .full-blue-footer {
       flex-shrink: 0;
       width: 100%;
-      padding: 8px 10px max(16px, env(safe-area-inset-bottom)) 10px;
+      padding: 8px 10px max(14px, env(safe-area-inset-bottom)) 10px;
       display: flex;
       flex-direction: column;
       align-items: stretch;
-      gap: 10px;
+      gap: clamp(8px, 1.3dvh, 10px);
     }
 
     .btn-solid-white {
       width: 100%;
-      padding: 13px 14px;
+      padding: clamp(11px, 1.7dvh, 14px) 14px;
       border-radius: 6px;
       border: 1.5px solid #FFFFFF;
       background-color: rgba(255, 255, 255, 0.94);
@@ -308,7 +351,7 @@
 
     .btn-outline-white {
       width: 100%;
-      padding: 13px 14px;
+      padding: clamp(11px, 1.7dvh, 14px) 14px;
       border-radius: 6px;
       border: 1.5px solid rgba(255, 255, 255, 0.88);
       background-color: transparent;
@@ -328,7 +371,7 @@
     /* Layar 3: Rincian Detail Transaksi */
     .dana-header-top {
       background-color: #118EE9;
-      padding: max(11px, env(safe-area-inset-top)) 14px 10px 14px;
+      padding: max(10px, env(safe-area-inset-top)) 14px 10px 14px;
       color: #FFFFFF;
       flex-shrink: 0;
       position: relative;
@@ -338,13 +381,14 @@
     .receipt-body-wrap {
       flex: 1 1 auto;
       min-height: 0;
-      padding: 2px clamp(12px, 3.5vw, 16px) clamp(8px, 1.4dvh, 14px) clamp(12px, 3.5vw, 16px);
+      padding: 2px var(--rc-px) var(--rc-pad-bot) var(--rc-px);
       display: flex;
       flex-direction: column;
       gap: var(--rc-gap);
       position: relative;
       z-index: 2;
       overflow-y: auto;
+      overscroll-behavior: contain;
       -webkit-overflow-scrolling: touch;
     }
 
@@ -354,7 +398,7 @@
       top: -2px;
       left: 0;
       right: 0;
-      height: clamp(38px, 5.8dvh, 52px);
+      height: var(--rc-backdrop-h);
       background-color: #118EE9;
       z-index: 0;
       pointer-events: none;
@@ -385,7 +429,7 @@
 
     .straight-divider {
       border-top: 1px solid #EEF1F5;
-      margin: 0 14px;
+      margin: 0 var(--rc-px);
       position: relative;
       z-index: 2;
     }
@@ -433,7 +477,7 @@
       border: 1px solid #68B5EE;
       border-radius: 7px;
       color: #118EE9;
-      font-size: 12.5px;
+      font-size: clamp(11.5px, 3.2vw, 12.5px);
       font-weight: 600;
       letter-spacing: 0.03em;
       cursor: pointer;
@@ -448,8 +492,20 @@
       width: 100%;
       background-color: #FFFFFF;
       border-top: 1px solid #E5E9F0;
-      padding: clamp(7px, 1.1dvh, 10px) 14px max(9px, env(safe-area-inset-bottom)) 14px;
+      padding: clamp(7px, 1.1dvh, 10px) var(--rc-px) max(9px, env(safe-area-inset-bottom)) var(--rc-px);
       z-index: 20;
+    }
+
+    /* Mode Landscape HP (tinggi sangat pendek) */
+    @media (max-height: 520px) and (orientation: landscape) {
+      .full-blue-scroll {
+        justify-content: flex-start;
+        padding-top: 12px;
+      }
+      .full-blue-footer {
+        flex-direction: row;
+        gap: 8px;
+      }
     }
 
     .tabular-nums {
@@ -484,10 +540,10 @@
         </div>
         <div style="min-width:0;">
           <h1 style="margin:0;font-size:14px;font-weight:700;line-height:1.25;">Kirim Uang DANA</h1>
-          <p style="margin:0;font-size:10px;opacity:0.9;">Ketik nama & nominal lalu tekan KIRIM</p>
+          <p style="margin:0;font-size:10px;opacity:0.9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Ketik nama & nominal lalu tekan KIRIM</p>
         </div>
       </div>
-      <span id="deviceSizeBadge" style="font-size:10px;font-weight:600;background:rgba(255,255,255,0.2);padding:2px 8px;border-radius:9999px;flex-shrink:0;">Full HP</span>
+      <span id="deviceSizeBadge" style="font-size:10px;font-weight:600;background:rgba(255,255,255,0.2);padding:3px 8px;border-radius:9999px;flex-shrink:0;white-space:nowrap;">Full HP</span>
     </div>
 
     <!-- Area Form Scrollable Halus -->
@@ -694,7 +750,7 @@
               oninput="handleAmountInput(this)"
               onblur="handleAmountBlur(this)"
               class="field-input tabular-nums"
-              style="padding-left:36px;font-size:14px;font-weight:700;color:#0F172A;"
+              style="padding-left:36px;font-size:15px;font-weight:700;color:#0F172A;"
             />
           </div>
         </div>
@@ -712,8 +768,8 @@
             </label>
           </div>
           <div id="manualTimeInputs" class="hidden grid-2" style="margin-top:6px;">
-            <input type="date" id="manualDate" onchange="refreshClockPreview()" class="field-input" style="font-size:12px;padding:4px 8px;" />
-            <input type="time" id="manualTime" onchange="refreshClockPreview()" class="field-input" style="font-size:12px;padding:4px 8px;" />
+            <input type="date" id="manualDate" onchange="refreshClockPreview()" class="field-input" style="font-size:12px;padding:5px 8px;" />
+            <input type="time" id="manualTime" onchange="refreshClockPreview()" class="field-input" style="font-size:12px;padding:5px 8px;" />
           </div>
         </div>
 
@@ -762,7 +818,7 @@
   <section id="screenReceipt" class="device-frame full-blue-screen hidden">
     <main class="full-blue-scroll no-scrollbar">
       <!-- Baris 1: Icon Coins Ceklis Besar -->
-      <div class="coin-badge" style="margin-bottom:20px;">
+      <div class="coin-badge">
         <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Koin Centang Berhasil">
           <circle cx="50" cy="50" r="47" fill="#FFCE18"/>
           <circle cx="50" cy="50" r="38" fill="#F5B408"/>
@@ -771,22 +827,22 @@
       </div>
 
       <!-- Baris 2: Teks Kirim Ke Saldo Besar -->
-      <div id="displayDestinationText" style="font-size:clamp(19px, 5.2vw, 23px);font-weight:700;color:#FFFFFF;letter-spacing:0.01em;margin-bottom:6px;text-align:center;word-break:break-word;line-height:1.25;">
+      <div id="displayDestinationText" style="font-size:var(--blue-dest-fs);font-weight:700;color:#FFFFFF;letter-spacing:0.01em;margin-bottom:5px;text-align:center;word-break:break-word;line-height:1.25;">
         Kirim Ke Saldo DANA
       </div>
 
       <!-- Baris 3: Nama Target Besar -->
-      <div id="displayRecipientHeading" style="font-size:clamp(23px, 6.4vw, 28px);font-weight:700;color:#FFFFFF;letter-spacing:0.015em;margin-bottom:4px;text-align:center;word-break:break-word;line-height:1.2;">
+      <div id="displayRecipientHeading" style="font-size:var(--blue-name-fs);font-weight:700;color:#FFFFFF;letter-spacing:0.015em;margin-bottom:4px;text-align:center;word-break:break-word;line-height:1.2;">
         -
       </div>
 
       <!-- Baris 4: Nomor HP Besar -->
-      <div id="displayRecipientPhone" class="tabular-nums hidden" style="font-size:clamp(20px, 5.6vw, 24px);font-weight:700;color:#FFFFFF;letter-spacing:0.02em;margin-bottom:10px;text-align:center;word-break:break-word;line-height:1.25;">
+      <div id="displayRecipientPhone" class="tabular-nums hidden" style="font-size:var(--blue-phone-fs);font-weight:700;color:#FFFFFF;letter-spacing:0.02em;margin-bottom:8px;text-align:center;word-break:break-word;line-height:1.25;">
         -
       </div>
 
       <!-- Baris 5: Rp dan Angka Besar -->
-      <div id="displayBigAmount" class="tabular-nums" style="font-size:clamp(46px, 13vw, 60px);font-weight:800;color:#FFFFFF;line-height:1.1;letter-spacing:-0.015em;margin-top:4px;margin-bottom:18px;text-align:center;word-break:break-word;">
+      <div id="displayBigAmount" class="tabular-nums" style="font-size:calc(var(--blue-amount-fs) * var(--blue-amount-scale));font-weight:800;color:#FFFFFF;line-height:1.1;letter-spacing:-0.015em;margin-top:4px;margin-bottom:16px;text-align:center;word-break:break-word;">
         Rp0
       </div>
 
@@ -828,50 +884,50 @@
         <div class="receipt-card">
           <div class="watermark-layer"></div>
 
-          <div style="position:relative;z-index:10;padding:var(--rc-pad-top) 16px var(--rc-pad-bot) 16px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+          <div style="position:relative;z-index:10;padding:var(--rc-pad-top) var(--rc-px) var(--rc-pad-bot) var(--rc-px);display:flex;flex-direction:column;align-items:center;justify-content:center;">
             <div style="display:flex;align-items:center;gap:8px;">
-              <svg width="29" height="29" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg style="width:var(--rc-logo-size);height:var(--rc-logo-size);" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <circle cx="20" cy="20" r="20" fill="#118EE9"/>
                 <path d="M10.5 16.2C13.8 14.3 17.2 14.3 20.5 16.2C23.8 18.1 27.2 18.1 29.5 16.4V23.8C27.2 25.5 23.8 25.5 20.5 23.6C17.2 21.7 13.8 21.7 10.5 23.6V16.2Z" fill="#FFFFFF"/>
               </svg>
-              <span style="font-size:20px;font-weight:700;letter-spacing:0.14em;color:#118EE9;line-height:1;">DANA</span>
+              <span style="font-size:var(--rc-logo-fs);font-weight:700;letter-spacing:0.14em;color:#118EE9;line-height:1;">DANA</span>
             </div>
           </div>
 
-          <div class="tabular-nums" style="position:relative;z-index:10;padding:0 15px 7px 15px;display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:clamp(10px, 2.8vw, 11px);color:#8A94A6;">
+          <div class="tabular-nums" style="position:relative;z-index:10;padding:0 var(--rc-px) 7px var(--rc-px);display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:var(--rc-meta-fs);color:#8A94A6;">
             <span id="displayDateTime" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">20 Nov 2026 • 22:32</span>
             <span id="displayIdDana" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;">ID DANA 0858••••2418</span>
           </div>
 
           <div class="straight-divider"></div>
 
-          <div style="position:relative;z-index:10;padding:var(--rc-pad-bot) 15px var(--rc-pad-bot) 15px;">
+          <div style="position:relative;z-index:10;padding:var(--rc-pad-bot) var(--rc-px) var(--rc-pad-bot) var(--rc-px);">
             <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
               <span style="width:15px;height:15px;border-radius:9999px;background:#10B981;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                 <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
               </span>
-              <span style="font-size:11.5px;font-weight:500;color:#4A5568;">Transaksi berhasil!</span>
+              <span style="font-size:var(--rc-status-fs);font-weight:500;color:#4A5568;">Transaksi berhasil!</span>
             </div>
 
-            <p id="displaySummaryText" style="margin:0 0 8px 0;font-size:clamp(11.5px, 3.3vw, 12.5px);font-weight:600;color:#1A1A1A;line-height:1.35;word-break:break-word;">
+            <p id="displaySummaryText" style="margin:0 0 8px 0;font-size:var(--rc-summary-fs);font-weight:600;color:#1A1A1A;line-height:1.35;word-break:break-word;">
               Kirim Uang Rp0 ke -
             </p>
 
             <div class="total-pay-box" style="margin-bottom:8px;">
-              <span style="font-size:12px;font-weight:700;color:#1A1A1A;">Total Bayar</span>
+              <span style="font-size:var(--rc-label-fs);font-weight:700;color:#1A1A1A;">Total Bayar</span>
               <div style="display:flex;align-items:center;gap:4px;">
-                <span id="displayTotalPay" class="tabular-nums" style="font-size:13px;font-weight:700;color:#1A1A1A;">Rp0</span>
+                <span id="displayTotalPay" class="tabular-nums" style="font-size:var(--rc-total-fs);font-weight:700;color:#1A1A1A;">Rp0</span>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9AA5B4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                   <polyline points="6 9 12 15 18 9"></polyline>
                 </svg>
               </div>
             </div>
 
-            <div style="display:flex;align-items:flex-start;justify-content:space-between;font-size:11px;padding-bottom:7px;border-bottom:1px solid #EEF1F5;">
-              <span style="color:#8A94A6;">Metode Pembayaran</span>
-              <div id="displayPaymentMethod" style="text-align:right;font-weight:500;color:#1A1A1A;line-height:1.25;">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;font-size:var(--rc-meta-fs);padding-bottom:7px;border-bottom:1px solid #EEF1F5;">
+              <span style="color:#8A94A6;flex-shrink:0;">Metode Pembayaran</span>
+              <div id="displayPaymentMethod" style="text-align:right;font-weight:500;color:#1A1A1A;line-height:1.25;max-width:60%;word-break:break-word;">
                 <div>DANA</div>
                 <div style="font-size:10px;">(SmartPay)</div>
               </div>
@@ -879,41 +935,41 @@
 
             <div style="border-bottom:1px solid #EEF1F5;">
               <button type="button" onclick="toggleAccordion('accRecipient')" style="width:100%;padding:var(--rc-row-py) 0;display:flex;align-items:center;justify-content:space-between;text-align:left;background:transparent;border:none;cursor:pointer;">
-                <span style="font-size:11.5px;font-weight:600;color:#1A1A1A;">Detail Penerima</span>
-                <svg id="icon-accRecipient" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9AA5B4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.1s;">
+                <span style="font-size:var(--rc-label-fs);font-weight:600;color:#1A1A1A;">Detail Penerima</span>
+                <svg id="icon-accRecipient" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9AA5B4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.1s;flex-shrink:0;">
                   <polyline points="6 9 12 15 18 9"></polyline>
                 </svg>
               </button>
-              <div id="accRecipient" class="hidden" style="padding-bottom:7px;font-size:10.5px;color:#4A5568;">
+              <div id="accRecipient" class="hidden" style="padding-bottom:7px;font-size:var(--rc-sub-fs);color:#4A5568;">
                 <div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:3px;">
-                  <span style="color:#8A94A6;">Nama</span>
-                  <span id="accRecipientName" style="font-weight:600;color:#1A1A1A;text-align:right;">-</span>
+                  <span style="color:#8A94A6;flex-shrink:0;">Nama</span>
+                  <span id="accRecipientName" style="font-weight:600;color:#1A1A1A;text-align:right;word-break:break-word;min-width:0;">-</span>
                 </div>
                 <div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:3px;">
-                  <span style="color:#8A94A6;">Nomor</span>
-                  <span id="accRecipientPhone" class="tabular-nums" style="font-weight:600;color:#1A1A1A;text-align:right;">-</span>
+                  <span style="color:#8A94A6;flex-shrink:0;">Nomor</span>
+                  <span id="accRecipientPhone" class="tabular-nums" style="font-weight:600;color:#1A1A1A;text-align:right;word-break:break-word;min-width:0;">-</span>
                 </div>
                 <div style="display:flex;justify-content:space-between;gap:8px;">
-                  <span style="color:#8A94A6;">Tujuan</span>
-                  <span id="accRecipientDest" style="font-weight:600;color:#1A1A1A;text-align:right;">DANA</span>
+                  <span style="color:#8A94A6;flex-shrink:0;">Tujuan</span>
+                  <span id="accRecipientDest" style="font-weight:600;color:#1A1A1A;text-align:right;word-break:break-word;min-width:0;">DANA</span>
                 </div>
               </div>
             </div>
 
             <div>
               <button type="button" onclick="toggleAccordion('accTx')" style="width:100%;padding-top:var(--rc-row-py);display:flex;align-items:center;justify-content:space-between;text-align:left;background:transparent;border:none;cursor:pointer;">
-                <span style="font-size:11.5px;font-weight:600;color:#1A1A1A;">Detail Transaksi</span>
-                <svg id="icon-accTx" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9AA5B4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.1s;">
+                <span style="font-size:var(--rc-label-fs);font-weight:600;color:#1A1A1A;">Detail Transaksi</span>
+                <svg id="icon-accTx" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9AA5B4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.1s;flex-shrink:0;">
                   <polyline points="6 9 12 15 18 9"></polyline>
                 </svg>
               </button>
-              <div id="accTx" class="hidden" style="padding-top:6px;font-size:10px;color:#4A5568;">
+              <div id="accTx" class="hidden" style="padding-top:6px;font-size:var(--rc-sub-fs);color:#4A5568;">
                 <div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:3px;">
                   <span style="color:#8A94A6;flex-shrink:0;">ID Transaksi</span>
-                  <span id="accTxCode" class="tabular-nums" style="font-weight:500;color:#1A1A1A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">202611202232148001001668492014</span>
+                  <span id="accTxCode" class="tabular-nums" style="font-weight:500;color:#1A1A1A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;min-width:0;">202611202232148001001668492014</span>
                 </div>
                 <div style="display:flex;justify-content:space-between;gap:8px;">
-                  <span style="color:#8A94A6;">Biaya Admin</span>
+                  <span style="color:#8A94A6;flex-shrink:0;">Biaya Admin</span>
                   <span style="font-weight:500;color:#10B981;">Gratis</span>
                 </div>
               </div>
@@ -984,7 +1040,7 @@
             </div>
           </div>
 
-          <div style="font-size:8px;color:#9AA5B4;line-height:1.25;">
+          <div style="font-size:var(--rc-footer-fs);color:#9AA5B4;line-height:1.25;">
             <p style="margin:0;">*Termasuk PPN • PT Espay Debit Indonesia Koe</p>
             <p style="margin:0;">NPWP: 073.210.332.0-613.000 • Capital Place Lt. 18, Kuningan Barat, Jakarta</p>
           </div>
@@ -1012,20 +1068,61 @@
     const MONTHS_ID = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
 
     function syncViewportHeight() {
-      const h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-      document.documentElement.style.setProperty('--app-height', `${h}px`);
+      const vw = window.visualViewport ? window.visualViewport.width : window.innerWidth;
+      const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+      const root = document.documentElement;
+      root.style.setProperty('--app-height', `${vh}px`);
+
+      // Deteksi mode frame (Tablet / Desktop >= 600x600 vs HP Fullscreen)
+      const isFramed = vw >= 600 && vh >= 600;
+      const fw = isFramed ? Math.min(vw - 24, 430) : vw;
+      const fh = isFramed ? Math.min(vh - 24, 880) : vh;
+
+      // Skala Layar 2 (Ringkasan Biru) agar selalu pas & proporsional di semua perangkat
+      const coinSize = Math.round(Math.max(84, Math.min(fw * 0.33, fh * 0.17, 142)));
+      const destFs = Math.round(Math.max(16, Math.min(fw * 0.052, fh * 0.028, 23)));
+      const nameFs = Math.round(Math.max(19, Math.min(fw * 0.064, fh * 0.034, 28)));
+      const phoneFs = Math.round(Math.max(17, Math.min(fw * 0.056, fh * 0.030, 24)));
+      const amountFs = Math.round(Math.max(36, Math.min(fw * 0.13, fh * 0.072, 60)));
+
+      root.style.setProperty('--coin-size', `${coinSize}px`);
+      root.style.setProperty('--blue-dest-fs', `${destFs}px`);
+      root.style.setProperty('--blue-name-fs', `${nameFs}px`);
+      root.style.setProperty('--blue-phone-fs', `${phoneFs}px`);
+      root.style.setProperty('--blue-amount-fs', `${amountFs}px`);
+
+      // Skala Layar 3 (Detail Transaksi) menyesuaikan lebar & tinggi layar perangkat
+      const rcPadTop = Math.round(Math.max(10, Math.min(fh * 0.022, 22)));
+      const rcPadBot = Math.round(Math.max(7, Math.min(fh * 0.015, 16)));
+      const rcPx = Math.round(Math.max(12, Math.min(fw * 0.04, 18)));
+      const rcGap = Math.round(Math.max(6, Math.min(fh * 0.016, 18)));
+      const rcRowPy = Math.round(Math.max(6, Math.min(fh * 0.013, 12)));
+      const rcBackdropH = Math.round(Math.max(34, Math.min(fh * 0.058, 54)));
+      const bannerW = Math.round(Math.max(120, Math.min(fw * 0.39, fh * 0.205, 174)));
+      const bannerH = Math.round(bannerW * 0.79);
+
+      root.style.setProperty('--rc-pad-top', `${rcPadTop}px`);
+      root.style.setProperty('--rc-pad-bot', `${rcPadBot}px`);
+      root.style.setProperty('--rc-px', `${rcPx}px`);
+      root.style.setProperty('--rc-gap', `${rcGap}px`);
+      root.style.setProperty('--rc-row-py', `${rcRowPy}px`);
+      root.style.setProperty('--rc-backdrop-h', `${rcBackdropH}px`);
+      root.style.setProperty('--banner-w', `${bannerW}px`);
+      root.style.setProperty('--banner-h', `${bannerH}px`);
 
       const breakdownEl = document.getElementById('screenDetailBreakdown');
       if (breakdownEl) {
         breakdownEl.classList.remove('density-compact', 'density-tall');
-        if (h <= 680) {
+        if (fh <= 680 || fw <= 350) {
           breakdownEl.classList.add('density-compact');
-        } else if (h >= 820) {
+        } else if (fh >= 820 && fw >= 390) {
           breakdownEl.classList.add('density-tall');
         }
       }
-      updateDeviceBadge();
+
+      updateDeviceBadge(Math.round(fw), Math.round(fh), vw, vh, isFramed);
     }
+
     window.addEventListener('resize', syncViewportHeight);
     window.addEventListener('orientationchange', () => setTimeout(syncViewportHeight, 150));
     if (window.visualViewport) {
@@ -1152,11 +1249,16 @@
       }
     }
 
-    function updateDeviceBadge() {
+    function updateDeviceBadge(fw, fh, vw, vh, isFramed) {
       const badge = document.getElementById('deviceSizeBadge');
       if (!badge) return;
-      const isDesktop = window.matchMedia('(min-width: 768px) and (hover: hover) and (pointer: fine)').matches;
-      badge.textContent = isDesktop ? 'Desktop Fit' : 'Full HP';
+      if (isFramed) {
+        const isDesktopPointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+        badge.textContent = `${isDesktopPointer ? 'Desktop' : 'Tablet'} ${fw}×${fh}`;
+      } else {
+        const orient = vw > vh ? 'Landscape' : 'HP';
+        badge.textContent = `${orient} ${fw}×${fh}`;
+      }
     }
 
     function formatRupiah(numStr) {
@@ -1290,7 +1392,19 @@
         phoneHeadingEl.classList.add('hidden');
       }
 
-      document.getElementById('displayBigAmount').textContent = `Rp${amount}`;
+      const fullAmountText = `Rp${amount}`;
+      document.getElementById('displayBigAmount').textContent = fullAmountText;
+
+      // Penyesuaian otomatis ukuran angka Rp jika digit sangat panjang agar tetap rapi 1 baris di HP
+      let amountScale = 1;
+      if (fullAmountText.length >= 14) {
+        amountScale = 0.68;
+      } else if (fullAmountText.length >= 11) {
+        amountScale = 0.82;
+      } else if (fullAmountText.length >= 9) {
+        amountScale = 0.92;
+      }
+      document.documentElement.style.setProperty('--blue-amount-scale', String(amountScale));
 
       // Layar 3 (Rincian Detail Transaksi)
       document.getElementById('displayDateTime').textContent = formattedTime;
