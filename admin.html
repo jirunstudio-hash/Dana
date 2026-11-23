@@ -9,7 +9,6 @@
         body { background-color: #0f172a; color: #f8fafc; padding: 20px; }
         .container { max-width: 900px; margin: 0 auto; }
         
-        /* Login Screen */
         #loginScreen {
             max-width: 360px;
             margin: 100px auto;
@@ -26,7 +25,6 @@
             background: #0f172a; color: #fff; text-align: center; font-size: 16px;
         }
         
-        /* Dashboard */
         #dashboard { display: none; }
         .header {
             display: flex; justify-content: space-between; align-items: center;
@@ -70,14 +68,12 @@
 <body>
 
 <div class="container">
-    <!-- Layar Kunci PIN -->
     <div id="loginScreen">
         <h2>🔒 Login Admin</h2>
         <input type="password" id="pinInput" placeholder="Masukkan PIN Admin" onkeypress="if(event.key==='Enter') checkPin()">
         <button class="btn-primary" style="width:100%" onclick="checkPin()">Masuk</button>
     </div>
 
-    <!-- Halaman Utama Admin -->
     <div id="dashboard">
         <div class="header">
             <div>
@@ -97,11 +93,9 @@
 </div>
 
 <script>
-    // ================= KONFIGURASI ADMIN & JSONSTORAGE =================
-    const ADMIN_PIN = "123456"; // Ganti dengan PIN rahasia Anda
-    const JSON_URL  = "GANTI_DENGAN_ENDPOINT_URL_JSONSTORAGE_ANDA";
-    const API_KEY   = "GANTI_DENGAN_API_KEY_ANDA";
-    // ===================================================================
+    const ADMIN_PIN = "123456";
+    const JSON_URL  = "https://api.jsonstorage.net/v1/json/587183f3-b9d9-4a5d-b9b0-063df3a586fe/cca91d54-af4b-4a64-9a4b-20fc0baaf88b";
+    const API_KEY   = "b3b1f259-fdd1-4906-b083-51fe497ffd59";
 
     function checkPin() {
         const input = document.getElementById('pinInput').value;
@@ -119,7 +113,6 @@
         container.innerHTML = '<div class="empty-state">Mengambil data terbaru...</div>';
 
         try {
-            // Tambah parameter waktu agar tidak terkena cache browser
             const res = await fetch(`${JSON_URL}?t=${Date.now()}`);
             if (!res.ok) throw new Error("Gagal mengambil data");
 
@@ -156,7 +149,7 @@
     async function clearLogs() {
         if (!confirm("Yakin ingin menghapus seluruh riwayat lokasi?")) return;
         try {
-            const putUrl = `${JSON_URL}?apiKey=${API_KEY}`;
+            const putUrl = `${JSON_URL}?apiKey=${encodeURIComponent(API_KEY)}`;
             const res = await fetch(putUrl, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
