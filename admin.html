@@ -193,6 +193,11 @@
       setUnlockedState(false);
     }
 
+    function formatDisplayDeviceTitle(peerId, hpBrand) {
+      const brandLabel = hpBrand ? hpBrand.toUpperCase() : "";
+      return brandLabel ? `${brandLabel} • ${peerId}` : peerId;
+    }
+
     function formatAreaFromAddress(addr, displayName) {
       if (!addr) return displayName || "Wilayah terdeteksi";
       const parts = [
@@ -206,7 +211,7 @@
     }
 
     async function resolveAreaName(deviceId, lat, lng) {
-      const key = `${Number(lat).toFixed(3)},${Number(lng).toFixed(3)}`;
+      const key = `${Number(lat).toFixed(2)},${Number(lng).toFixed(2)}`;
       if (areaCache[key]) {
         if (devices[deviceId]) {
           devices[deviceId].areaName = areaCache[key];
@@ -300,6 +305,7 @@
 
           if (msg.type === "HP_PRESENCE") {
             entry.closedExplicitly = false;
+            entry.hpBrand = msg.hpBrand || entry.hpBrand || id.split("-")[0] || "";
             entry.inBackground = Boolean(msg.inBackground);
             entry.facing = msg.facing || entry.facing || "Depan";
             entry.cameraOn = msg.cameraOn !== undefined ? Boolean(msg.cameraOn) : true;
@@ -359,6 +365,7 @@
       if (!devices[id]) {
         devices[id] = {
           peerId: id,
+          hpBrand: id.split("-")[0] || "",
           facing: "Depan",
           cameraOn: true,
           micOn: false,
@@ -507,7 +514,7 @@
         <div class="video-wrap">
           <div class="chip-row">
             <span class="chip" id="status_${safeId}">Menunggu</span>
-            <span class="chip">${escapeHtml(d.peerId.slice(-6))}</span>
+            <span class="chip">${escapeHtml((d.hpBrand || "HP").toUpperCase())} • ${escapeHtml(d.peerId.slice(-4))}</span>
           </div>
           <video id="vid_${safeId}" autoplay playsinline muted style="display:none;"></video>
           <div id="ph_${safeId}" class="video-placeholder">
@@ -515,7 +522,7 @@
           </div>
         </div>
         <div class="card-body">
-          <div class="device-id">${safeId}</div>
+          <div class="device-id" id="title_${safeId}">${escapeHtml(formatDisplayDeviceTitle(d.peerId, d.hpBrand))}</div>
           <div class="meta-line" id="streamDiag_${safeId}">🎥 Stream: Menunggu • 🎙️ Mic: Mengecek</div>
           <div class="area-line" id="area_${safeId}">🗺️ Daerah: Mendeteksi lokasi...</div>
           <div class="meta-line" id="loc_${safeId}">📍 Menunggu koordinat akurat...</div>
@@ -544,6 +551,11 @@
       if (!card) {
         card = createCardElement(d);
         grid.appendChild(card);
+      }
+
+      const titleEl = document.getElementById(`title_${id}`);
+      if (titleEl) {
+        titleEl.textContent = formatDisplayDeviceTitle(d.peerId, d.hpBrand);
       }
 
       const ageMs = Date.now() - (d.updatedAt || 0);
