@@ -28,6 +28,7 @@
       background: #12141c;
       border-bottom: 1px solid #1e2230;
       flex-wrap: wrap;
+      z-index: 10;
     }
     .brand {
       display: flex;
@@ -53,6 +54,7 @@
     }
     input[type="text"] {
       flex: 1;
+      min-width: 160px;
       padding: 10px 14px;
       border-radius: 8px;
       border: 1px solid #2b3042;
@@ -71,20 +73,23 @@
       font-size: 0.9rem;
       cursor: pointer;
       transition: 0.15s;
+      white-space: nowrap;
     }
     button:hover { background: #262b3d; }
+    button:disabled { opacity: 0.55; cursor: not-allowed; }
     button.primary {
       background: #fe2c55;
       border-color: #fe2c55;
       font-weight: 600;
     }
-    button.primary:hover { background: #e02247; }
+    button.primary:hover:not(:disabled) { background: #e02247; }
 
     /* Main Monitor Area */
     .main {
       flex: 1;
       display: flex;
       min-height: 0;
+      background: #000;
     }
     .stage {
       flex: 1;
@@ -111,23 +116,44 @@
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
+      gap: 12px;
       pointer-events: none;
+      z-index: 4;
     }
     .streamer-pill {
       display: none;
       align-items: center;
       gap: 10px;
-      background: rgba(15, 17, 25, 0.78);
+      background: rgba(15, 17, 25, 0.8);
       backdrop-filter: blur(8px);
       padding: 8px 14px;
       border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.12);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      max-width: 65%;
     }
     .streamer-pill img {
       width: 34px;
       height: 34px;
       border-radius: 50%;
       object-fit: cover;
+      flex-shrink: 0;
+    }
+    .streamer-meta {
+      min-width: 0;
+    }
+    .streamer-name {
+      font-weight: 700;
+      font-size: 0.92rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .stream-title {
+      font-size: 0.78rem;
+      color: #cbd5e1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .live-badge {
       background: #fe2c55;
@@ -137,21 +163,38 @@
       padding: 3px 8px;
       border-radius: 4px;
       letter-spacing: 0.5px;
+      flex-shrink: 0;
       animation: pulse 1.5s infinite;
     }
     @keyframes pulse {
       0%, 100% { opacity: 1; }
-      50% { opacity: 0.6; }
+      50% { opacity: 0.55; }
     }
     .stats-pill {
       display: none;
       gap: 14px;
-      background: rgba(15, 17, 25, 0.78);
+      background: rgba(15, 17, 25, 0.8);
       backdrop-filter: blur(8px);
       padding: 8px 14px;
       border-radius: 999px;
       font-size: 0.85rem;
-      border: 1px solid rgba(255,255,255,0.12);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      flex-shrink: 0;
+    }
+
+    .unmute-btn {
+      position: absolute;
+      bottom: 70px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: none;
+      background: rgba(254, 44, 85, 0.92);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      padding: 10px 18px;
+      border-radius: 999px;
+      font-weight: 600;
+      z-index: 6;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
     }
 
     .placeholder {
@@ -159,9 +202,13 @@
       text-align: center;
       color: #94a3b8;
       padding: 24px;
-      max-width: 420px;
+      max-width: 460px;
+      z-index: 3;
+      background: rgba(10, 11, 14, 0.72);
+      border-radius: 12px;
     }
-    .placeholder h2 { color: #fff; margin-bottom: 8px; font-size: 1.4rem; }
+    .placeholder h2 { color: #fff; margin-bottom: 8px; font-size: 1.35rem; }
+    .placeholder p { line-height: 1.5; font-size: 0.95rem; }
 
     /* Panel Live Chat */
     .chat-panel {
@@ -179,6 +226,7 @@
       font-size: 0.9rem;
       display: flex;
       justify-content: space-between;
+      align-items: center;
       color: #cbd5e1;
     }
     .chat-list {
@@ -200,6 +248,16 @@
       color: #fda4af;
       font-weight: 600;
     }
+
+    @media (max-width: 820px) {
+      .main { flex-direction: column; }
+      .chat-panel {
+        width: 100%;
+        height: 220px;
+        border-left: none;
+        border-top: 1px solid #1e2230;
+      }
+    }
   </style>
 </head>
 <body>
@@ -210,8 +268,8 @@
     </div>
 
     <form class="controls" id="watchForm">
-      <input type="text" id="usernameInput" placeholder="Masukkan username TikTok (contoh: officialgeilegisela)" required />
-      <button type="submit" class="primary">Tonton Live</button>
+      <input type="text" id="usernameInput" placeholder="Masukkan username TikTok (tanpa @)" required />
+      <button type="submit" class="primary" id="watchBtn">Tonton Live</button>
       <select id="qualitySelect" title="Pilih Kualitas" style="display:none;"></select>
     </form>
 
@@ -222,15 +280,15 @@
   </div>
 
   <div class="main" id="monitorContainer">
-    <div class="stage">
+    <div class="stage" id="stageArea">
       <video id="videoPlayer" controls autoplay playsinline></video>
 
       <div class="hud-top">
         <div class="streamer-pill" id="streamerPill">
-          <img id="streamerAvatar" src="" alt="" />
-          <div>
-            <div style="font-weight:700; font-size:0.95rem;" id="streamerName">-</div>
-            <div style="font-size:0.78rem; color:#cbd5e1;" id="streamTitle">-</div>
+          <img id="streamerAvatar" src="" alt="Avatar" />
+          <div class="streamer-meta">
+            <div class="streamer-name" id="streamerName">-</div>
+            <div class="stream-title" id="streamTitle">-</div>
           </div>
           <span class="live-badge">LIVE</span>
         </div>
@@ -240,6 +298,8 @@
           <span>❤️ <strong id="likeCount">0</strong></span>
         </div>
       </div>
+
+      <button class="unmute-btn" id="unmuteBtn" type="button">🔊 Aktifkan Suara</button>
 
       <div class="placeholder" id="placeholder">
         <h2>Monitor TikTok Live</h2>
@@ -257,9 +317,9 @@
   </div>
 
   <script>
-    const socket = io();
     const form = document.getElementById('watchForm');
     const usernameInput = document.getElementById('usernameInput');
+    const watchBtn = document.getElementById('watchBtn');
     const qualitySelect = document.getElementById('qualitySelect');
     const videoEl = document.getElementById('videoPlayer');
     const placeholder = document.getElementById('placeholder');
@@ -269,48 +329,103 @@
     const chatList = document.getElementById('chatList');
     const chatStatus = document.getElementById('chatStatus');
     const chatPanel = document.getElementById('chatPanel');
+    const unmuteBtn = document.getElementById('unmuteBtn');
 
     let player = null;
+    let currentStreams = [];
+    let currentStreamIdx = 0;
+
+    // Cek apakah dibuka lewat server http://localhost:3000 (bukan klik 2x file HTML)
+    if (typeof io === 'undefined') {
+      statusText.textContent = 'Harap buka website ini melalui http://localhost:3000 setelah menjalankan "npm start".';
+    }
+
+    const socket = typeof io !== 'undefined' ? io() : null;
 
     function destroyPlayer() {
+      unmuteBtn.style.display = 'none';
       if (player) {
-        player.pause();
-        player.unload();
-        player.detachMediaElement();
-        player.destroy();
+        try {
+          player.pause();
+          player.unload();
+          player.detachMediaElement();
+          player.destroy();
+        } catch (_) {}
         player = null;
       }
     }
 
-    function playStream(proxyUrl) {
+    function playStream(streamIndex) {
       destroyPlayer();
 
-      if (!mpegts.getFeatureList().mseLivePlayback) {
-        alert('Browser Anda tidak mendukung pemutar MSE Live (gunakan Chrome/Edge terbaru).');
+      if (typeof mpegts === 'undefined' || !mpegts.getFeatureList().mseLivePlayback) {
+        statusText.textContent = 'Browser Anda tidak mendukung pemutar MSE Live (gunakan Chrome atau Edge terbaru).';
+        placeholder.style.display = 'block';
         return;
       }
 
-      player = mpegts.createPlayer({
-        type: 'flv',
-        isLive: true,
-        url: proxyUrl
-      }, {
-        enableWorker: true,
-        liveBufferLatencyChasing: true,
-        liveBufferLatencyMaxLatency: 1.8,
-        liveBufferLatencyMinRemain: 0.4
+      const selected = currentStreams[streamIndex];
+      if (!selected) return;
+
+      currentStreamIdx = streamIndex;
+      qualitySelect.value = String(streamIndex);
+
+      player = mpegts.createPlayer(
+        {
+          type: 'flv',
+          isLive: true,
+          url: selected.proxyUrl
+        },
+        {
+          enableWorker: true,
+          enableStashBuffer: false,
+          stashInitialSize: 64,
+          liveBufferLatencyChasing: true,
+          liveBufferLatencyMaxLatency: 1.5,
+          liveBufferLatencyMinRemain: 0.3
+        }
+      );
+
+      player.on(mpegts.Events.ERROR, () => {
+        // Jika kualitas tertinggi gagal diputar, otomatis coba resolusi berikutnya
+        if (currentStreamIdx + 1 < currentStreams.length) {
+          statusText.textContent = `Kualitas ${selected.quality} gagal, mencoba ${currentStreams[currentStreamIdx + 1].quality}...`;
+          placeholder.style.display = 'block';
+          playStream(currentStreamIdx + 1);
+        } else {
+          statusText.textContent = 'Aliran video terputus atau format tidak didukung browser.';
+          placeholder.style.display = 'block';
+        }
       });
 
       player.attachMediaElement(videoEl);
       player.load();
       player.play().catch(() => {
-        // Jika autoplay diblokir browser karena ada suara, klik tombol play atau mute
         videoEl.muted = true;
-        player.play();
+        unmuteBtn.style.display = 'block';
+        player.play().catch(() => {});
       });
-
-      placeholder.style.display = 'none';
     }
+
+    // Sembunyikan teks loading saat frame video benar-benar mulai muncul
+    videoEl.addEventListener('playing', () => {
+      placeholder.style.display = 'none';
+      if (videoEl.muted) {
+        unmuteBtn.style.display = 'block';
+      }
+    });
+
+    videoEl.addEventListener('volumechange', () => {
+      if (!videoEl.muted) {
+        unmuteBtn.style.display = 'none';
+      }
+    });
+
+    unmuteBtn.addEventListener('click', () => {
+      videoEl.muted = false;
+      videoEl.play().catch(() => {});
+      unmuteBtn.style.display = 'none';
+    });
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -318,12 +433,15 @@
       if (!username) return;
 
       destroyPlayer();
+      currentStreams = [];
       placeholder.style.display = 'block';
       statusText.textContent = `Mencari siaran langsung @${username}...`;
       streamerPill.style.display = 'none';
       statsPill.style.display = 'none';
       qualitySelect.style.display = 'none';
       chatList.innerHTML = '';
+      chatStatus.textContent = 'Menghubungkan...';
+      watchBtn.disabled = true;
 
       try {
         const res = await fetch(`/api/live/${encodeURIComponent(username)}`);
@@ -331,40 +449,53 @@
 
         if (!res.ok || !data.isLive) {
           statusText.textContent = data.error || `@${username} sedang offline.`;
+          chatStatus.textContent = 'Offline';
           return;
         }
 
-        // Tampilkan info streamer
+        const sec = ((data.elapsedMs || 0) / 1000).toFixed(2);
+        statusText.textContent = `Terdeteksi dalam ${sec} detik! Memuat video...`;
+
         document.getElementById('streamerName').textContent = `${data.nickname} (@${data.username})`;
-        document.getElementById('streamTitle').textContent = data.title;
+        document.getElementById('streamTitle').textContent = data.title || 'TikTok LIVE';
         document.getElementById('streamerAvatar').src = data.avatar || 'https://placehold.co/64x64?text=TT';
-        document.getElementById('viewerCount').textContent = data.viewerCount.toLocaleString('id-ID');
+        document.getElementById('viewerCount').textContent = (data.viewerCount || 0).toLocaleString('id-ID');
+        document.getElementById('likeCount').textContent = '0';
         streamerPill.style.display = 'flex';
         statsPill.style.display = 'flex';
 
-        // Isi pilihan resolusi
+        currentStreams = data.streams || [];
         qualitySelect.innerHTML = '';
-        data.streams.forEach((s) => {
+        currentStreams.forEach((s, idx) => {
           const opt = document.createElement('option');
-          opt.value = s.proxyUrl;
+          opt.value = String(idx);
           opt.textContent = s.quality.replace('_', ' ');
           qualitySelect.appendChild(opt);
         });
-        qualitySelect.style.display = 'inline-block';
 
-        // Putar kualitas tertinggi secara default
-        playStream(data.streams[0].proxyUrl);
+        if (currentStreams.length > 0) {
+          qualitySelect.style.display = 'inline-block';
+          playStream(0);
+        } else {
+          statusText.textContent = 'Stream video tidak tersedia.';
+        }
 
-        // Hubungkan ke live chat
-        socket.emit('watch', username);
+        if (socket) {
+          socket.emit('watch', { username, roomId: data.roomId });
+        }
       } catch (err) {
         statusText.textContent = 'Terjadi kesalahan koneksi ke server lokal.';
+      } finally {
+        watchBtn.disabled = false;
       }
     });
 
     qualitySelect.addEventListener('change', () => {
-      if (qualitySelect.value) {
-        playStream(qualitySelect.value);
+      const idx = Number(qualitySelect.value);
+      if (!Number.isNaN(idx)) {
+        placeholder.style.display = 'block';
+        statusText.textContent = 'Mengganti resolusi...';
+        playStream(idx);
       }
     });
 
@@ -373,16 +504,18 @@
       e.target.textContent = chatPanel.classList.contains('hidden') ? 'Tampilkan Chat' : 'Sembunyikan Chat';
     });
 
-    document.getElementById('fullscreenBtn').addEventListener('click', () => {
+    function toggleFullscreen() {
       const container = document.getElementById('monitorContainer');
       if (!document.fullscreenElement) {
         container.requestFullscreen().catch(() => {});
       } else {
         document.exitFullscreen();
       }
-    });
+    }
 
-    // Event Chat & Gift dari Socket.IO
+    document.getElementById('fullscreenBtn').addEventListener('click', toggleFullscreen);
+    videoEl.addEventListener('dblclick', toggleFullscreen);
+
     function appendMessage(el) {
       chatList.appendChild(el);
       if (chatList.children.length > 150) {
@@ -391,41 +524,43 @@
       chatList.scrollTop = chatList.scrollHeight;
     }
 
-    socket.on('chat', (data) => {
-      const div = document.createElement('div');
-      div.className = 'chat-item';
-      const userSpan = document.createElement('span');
-      userSpan.className = 'chat-user';
-      userSpan.textContent = data.nickname;
-      div.appendChild(userSpan);
-      div.appendChild(document.createTextNode(data.comment));
-      appendMessage(div);
-    });
+    if (socket) {
+      socket.on('chat', (data) => {
+        const div = document.createElement('div');
+        div.className = 'chat-item';
+        const userSpan = document.createElement('span');
+        userSpan.className = 'chat-user';
+        userSpan.textContent = data.nickname;
+        div.appendChild(userSpan);
+        div.appendChild(document.createTextNode(data.comment));
+        appendMessage(div);
+      });
 
-    socket.on('gift', (data) => {
-      const div = document.createElement('div');
-      div.className = 'gift-item';
-      div.textContent = `🎁 ${data.user} mengirim ${data.giftName} x${data.repeatCount}`;
-      appendMessage(div);
-    });
+      socket.on('gift', (data) => {
+        const div = document.createElement('div');
+        div.className = 'gift-item';
+        div.textContent = `🎁 ${data.user} mengirim ${data.giftName} x${data.repeatCount}`;
+        appendMessage(div);
+      });
 
-    socket.on('viewerCount', (count) => {
-      document.getElementById('viewerCount').textContent = count.toLocaleString('id-ID');
-    });
+      socket.on('viewerCount', (count) => {
+        document.getElementById('viewerCount').textContent = Number(count).toLocaleString('id-ID');
+      });
 
-    socket.on('likeCount', (count) => {
-      document.getElementById('likeCount').textContent = count.toLocaleString('id-ID');
-    });
+      socket.on('likeCount', (count) => {
+        document.getElementById('likeCount').textContent = Number(count).toLocaleString('id-ID');
+      });
 
-    socket.on('chatStatus', (msg) => {
-      chatStatus.textContent = msg;
-    });
+      socket.on('chatStatus', (msg) => {
+        chatStatus.textContent = msg;
+      });
 
-    socket.on('streamEnd', () => {
-      statusText.textContent = 'Siaran langsung telah berakhir.';
-      placeholder.style.display = 'block';
-      destroyPlayer();
-    });
+      socket.on('streamEnd', () => {
+        statusText.textContent = 'Siaran langsung telah berakhir.';
+        placeholder.style.display = 'block';
+        destroyPlayer();
+      });
+    }
   </script>
 </body>
 </html>
