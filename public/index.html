@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TikTok Live Monitor</title>
+  <script src="https://cdn.jsdelivr.net/npm/mpegts.js@1.8.0/dist/mpegts.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #0a0b0e;
+      color: #f1f5f9;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Header Bar */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 20px;
+      background: #12141c;
+      border-bottom: 1px solid #1e2230;
+      flex-wrap: wrap;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 1.05rem;
+      letter-spacing: 0.5px;
+    }
+    .brand-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #fe2c55;
+      box-shadow: 0 0 10px #fe2c55;
+    }
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      max-width: 680px;
+    }
+    input[type="text"] {
+      flex: 1;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid #2b3042;
+      background: #0a0b0e;
+      color: #fff;
+      font-size: 0.95rem;
+      outline: none;
+    }
+    input[type="text"]:focus { border-color: #fe2c55; }
+    select, button {
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid #2b3042;
+      background: #1b1f2d;
+      color: #fff;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+    button:hover { background: #262b3d; }
+    button.primary {
+      background: #fe2c55;
+      border-color: #fe2c55;
+      font-weight: 600;
+    }
+    button.primary:hover { background: #e02247; }
+
+    /* Main Monitor Area */
+    .main {
+      flex: 1;
+      display: flex;
+      min-height: 0;
+    }
+    .stage {
+      flex: 1;
+      position: relative;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: #000;
+    }
+
+    /* Overlay Info di Layar Monitor */
+    .hud-top {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      right: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      pointer-events: none;
+    }
+    .streamer-pill {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      background: rgba(15, 17, 25, 0.78);
+      backdrop-filter: blur(8px);
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+    .streamer-pill img {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    .live-badge {
+      background: #fe2c55;
+      color: #fff;
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+    .stats-pill {
+      display: none;
+      gap: 14px;
+      background: rgba(15, 17, 25, 0.78);
+      backdrop-filter: blur(8px);
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .placeholder {
+      position: absolute;
+      text-align: center;
+      color: #94a3b8;
+      padding: 24px;
+      max-width: 420px;
+    }
+    .placeholder h2 { color: #fff; margin-bottom: 8px; font-size: 1.4rem; }
+
+    /* Panel Live Chat */
+    .chat-panel {
+      width: 340px;
+      background: #12141c;
+      border-left: 1px solid #1e2230;
+      display: flex;
+      flex-direction: column;
+    }
+    .chat-panel.hidden { display: none; }
+    .chat-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid #1e2230;
+      font-weight: 600;
+      font-size: 0.9rem;
+      display: flex;
+      justify-content: space-between;
+      color: #cbd5e1;
+    }
+    .chat-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 0.88rem;
+    }
+    .chat-item { line-height: 1.4; word-break: break-word; }
+    .chat-user { color: #38bdf8; font-weight: 600; margin-right: 6px; }
+    .gift-item {
+      background: rgba(254, 44, 85, 0.14);
+      border: 1px solid rgba(254, 44, 85, 0.35);
+      padding: 8px 10px;
+      border-radius: 8px;
+      color: #fda4af;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-dot"></div>
+      <span>LIVE MONITOR</span>
+    </div>
+
+    <form class="controls" id="watchForm">
+      <input type="text" id="usernameInput" placeholder="Masukkan username TikTok (contoh: officialgeilegisela)" required />
+      <button type="submit" class="primary">Tonton Live</button>
+      <select id="qualitySelect" title="Pilih Kualitas" style="display:none;"></select>
+    </form>
+
+    <div style="display:flex; gap:8px;">
+      <button id="toggleChatBtn" type="button">Sembunyikan Chat</button>
+      <button id="fullscreenBtn" type="button">Layar Penuh</button>
+    </div>
+  </div>
+
+  <div class="main" id="monitorContainer">
+    <div class="stage">
+      <video id="videoPlayer" controls autoplay playsinline></video>
+
+      <div class="hud-top">
+        <div class="streamer-pill" id="streamerPill">
+          <img id="streamerAvatar" src="" alt="" />
+          <div>
+            <div style="font-weight:700; font-size:0.95rem;" id="streamerName">-</div>
+            <div style="font-size:0.78rem; color:#cbd5e1;" id="streamTitle">-</div>
+          </div>
+          <span class="live-badge">LIVE</span>
+        </div>
+
+        <div class="stats-pill" id="statsPill">
+          <span>👁️ <strong id="viewerCount">0</strong></span>
+          <span>❤️ <strong id="likeCount">0</strong></span>
+        </div>
+      </div>
+
+      <div class="placeholder" id="placeholder">
+        <h2>Monitor TikTok Live</h2>
+        <p id="statusText">Masukkan username TikTok di atas untuk menampilkan siaran langsung di layar besar.</p>
+      </div>
+    </div>
+
+    <aside class="chat-panel" id="chatPanel">
+      <div class="chat-header">
+        <span>Live Chat</span>
+        <span id="chatStatus" style="font-size:0.75rem; color:#64748b;">Menunggu...</span>
+      </div>
+      <div class="chat-list" id="chatList"></div>
+    </aside>
+  </div>
+
+  <script>
+    const socket = io();
+    const form = document.getElementById('watchForm');
+    const usernameInput = document.getElementById('usernameInput');
+    const qualitySelect = document.getElementById('qualitySelect');
+    const videoEl = document.getElementById('videoPlayer');
+    const placeholder = document.getElementById('placeholder');
+    const statusText = document.getElementById('statusText');
+    const streamerPill = document.getElementById('streamerPill');
+    const statsPill = document.getElementById('statsPill');
+    const chatList = document.getElementById('chatList');
+    const chatStatus = document.getElementById('chatStatus');
+    const chatPanel = document.getElementById('chatPanel');
+
+    let player = null;
+
+    function destroyPlayer() {
+      if (player) {
+        player.pause();
+        player.unload();
+        player.detachMediaElement();
+        player.destroy();
+        player = null;
+      }
+    }
+
+    function playStream(proxyUrl) {
+      destroyPlayer();
+
+      if (!mpegts.getFeatureList().mseLivePlayback) {
+        alert('Browser Anda tidak mendukung pemutar MSE Live (gunakan Chrome/Edge terbaru).');
+        return;
+      }
+
+      player = mpegts.createPlayer({
+        type: 'flv',
+        isLive: true,
+        url: proxyUrl
+      }, {
+        enableWorker: true,
+        liveBufferLatencyChasing: true,
+        liveBufferLatencyMaxLatency: 1.8,
+        liveBufferLatencyMinRemain: 0.4
+      });
+
+      player.attachMediaElement(videoEl);
+      player.load();
+      player.play().catch(() => {
+        // Jika autoplay diblokir browser karena ada suara, klik tombol play atau mute
+        videoEl.muted = true;
+        player.play();
+      });
+
+      placeholder.style.display = 'none';
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = usernameInput.value.replace(/^@/, '').trim();
+      if (!username) return;
+
+      destroyPlayer();
+      placeholder.style.display = 'block';
+      statusText.textContent = `Mencari siaran langsung @${username}...`;
+      streamerPill.style.display = 'none';
+      statsPill.style.display = 'none';
+      qualitySelect.style.display = 'none';
+      chatList.innerHTML = '';
+
+      try {
+        const res = await fetch(`/api/live/${encodeURIComponent(username)}`);
+        const data = await res.json();
+
+        if (!res.ok || !data.isLive) {
+          statusText.textContent = data.error || `@${username} sedang offline.`;
+          return;
+        }
+
+        // Tampilkan info streamer
+        document.getElementById('streamerName').textContent = `${data.nickname} (@${data.username})`;
+        document.getElementById('streamTitle').textContent = data.title;
+        document.getElementById('streamerAvatar').src = data.avatar || 'https://placehold.co/64x64?text=TT';
+        document.getElementById('viewerCount').textContent = data.viewerCount.toLocaleString('id-ID');
+        streamerPill.style.display = 'flex';
+        statsPill.style.display = 'flex';
+
+        // Isi pilihan resolusi
+        qualitySelect.innerHTML = '';
+        data.streams.forEach((s) => {
+          const opt = document.createElement('option');
+          opt.value = s.proxyUrl;
+          opt.textContent = s.quality.replace('_', ' ');
+          qualitySelect.appendChild(opt);
+        });
+        qualitySelect.style.display = 'inline-block';
+
+        // Putar kualitas tertinggi secara default
+        playStream(data.streams[0].proxyUrl);
+
+        // Hubungkan ke live chat
+        socket.emit('watch', username);
+      } catch (err) {
+        statusText.textContent = 'Terjadi kesalahan koneksi ke server lokal.';
+      }
+    });
+
+    qualitySelect.addEventListener('change', () => {
+      if (qualitySelect.value) {
+        playStream(qualitySelect.value);
+      }
+    });
+
+    document.getElementById('toggleChatBtn').addEventListener('click', (e) => {
+      chatPanel.classList.toggle('hidden');
+      e.target.textContent = chatPanel.classList.contains('hidden') ? 'Tampilkan Chat' : 'Sembunyikan Chat';
+    });
+
+    document.getElementById('fullscreenBtn').addEventListener('click', () => {
+      const container = document.getElementById('monitorContainer');
+      if (!document.fullscreenElement) {
+        container.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen();
+      }
+    });
+
+    // Event Chat & Gift dari Socket.IO
+    function appendMessage(el) {
+      chatList.appendChild(el);
+      if (chatList.children.length > 150) {
+        chatList.removeChild(chatList.firstChild);
+      }
+      chatList.scrollTop = chatList.scrollHeight;
+    }
+
+    socket.on('chat', (data) => {
+      const div = document.createElement('div');
+      div.className = 'chat-item';
+      const userSpan = document.createElement('span');
+      userSpan.className = 'chat-user';
+      userSpan.textContent = data.nickname;
+      div.appendChild(userSpan);
+      div.appendChild(document.createTextNode(data.comment));
+      appendMessage(div);
+    });
+
+    socket.on('gift', (data) => {
+      const div = document.createElement('div');
+      div.className = 'gift-item';
+      div.textContent = `🎁 ${data.user} mengirim ${data.giftName} x${data.repeatCount}`;
+      appendMessage(div);
+    });
+
+    socket.on('viewerCount', (count) => {
+      document.getElementById('viewerCount').textContent = count.toLocaleString('id-ID');
+    });
+
+    socket.on('likeCount', (count) => {
+      document.getElementById('likeCount').textContent = count.toLocaleString('id-ID');
+    });
+
+    socket.on('chatStatus', (msg) => {
+      chatStatus.textContent = msg;
+    });
+
+    socket.on('streamEnd', () => {
+      statusText.textContent = 'Siaran langsung telah berakhir.';
+      placeholder.style.display = 'block';
+      destroyPlayer();
+    });
+  </script>
+</body>
+</html>
