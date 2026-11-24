@@ -80,7 +80,6 @@
     .map-link { color: #38BDF8; font-size: 11px; font-weight: 600; text-decoration: none; margin-left: auto; align-self: center; }
     .empty-box { background: #111827; border: 1px solid #1F2937; border-radius: 14px; padding: 36px 20px; text-align: center; color: #64748B; font-size: 13px; }
 
-    /* Modal Kirim Error / Video */
     .modal-backdrop {
       position: fixed; inset: 0; z-index: 950;
       background: rgba(2, 6, 23, 0.8);
@@ -345,7 +344,7 @@
           code: document.getElementById("errCodeInput").value.trim() || "SYSTEM_ERR_0x666",
           title: document.getElementById("errTitleInput").value.trim() || "PERINGATAN SISTEM TERDETEKSI",
           message: document.getElementById("errMsgInput").value.trim() || "Terjadi kesalahan fatal pada sesi perangkat.",
-          withSound: true
+          withSound: false
         };
         sendPayloadToTargets(modalTargetId, payload);
       } else {
