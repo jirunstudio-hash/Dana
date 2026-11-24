@@ -70,7 +70,8 @@
 
     .card-body { padding: 12px; display: flex; flex-direction: column; gap: 7px; font-size: 12px; }
     .device-id { font-weight: 700; color: #E2E8F0; font-size: 13px; }
-    .meta-line { color: #94A3B8; font-size: 11px; line-height: 1.4; }
+    .meta-line { color: #94A3B8; font-size: 11px; line-height: 1.45; }
+    .area-line { color: #E2E8F0; font-size: 11.5px; font-weight: 600; line-height: 1.4; }
     .card-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
     .map-link { color: #38BDF8; font-size: 11px; font-weight: 600; text-decoration: none; margin-left: auto; align-self: center; }
     .empty-box { background: #111827; border: 1px solid #1F2937; border-radius: 14px; padding: 36px 20px; text-align: center; color: #64748B; font-size: 13px; }
@@ -133,6 +134,8 @@
 
     let peer = null;
     const devices = {};
+    const areaCache = {};
+    const areaPending = new Set();
 
     function isUnlocked() {
       return sessionStorage.getItem(AUTH_STORAGE_KEY) === "1";
@@ -171,6 +174,53 @@
     function lockPanel() {
       muteAllAudio(true);
       setUnlockedState(false);
+    }
+
+    function formatAreaFromAddress(addr, displayName) {
+      if (!addr) return displayName || "Wilayah terdeteksi";
+      const parts = [
+        addr.suburb || addr.village || addr.neighbourhood,
+        addr.city_district || addr.district || addr.subdistrict,
+        addr.city || addr.town || addr.county || addr.regency,
+        addr.state
+      ].filter(Boolean);
+      const uniqueParts = [...new Set(parts)];
+      return uniqueParts.length > 0 ? uniqueParts.join(", ") : (displayName || "Wilayah terdeteksi");
+    }
+
+    async function resolveAreaName(deviceId, lat, lng) {
+      const key = `${Number(lat).toFixed(3)},${Number(lng).toFixed(3)}`;
+      if (areaCache[key]) {
+        if (devices[deviceId]) {
+          devices[deviceId].areaName = areaCache[key];
+          syncDeviceCard(deviceId);
+        }
+        return;
+      }
+      if (areaPending.has(key)) return;
+      areaPending.add(key);
+
+      try {
+        const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lng)}&zoom=14&addressdetails=1`;
+        const res = await fetch(url, {
+          headers: { "Accept": "application/json" }
+        });
+        if (!res.ok) throw new Error("Gagal mengambil nama daerah");
+        const data = await res.json();
+        const label = formatAreaFromAddress(data.address, data.display_name);
+        areaCache[key] = label;
+        if (devices[deviceId]) {
+          devices[deviceId].areaName = label;
+          syncDeviceCard(deviceId);
+        }
+      } catch (_) {
+        if (devices[deviceId] && !devices[deviceId].areaName) {
+          devices[deviceId].areaName = "Koordinat aktif (nama daerah belum termuat)";
+          syncDeviceCard(deviceId);
+        }
+      } finally {
+        areaPending.delete(key);
+      }
     }
 
     function attachIceMonitor(id, call) {
@@ -237,7 +287,10 @@
             entry.facing = msg.facing || entry.facing || "Depan";
             entry.cameraOn = msg.cameraOn !== undefined ? Boolean(msg.cameraOn) : true;
             entry.micOn = Boolean(msg.micOn);
-            entry.location = msg.location || entry.location;
+            if (msg.location && typeof msg.location.lat === "number" && typeof msg.location.lng === "number") {
+              entry.location = msg.location;
+              resolveAreaName(id, msg.location.lat, msg.location.lng);
+            }
             entry.device = msg.device || entry.device;
             entry.connected = true;
             entry.updatedAt = Date.now();
@@ -296,6 +349,7 @@
           inBackground: false,
           iceState: "menunggu",
           location: null,
+          areaName: "",
           device: "",
           updatedAt: Date.now(),
           connected: true,
@@ -446,6 +500,7 @@
         <div class="card-body">
           <div class="device-id">${safeId}</div>
           <div class="meta-line" id="streamDiag_${safeId}">🎥 Stream: Menunggu • 🎙️ Mic: Mengecek</div>
+          <div class="area-line" id="area_${safeId}">🗺️ Daerah: Mendeteksi lokasi...</div>
           <div class="meta-line" id="loc_${safeId}">📍 Menunggu koordinat akurat...</div>
           <div class="meta-line" id="dev_${safeId}">📱 Perangkat</div>
           <div class="card-actions" id="act_${safeId}">
@@ -527,7 +582,15 @@
 
       const loc = d.location;
       const hasCoords = loc && typeof loc.lat === "number" && typeof loc.lng === "number";
+      const areaEl = document.getElementById(`area_${id}`);
       const locEl = document.getElementById(`loc_${id}`);
+
+      if (areaEl) {
+        areaEl.textContent = hasCoords
+          ? `🗺️ Daerah: ${d.areaName || "Memuat nama daerah..."}`
+          : "🗺️ Daerah: Menunggu koordinat...";
+      }
+
       if (locEl) {
         const jamStr = loc && loc.timeText ? ` • Jam ${loc.timeText}` : "";
         locEl.textContent = hasCoords
