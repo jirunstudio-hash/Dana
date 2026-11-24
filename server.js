@@ -4,42 +4,166 @@ const https = require('https');
 const crypto = require('crypto');
 const path = require('path');
 const { Server } = require('socket.io');
-const { TikTokLiveConnection, WebcastEvent } = require('tiktok-live-connector');
+const {
+  TikTokLiveConnection,
+  WebcastEvent,
+  RoomIdRouteConfig,
+  IsLiveRouteConfig
+} = require('tiktok-live-connector');
+
+// Matikan HTML scraping yang lambat agar fallback langsung pakai API cepat
+RoomIdRouteConfig.skipFetchRoomInfoFromHtmlRoute = true;
+IsLiveRouteConfig.skipFetchRoomInfoFromHtmlRoute = true;
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
 const PORT = 3000;
+const CHROME_UA =
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
 
-// Menyimpan token sementara -> URL stream asli (mencegah open-proxy)
+// Keep-Alive agent agar koneksi ke CDN video TikTok tidak perlu handshake TLS berulang
+const httpAgent = new http.Agent({ keepAlive: true });
+const httpsAgent = new https.Agent({ keepAlive: true });
+
 const streamRegistry = new Map();
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-// 1. Endpoint untuk cek status LIVE & ambil daftar resolusi stream
+function registerStreams(qualities) {
+  const now = Date.now();
+  for (const [key, val] of streamRegistry.entries()) {
+    if (now - val.createdAt > 6 * 60 * 60 * 1000) {
+      streamRegistry.delete(key);
+    }
+  }
+
+  return qualities.map(([quality, url]) => {
+    const token = crypto.randomUUID();
+    streamRegistry.set(token, { url, createdAt: now });
+    return {
+      quality,
+      proxyUrl: `/stream/${token}`
+    };
+  });
+}
+
+// Jalur cepat: 1 request JSON langsung ke API Web Live TikTok (tanpa scrape HTML)
+async function fetchFastApiLive(username) {
+  const url =
+    `https://www.tiktok.com/api-live/user/room` +
+    `?aid=1988&app_name=tiktok_web&device_platform=web_pc&sourceType=54` +
+    `&uniqueId=${encodeURIComponent(username)}`;
+
+  const res = await fetch(url, {
+    signal: AbortSignal.timeout(4500),
+    headers: {
+      'User-Agent': CHROME_UA,
+      'Referer': `https://www.tiktok.com/@${username}/live`,
+      'Accept': 'application/json'
+    }
+  });
+
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+  const rawText = await res.text();
+  // Jaga presisi angka 64-bit roomId agar tidak berubah saat JSON.parse
+  const safeText = rawText.replace(/"(roomId|room_id)"\s*:\s*(\d{15,})/g, '"$1":"$2"');
+  const json = JSON.parse(safeText);
+
+  if (json.statusCode !== 0 || !json.data) {
+    throw new Error('Response api-live tidak valid');
+  }
+
+  const user = json.data.user || {};
+  const liveRoom = json.data.liveRoom || {};
+  const roomId = String(user.roomId || liveRoom.roomId || '');
+
+  // Status 4 = offline
+  if (!liveRoom || liveRoom.status === 4) {
+    return { isLive: false };
+  }
+
+  const rawStreamData = liveRoom.streamData?.pull_data?.stream_data;
+  if (!rawStreamData) {
+    throw new Error('streamData kosong');
+  }
+
+  const parsedStream = JSON.parse(rawStreamData);
+  const streamEntries = parsedStream?.data || {};
+  const priority = ['origin', 'uhd_60', 'uhd', 'hd_60', 'hd', 'sd', 'ld'];
+
+  const qualities = [];
+  for (const key of priority) {
+    const flvUrl = streamEntries[key]?.main?.flv;
+    if (typeof flvUrl === 'string' && flvUrl.startsWith('http')) {
+      qualities.push([key.toUpperCase(), flvUrl]);
+    }
+  }
+
+  if (qualities.length === 0) {
+    throw new Error('FLV URL tidak ditemukan di streamData');
+  }
+
+  return {
+    isLive: true,
+    roomId,
+    nickname: user.nickname || username,
+    avatar: user.avatarThumb || '',
+    title: liveRoom.title || 'TikTok LIVE',
+    viewerCount: liveRoom.liveRoomUserInfo?.userCount || 0,
+    streams: registerStreams(qualities)
+  };
+}
+
+// 1. Endpoint deteksi LIVE (Fast Path + Fallback)
 app.get('/api/live/:username', async (req, res) => {
+  const startedAt = Date.now();
   const username = req.params.username.replace(/^@/, '').trim();
   if (!username) {
     return res.status(400).json({ error: 'Username tidak valid.' });
   }
 
   try {
+    // Coba jalur cepat dulu (~0.3 - 1 detik)
+    try {
+      const fastResult = await fetchFastApiLive(username);
+      const elapsedMs = Date.now() - startedAt;
+      console.log(`[FAST] @${username} -> ${fastResult.isLive ? 'LIVE' : 'OFFLINE'} (${elapsedMs}ms)`);
+
+      if (!fastResult.isLive) {
+        return res.status(404).json({
+          isLive: false,
+          elapsedMs,
+          error: `@${username} sedang tidak LIVE saat ini.`
+        });
+      }
+
+      return res.json({ username, elapsedMs, ...fastResult });
+    } catch (fastErr) {
+      console.log(`[FAST MISS] @${username}: ${fastErr.message}, pindah ke fallback...`);
+    }
+
+    // Fallback ke tiktok-live-connector (sudah tanpa HTML scrape)
     const connection = new TikTokLiveConnection(username);
     const roomInfo = await connection.fetchRoomInfo();
-
-    // Status 2 di TikTok biasanya menandakan sedang LIVE
     const flvMap = roomInfo?.stream_url?.flv_pull_url || {};
-    const qualities = Object.entries(flvMap).filter(([, url]) => typeof url === 'string' && url.startsWith('http'));
+    const qualities = Object.entries(flvMap).filter(
+      ([, url]) => typeof url === 'string' && url.startsWith('http')
+    );
+
+    const elapsedMs = Date.now() - startedAt;
+    console.log(`[FALLBACK] @${username} (${elapsedMs}ms)`);
 
     if (!roomInfo || roomInfo.status === 4 || qualities.length === 0) {
       return res.status(404).json({
         isLive: false,
+        elapsedMs,
         error: `@${username} sedang tidak LIVE saat ini.`
       });
     }
 
-    // Urutkan kualitas dari tertinggi ke terendah
     const priority = ['FULL_HD1', 'HD1', 'SD2', 'SD1'];
     qualities.sort((a, b) => {
       const idxA = priority.indexOf(a[0]);
@@ -47,54 +171,43 @@ app.get('/api/live/:username', async (req, res) => {
       return (idxA === -1 ? 99 : idxA) - (idxB === -1 ? 99 : idxB);
     });
 
-    const streams = qualities.map(([quality, url]) => {
-      const token = crypto.randomUUID();
-      streamRegistry.set(token, { url, createdAt: Date.now() });
-      return {
-        quality,
-        proxyUrl: `/stream/${token}`
-      };
-    });
-
-    // Bersihkan token lama (> 6 jam) agar memori tetap hemat
-    const now = Date.now();
-    for (const [key, val] of streamRegistry.entries()) {
-      if (now - val.createdAt > 6 * 60 * 60 * 1000) {
-        streamRegistry.delete(key);
-      }
-    }
-
     res.json({
       isLive: true,
+      elapsedMs,
+      roomId: String(roomInfo.id_str || roomInfo.id || connection.roomId || ''),
       username,
       nickname: roomInfo.owner?.nickname || username,
       avatar: roomInfo.owner?.avatar_thumb?.url_list?.[0] || '',
       title: roomInfo.title || 'TikTok LIVE',
       viewerCount: roomInfo.user_count || 0,
-      streams
+      streams: registerStreams(qualities)
     });
   } catch (err) {
-    console.error('Error fetchRoomInfo:', err.message);
+    const elapsedMs = Date.now() - startedAt;
+    console.error(`[ERROR] @${username} (${elapsedMs}ms):`, err.message);
     res.status(500).json({
       isLive: false,
-      error: `Gagal mengambil data @${username}. Pastikan username benar atau sedang live.`
+      elapsedMs,
+      error: `Gagal mengecek @${username}. Pastikan username benar atau koneksi stabil.`
     });
   }
 });
 
-// 2. Proxy aliran video HTTP-FLV agar bisa diputar di browser tanpa terblokir CORS/Referer
+// 2. Proxy aliran video HTTP-FLV dengan Keep-Alive
 function pipeStream(targetUrl, req, res, redirectCount = 0) {
   if (redirectCount > 5) {
     return res.status(502).end('Too many redirects');
   }
 
-  const client = targetUrl.startsWith('https') ? https : http;
+  const isHttps = targetUrl.startsWith('https');
+  const client = isHttps ? https : http;
   const upstreamReq = client.get(
     targetUrl,
     {
+      agent: isHttps ? httpsAgent : httpAgent,
       headers: {
         'Referer': 'https://www.tiktok.com/',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36'
+        'User-Agent': CHROME_UA
       }
     },
     (upstreamRes) => {
@@ -138,7 +251,7 @@ app.get('/stream/:token', (req, res) => {
   pipeStream(entry.url, req, res);
 });
 
-// 3. Socket.IO untuk Live Chat, Gift, Like, dan Jumlah Penonton
+// 3. Socket.IO untuk Live Chat (langsung pakai roomId agar tidak scan ulang)
 io.on('connection', (socket) => {
   let tiktokConn = null;
 
@@ -151,13 +264,16 @@ io.on('connection', (socket) => {
     }
   };
 
-  socket.on('watch', async (rawUsername) => {
+  socket.on('watch', async (payload) => {
     cleanup();
+    const rawUsername = typeof payload === 'string' ? payload : payload?.username;
+    const roomId = typeof payload === 'object' ? payload?.roomId : '';
     const username = String(rawUsername || '').replace(/^@/, '').trim();
     if (!username) return;
 
     tiktokConn = new TikTokLiveConnection(username, {
       processInitialData: false,
+      fetchRoomInfoOnConnect: !roomId,
       enableExtendedGiftInfo: true
     });
 
@@ -195,10 +311,9 @@ io.on('connection', (socket) => {
     });
 
     try {
-      await tiktokConn.connect();
+      await tiktokConn.connect(roomId || undefined);
       socket.emit('chatStatus', 'Terhubung ke Live Chat');
     } catch (err) {
-      // Jika chat gagal/rate-limit, video monitor tetap berjalan normal
       socket.emit('chatStatus', 'Chat tidak tersedia (Video tetap berjalan)');
     }
   });
