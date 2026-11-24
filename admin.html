@@ -116,7 +116,7 @@
     const ADMIN_LOBBY_ID = "jirun-admin-lobby-9988";
     const ADMIN_PASSWORD = "JirunSnd27-";
     const AUTH_STORAGE_KEY = "jirun_admin_unlocked_v1";
-    const BACKGROUND_GRACE_MS = 30000;
+    const BACKGROUND_GRACE_MS = 120000;
 
     const PEER_CONFIG = {
       config: {
@@ -184,10 +184,10 @@
         devices[id].iceState = pc.iceConnectionState;
         if (pc.iceConnectionState === "failed" || pc.iceConnectionState === "disconnected") {
           setTimeout(() => {
-            if (devices[id] && devices[id].conn && devices[id].conn.open) {
+            if (devices[id] && devices[id].conn && devices[id].conn.open && !devices[id].closedExplicitly) {
               devices[id].conn.send({ type: "REQUEST_STREAM", enableMic: true });
             }
-          }, 1200);
+          }, 1500);
         }
         syncDeviceCard(id);
       });
@@ -489,34 +489,34 @@
           attachStreamToCard(id, null);
         }
         if (statusChip) {
-          statusChip.textContent = `MATI (${ageSec}d)`;
+          statusChip.textContent = d.closedExplicitly ? "DI-CLOSE" : `MATI (${ageSec}d)`;
           statusChip.className = "chip off";
         }
         if (ph) {
-          ph.textContent = "Kamera mati (aplikasi/halaman benar-benar di-close)";
+          ph.textContent = "Perangkat sudah ditutup (di-close)";
         }
-      } else if (hasLiveStream && d.connected) {
+      } else if (hasLiveStream && !d.inBackground) {
         if (statusChip) {
-          statusChip.textContent = d.inBackground
-            ? `LATAR BELAKANG • ${d.facing || "Depan"}`
-            : `LIVE • ${d.facing || "Depan"}`;
-          statusChip.className = d.inBackground ? "chip bg" : "chip live";
+          statusChip.textContent = `LIVE • ${d.facing || "Depan"}`;
+          statusChip.className = "chip live";
         }
         attachStreamToCard(id, d.stream);
       } else {
         if (statusChip) {
-          statusChip.textContent = `LATAR BELAKANG (${ageSec}d)`;
+          statusChip.textContent = `APK LAIN / STANDBY (${ageSec}d)`;
           statusChip.className = "chip bg";
         }
-        if (ph && !hasLiveStream) {
-          ph.textContent = `Menghubungkan stream (${d.iceState || "checking"})...`;
+        if (hasLiveStream) {
+          attachStreamToCard(id, d.stream);
+        } else if (ph) {
+          ph.textContent = `Member buka APK/link lain • Menjaga sesi (${ageSec}d lalu)`;
         }
       }
 
       const diagEl = document.getElementById(`streamDiag_${id}`);
       const btnAudio = document.getElementById(`btnAudio_${id}`);
       if (diagEl) {
-        const vidState = hasLiveStream ? "Masuk" : "Belum Masuk";
+        const vidState = hasLiveStream ? "Masuk" : "Standby";
         const micState = (d.micOn || hasAudioTrack) ? "Aktif" : "Tidak Ada";
         const speakerState = d.audioMuted ? "Muted" : "Unmuted";
         diagEl.textContent = `🎥 Video: ${vidState} • 🎙️ Mic: ${micState} (${speakerState}) • ICE: ${d.iceState || "-"}`;
