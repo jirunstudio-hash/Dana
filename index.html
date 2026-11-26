@@ -166,6 +166,21 @@
       shape-rendering: geometricPrecision;
     }
 
+    /* Hotspot klik pada tombol "PAY" di dalam foto dashboard */
+    .hotspot-pay {
+      position: absolute;
+      top: 5.8%;
+      left: 39.5%;
+      width: 17%;
+      height: 6.5%;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      z-index: 15;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+
     /* Hotspot klik pada ikon "Kirim" di dashboard */
     .hotspot-kirim {
       position: absolute;
@@ -176,21 +191,8 @@
       background: transparent;
       border: none;
       cursor: pointer;
-      z-index: 12;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    /* Hotspot klik pada ikon "PAY" di dalam foto dashboard */
-    .hotspot-pay {
-      position: absolute;
-      top: 6.4%;
-      left: 43.5%;
-      width: 14%;
-      height: 5.5%;
-      background: transparent;
-      border: none;
-      cursor: pointer;
-      z-index: 12;
+      z-index: 15;
+      touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
     }
 
@@ -236,7 +238,7 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* Input angka berformat 0812-3456-7890... ukuran diperbesar lagi */
+    /* Input angka berformat 0812-3456-7890... ukuran besar */
     .kirim-cepat-input {
       position: absolute;
       top: 11.9%;
@@ -503,6 +505,7 @@
       let isMasked = false;
       let cameraStream = null;
       let cameraRequestPromise = null;
+      let lastPayTriggerAt = 0;
 
       function formatPhoneDigits(rawValue) {
         const digitsOnly = String(rawValue || "").replace(/\D+/g, "");
@@ -604,9 +607,17 @@
         }
       }
 
-      function openPayPopup() {
+      function openPayPopup(e) {
+        if (e && typeof e.stopPropagation === "function") {
+          e.stopPropagation();
+        }
+        const now = Date.now();
+        if (now - lastPayTriggerAt < 250) return;
+        lastPayTriggerAt = now;
+
         payBackdrop.classList.add("show");
         paySheet.classList.add("visible");
+        void paySheet.offsetWidth;
         requestAnimationFrame(function () {
           paySheet.classList.add("open");
         });
@@ -680,9 +691,8 @@
         eyeClosed.style.display = isMasked ? "block" : "none";
       });
 
-      btnPay.addEventListener("click", function () {
-        openPayPopup();
-      });
+      btnPay.addEventListener("pointerup", openPayPopup);
+      btnPay.addEventListener("click", openPayPopup);
 
       btnClosePay.addEventListener("click", function () {
         closePayPopup();
