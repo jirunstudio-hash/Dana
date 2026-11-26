@@ -27,12 +27,13 @@
       <button onclick="loadData()">↻ Refresh</button>
     </header>
 
-    <div class="login-panel">
-      <h3>Login Admin API</h3>
-      <input type="password" id="adminToken" placeholder="Masukkan token admin">
+    <section class="login-panel">
+      <h3>Akses Admin</h3>
+      <input type="password" id="adminToken"
+      placeholder="Token admin">
       <button onclick="login()">Hubungkan</button>
-      <span id="loginStatus"></span>
-    </div>
+      <p id="loginStatus"></p>
+    </section>
 
     <div class="stats">
       <div class="stat"><small>Total Perangkat</small><h2 id="total">0</h2></div>
@@ -44,14 +45,18 @@
       <h3>Daftar Perangkat</h3>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Nama</th><th>ID</th><th>Status</th><th>Izin</th></tr></thead>
-          <tbody id="deviceRows"><tr><td colspan="4">Login admin untuk melihat data.</td></tr></tbody>
+          <thead><tr>
+            <th>Nama</th><th>ID</th><th>Status</th><th>Izin</th>
+          </tr></thead>
+          <tbody id="deviceRows">
+            <tr><td colspan="4">Silakan login.</td></tr>
+          </tbody>
         </table>
       </div>
     </section>
 
     <section class="panel" id="locations">
-      <h3>Laporan Lokasi</h3>
+      <h3>Riwayat Lokasi</h3>
       <div id="locationRows">Belum ada data.</div>
     </section>
 
@@ -67,23 +72,28 @@
 <script>
 const API_URL = "https://GANTI-DENGAN-DOMAIN-BACKEND/api";
 let token = "";
+let timer = null;
 
 function login() {
   token = document.getElementById("adminToken").value.trim();
   if (!token) return alert("Masukkan token admin.");
+
   loadData();
+
+  if (timer) clearInterval(timer);
+  timer = setInterval(loadData, 15000);
 }
 
 async function loadData() {
   const status = document.getElementById("dbStatus");
-  status.textContent = "Mengambil data...";
+  status.textContent = "Memuat database...";
 
   try {
     const response = await fetch(`${API_URL}/admin/data`, {
       headers: { Authorization: `Bearer ${token}` }
     });
 
-    if (!response.ok) throw new Error("Login gagal atau database bermasalah.");
+    if (!response.ok) throw new Error("Akses gagal atau server tidak tersedia.");
 
     const data = await response.json();
 
@@ -110,11 +120,12 @@ async function loadData() {
         <div class="report">
           <b>${esc(l.device_name)}</b>
           <p>${Number(l.latitude)}, ${Number(l.longitude)}</p>
-          <p>${esc(l.timestamp)}</p>
+          <small>${esc(l.timestamp)}</small><br>
           <a target="_blank" rel="noopener"
-          href="https://www.google.com/maps?q=${Number(l.latitude)},${Number(l.longitude)}">Lihat peta</a>
+          href="https://www.google.com/maps?q=${Number(l.latitude)},${Number(l.longitude)}">
+          Lihat Peta</a>
         </div>
-      `).join("") : "Belum ada laporan lokasi.";
+      `).join("") : "Belum ada laporan.";
 
     document.getElementById("notificationRows").innerHTML =
       notifications.length ? notifications.slice().reverse().map(n => `
@@ -126,21 +137,19 @@ async function loadData() {
       `).join("") : "Belum ada notifikasi.";
 
     status.textContent = "Database berhasil dimuat.";
+    document.getElementById("loginStatus").textContent = "Admin terhubung.";
+
   } catch (error) {
     status.textContent = error.message;
+    document.getElementById("loginStatus").textContent = "Gagal terhubung.";
   }
 }
 
 function esc(value) {
   return String(value ?? "").replace(/[&<>"']/g, c => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;",
-    '"': "&quot;", "'": "&#39;"
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
   })[c]);
 }
-
-setInterval(() => {
-  if (token) loadData();
-}, 15000);
 </script>
 </body>
 </html>
