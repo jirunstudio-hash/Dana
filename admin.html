@@ -127,7 +127,7 @@
   </div>
 
   <script type="module">
-    import { loadVisitors, deleteVisitorRecord } from "./js/visitor-store.js";
+    import { loadVisitors, deleteVisitorRecord, getVisitorStoreUrl } from "./js/visitor-store.js";
 
     const listEl = document.getElementById("list");
     const countEl = document.getElementById("count");
@@ -156,7 +156,7 @@
         const visitors = await loadVisitors();
         const items = Object.values(visitors).sort((a, b) => (b.lastSeenAt || 0) - (a.lastSeenAt || 0));
         countEl.textContent = String(items.length);
-        statusBarEl.textContent = `Auto-sync aktif (tiap 3d) • ${items.length} data tersimpan permanen • Update: ${new Date().toLocaleTimeString("id-ID")}`;
+        statusBarEl.textContent = `Auto-sync aktif (tiap 3d) • ${items.length} data tersimpan permanen • ${new Date().toLocaleTimeString("id-ID")}`;
 
         if (items.length === 0) {
           listEl.innerHTML = `<div class="empty">Belum ada data pengunjung tersimpan.</div>`;
@@ -204,7 +204,7 @@
         listEl.appendChild(fragment);
       } catch (err) {
         countEl.textContent = "0";
-        statusBarEl.textContent = "Gagal memuat dari jsonstorage.net";
+        statusBarEl.textContent = `Gagal memuat dari ${getVisitorStoreUrl()}`;
         listEl.innerHTML = `<div class="err">Error: ${escapeHtml(err.message)}</div>`;
       } finally {
         isFetching = false;
