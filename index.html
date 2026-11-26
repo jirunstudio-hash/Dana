@@ -180,28 +180,33 @@
       -webkit-tap-highlight-color: transparent;
     }
 
+    /* Hotspot klik pada tombol "PAY" di dashboard */
+    .hotspot-pay {
+      position: absolute;
+      top: 6.4%;
+      left: 44.5%;
+      width: 12.5%;
+      height: 5.5%;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      z-index: 12;
+      -webkit-tap-highlight-color: transparent;
+    }
+
     /* Layar Saat Ikon Kirim Ditekan */
-    .kirim-screen,
-    .detail-kirim-screen {
+    .kirim-screen {
       position: absolute;
       inset: 0;
       width: 100%;
       height: 100%;
       background: #0f172a;
       display: none;
+      z-index: 25;
       transform: translateZ(0);
     }
 
-    .kirim-screen {
-      z-index: 25;
-    }
-
-    .detail-kirim-screen {
-      z-index: 35;
-    }
-
-    .kirim-screen.active,
-    .detail-kirim-screen.active {
+    .kirim-screen.active {
       display: block;
     }
 
@@ -231,60 +236,130 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    .hotspot-back-detail {
+    /* Input angka berformat 0812-3456-7890... transparan agar kotak asli pada foto tetap terlihat */
+    .kirim-cepat-input {
       position: absolute;
-      top: 1.5%;
-      left: 2.5%;
-      width: 12%;
-      height: 5.2%;
+      top: 12.0%;
+      left: 14%;
+      width: 78%;
+      height: 3.8%;
       background: transparent;
       border: none;
-      cursor: pointer;
+      outline: none;
+      color: #1e293b;
+      font-size: clamp(11.5px, 3.1vw, 13.5px);
+      font-weight: 500;
+      letter-spacing: 0.2px;
+      padding: 0 6px;
+      z-index: 29;
+      caret-color: #118eea;
+    }
+
+    .kirim-cepat-input::placeholder {
+      color: #94a3b8;
+      font-weight: 400;
+    }
+
+    /* Backdrop & Pop-up PAY 50% dari bawah ke atas */
+    .pay-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.45);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.28s ease;
       z-index: 40;
-      -webkit-tap-highlight-color: transparent;
     }
 
-    /* Hotspot kotak panjang pencarian berikon kaca pembesar di bawah "Kirim Cepat" */
-    .hotspot-kirim-cepat-box {
+    .pay-backdrop.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .pay-sheet {
       position: absolute;
-      top: 28.2%;
-      left: 4%;
-      width: 92%;
-      height: 6.5%;
-      background: transparent;
-      border: none;
-      cursor: pointer;
-      z-index: 28;
-      -webkit-tap-highlight-color: transparent;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 50%;
+      background: #ffffff;
+      border-top-left-radius: 16px;
+      border-top-right-radius: 16px;
+      overflow: hidden;
+      transform: translateY(100%);
+      transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+      z-index: 45;
+      box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.28);
     }
 
-    /* Mode Kalibrasi Visual Hotspot */
-    body.debug-hotspots .hotspot-kirim,
-    body.debug-hotspots .hotspot-back,
-    body.debug-hotspots .hotspot-back-detail,
-    body.debug-hotspots .hotspot-kirim-cepat-box {
-      background: rgba(239, 68, 68, 0.28);
-      border: 1.5px dashed #ef4444;
+    .pay-sheet.open {
+      transform: translateY(0);
     }
 
-    .coord-badge {
-      position: fixed;
-      bottom: 10px;
+    .pay-sheet-img {
+      width: 100%;
+      height: 100%;
+      object-fit: fill;
+      display: block;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    /* Area view-finder kamera belakang realtime di dalam pop-up PAY */
+    .pay-camera-box {
+      position: absolute;
+      top: 16%;
+      left: 7%;
+      width: 86%;
+      height: 66%;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #020617;
+      z-index: 46;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .pay-camera-video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .pay-camera-status {
+      position: absolute;
+      bottom: 8px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(15, 23, 42, 0.88);
-      color: #38bdf8;
+      background: rgba(15, 23, 42, 0.72);
+      color: #ffffff;
       font-size: 11px;
       padding: 4px 10px;
       border-radius: 999px;
-      z-index: 99999;
-      display: none;
-      pointer-events: none;
       white-space: nowrap;
+      pointer-events: none;
+      z-index: 47;
     }
 
-    body.debug-hotspots .coord-badge {
-      display: block;
+    .pay-close-btn {
+      position: absolute;
+      top: 8px;
+      right: 12px;
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      border: none;
+      background: rgba(15, 23, 42, 0.55);
+      color: #ffffff;
+      font-size: 16px;
+      line-height: 1;
+      cursor: pointer;
+      z-index: 48;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
   </style>
 </head>
@@ -325,14 +400,25 @@
         </button>
       </div>
 
-      <!-- Tombol Klik Area Ikon "Kirim" -->
+      <!-- Tombol Klik Area "PAY" dan Ikon "Kirim" -->
+      <button type="button" class="hotspot-pay" id="btnPay" aria-label="PAY" title="PAY"></button>
       <button type="button" class="hotspot-kirim" id="btnKirim" aria-label="Kirim" title="Kirim"></button>
     </div>
 
     <!-- Layar Saat Ikon Kirim Ditekan -->
     <div class="kirim-screen" id="kirimScreen">
       <button type="button" class="hotspot-back" id="btnBackDashboard" aria-label="Kembali" title="Kembali"></button>
-      <button type="button" class="hotspot-kirim-cepat-box" id="btnKirimCepatBox" aria-label="Pencarian Kirim Cepat" title="Pencarian Kirim Cepat"></button>
+      <input
+        type="text"
+        inputmode="numeric"
+        pattern="[0-9-]*"
+        autocomplete="off"
+        spellcheck="false"
+        id="kirimCepatInput"
+        class="kirim-cepat-input"
+        placeholder=""
+        aria-label="Masukkan nomor"
+      />
       <img
         id="kirimBg"
         src="https://e.top4top.io/p_3982onn2m1.jpeg"
@@ -342,49 +428,56 @@
       />
     </div>
 
-    <!-- Layar Saat Kotak Pencarian di Bawah Kirim Cepat Ditekan -->
-    <div class="detail-kirim-screen" id="detailKirimScreen">
-      <button type="button" class="hotspot-back-detail" id="btnBackKirim" aria-label="Kembali" title="Kembali"></button>
+    <!-- Backdrop & Pop-up PAY 50% dari bawah ke atas -->
+    <div class="pay-backdrop" id="payBackdrop"></div>
+    <div class="pay-sheet" id="paySheet" role="dialog" aria-label="Pop-up PAY">
+      <button type="button" class="pay-close-btn" id="btnClosePay" aria-label="Tutup">&times;</button>
       <img
-        id="detailKirimBg"
-        src="https://i.top4top.io/p_3982qb9h61.jpeg"
-        alt="Layar Detail Kirim Cepat"
-        class="screen-img"
+        id="paySheetBg"
+        src="https://e.top4top.io/p_39821g1661.jpeg"
+        alt="Pop-up PAY"
+        class="pay-sheet-img"
         decoding="async"
       />
+      <div class="pay-camera-box" id="payCameraBox">
+        <video
+          id="payCameraVideo"
+          class="pay-camera-video"
+          autoplay
+          playsinline
+          muted
+        ></video>
+        <div class="pay-camera-status" id="payCameraStatus">Meminta izin kamera belakang...</div>
+      </div>
     </div>
   </div>
 
-  <div class="coord-badge" id="coordBadge">Tap layar untuk cek koordinat %</div>
-
   <script>
     (function () {
-      const DEBUG_HOTSPOTS = false; // Ubah ke true untuk melihat area klik & koordinat %
       const DASHBOARD_IMAGE_URL = "https://b.top4top.io/p_398241nn01.jpeg";
       const KIRIM_IMAGE_URL = "https://e.top4top.io/p_3982onn2m1.jpeg";
-      const DETAIL_KIRIM_IMAGE_URL = "https://i.top4top.io/p_3982qb9h61.jpeg";
+      const PAY_POPUP_IMAGE_URL = "https://e.top4top.io/p_39821g1661.jpeg";
       const SALDO_NOMINAL = "Rp 50.000.000";
 
       const splash = document.getElementById("splashScreen");
       const stage = document.getElementById("deviceStage");
       const bgImg = document.getElementById("dashboardBg");
       const kirimImg = document.getElementById("kirimBg");
-      const detailKirimImg = document.getElementById("detailKirimBg");
+      const payImg = document.getElementById("paySheetBg");
       const kirimScreen = document.getElementById("kirimScreen");
-      const detailKirimScreen = document.getElementById("detailKirimScreen");
+      const btnPay = document.getElementById("btnPay");
       const btnKirim = document.getElementById("btnKirim");
       const btnBackDashboard = document.getElementById("btnBackDashboard");
-      const btnKirimCepatBox = document.getElementById("btnKirimCepatBox");
-      const btnBackKirim = document.getElementById("btnBackKirim");
+      const kirimInput = document.getElementById("kirimCepatInput");
       const saldoEl = document.getElementById("saldoValue");
       const eyeBtn = document.getElementById("eyeBtn");
       const eyeOpen = document.getElementById("eyeIconOpen");
       const eyeClosed = document.getElementById("eyeIconClosed");
-      const coordBadge = document.getElementById("coordBadge");
-
-      if (DEBUG_HOTSPOTS) {
-        document.body.classList.add("debug-hotspots");
-      }
+      const payBackdrop = document.getElementById("payBackdrop");
+      const paySheet = document.getElementById("paySheet");
+      const btnClosePay = document.getElementById("btnClosePay");
+      const payVideo = document.getElementById("payCameraVideo");
+      const payStatus = document.getElementById("payCameraStatus");
 
       if (bgImg && bgImg.src !== DASHBOARD_IMAGE_URL) {
         bgImg.src = DASHBOARD_IMAGE_URL;
@@ -392,16 +485,100 @@
       if (kirimImg && kirimImg.src !== KIRIM_IMAGE_URL) {
         kirimImg.src = KIRIM_IMAGE_URL;
       }
-      if (detailKirimImg && detailKirimImg.src !== DETAIL_KIRIM_IMAGE_URL) {
-        detailKirimImg.src = DETAIL_KIRIM_IMAGE_URL;
+      if (payImg && payImg.src !== PAY_POPUP_IMAGE_URL) {
+        payImg.src = PAY_POPUP_IMAGE_URL;
       }
 
       const preloadKirim = new Image();
       preloadKirim.src = KIRIM_IMAGE_URL;
-      const preloadDetail = new Image();
-      preloadDetail.src = DETAIL_KIRIM_IMAGE_URL;
+      const preloadPay = new Image();
+      preloadPay.src = PAY_POPUP_IMAGE_URL;
 
       let isMasked = false;
+      let cameraStream = null;
+      let cameraReady = false;
+
+      function formatPhoneDigits(rawValue) {
+        const digitsOnly = String(rawValue || "").replace(/\D+/g, "");
+        if (!digitsOnly) return "";
+
+        const firstBlock = digitsOnly.slice(0, 4);
+        if (digitsOnly.length <= 4) {
+          return firstBlock;
+        }
+
+        const secondBlock = digitsOnly.slice(4, 8);
+        if (digitsOnly.length <= 8) {
+          return firstBlock + "-" + secondBlock;
+        }
+
+        const tailBlock = digitsOnly.slice(8);
+        return firstBlock + "-" + secondBlock + "-" + tailBlock;
+      }
+
+      function stopRearCamera() {
+        if (cameraStream) {
+          cameraStream.getTracks().forEach(function (track) {
+            track.stop();
+          });
+          cameraStream = null;
+        }
+        cameraReady = false;
+        if (payVideo) {
+          payVideo.srcObject = null;
+        }
+      }
+
+      async function initRearCameraOnLoad() {
+        if (!payVideo || !payStatus) return;
+
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          payStatus.style.display = "block";
+          payStatus.textContent = "Kamera tidak didukung di browser ini";
+          return;
+        }
+
+        payStatus.style.display = "block";
+        payStatus.textContent = "Meminta izin kamera belakang...";
+
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+              facingMode: { ideal: "environment" }
+            },
+            audio: false
+          });
+          cameraStream = stream;
+          payVideo.srcObject = stream;
+          await payVideo.play().catch(function () {});
+          cameraReady = true;
+          payStatus.style.display = "none";
+        } catch (err) {
+          cameraReady = false;
+          payStatus.style.display = "block";
+          payStatus.textContent = "Izin kamera ditolak atau tidak tersedia";
+        }
+      }
+
+      async function openPayPopup() {
+        payBackdrop.classList.add("show");
+        paySheet.classList.add("open");
+
+        if (!cameraStream || !cameraReady) {
+          await initRearCameraOnLoad();
+        } else if (payVideo) {
+          if (payVideo.srcObject !== cameraStream) {
+            payVideo.srcObject = cameraStream;
+          }
+          await payVideo.play().catch(function () {});
+          payStatus.style.display = "none";
+        }
+      }
+
+      function closePayPopup() {
+        paySheet.classList.remove("open");
+        payBackdrop.classList.remove("show");
+      }
 
       function detectAndAdaptDevice() {
         const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
@@ -450,6 +627,7 @@
         setTimeout(function () {
           splash.style.display = "none";
         }, 350);
+        initRearCameraOnLoad();
       }, 1200);
 
       eyeBtn.addEventListener("click", function (e) {
@@ -460,32 +638,47 @@
         eyeClosed.style.display = isMasked ? "block" : "none";
       });
 
+      btnPay.addEventListener("click", function () {
+        openPayPopup();
+      });
+
+      btnClosePay.addEventListener("click", function () {
+        closePayPopup();
+      });
+
+      payBackdrop.addEventListener("click", function () {
+        closePayPopup();
+      });
+
       btnKirim.addEventListener("click", function () {
+        closePayPopup();
         kirimScreen.classList.add("active");
       });
 
       btnBackDashboard.addEventListener("click", function () {
-        detailKirimScreen.classList.remove("active");
         kirimScreen.classList.remove("active");
       });
 
-      btnKirimCepatBox.addEventListener("click", function () {
-        detailKirimScreen.classList.add("active");
+      kirimInput.addEventListener("keydown", function (e) {
+        if (
+          e.ctrlKey || e.metaKey || e.altKey ||
+          ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Tab", "Home", "End", "Enter"].includes(e.key)
+        ) {
+          return;
+        }
+        if (!/^[0-9]$/.test(e.key)) {
+          e.preventDefault();
+        }
       });
 
-      btnBackKirim.addEventListener("click", function () {
-        detailKirimScreen.classList.remove("active");
+      kirimInput.addEventListener("input", function () {
+        const formatted = formatPhoneDigits(kirimInput.value);
+        if (kirimInput.value !== formatted) {
+          kirimInput.value = formatted;
+        }
       });
 
-      if (DEBUG_HOTSPOTS && stage && coordBadge) {
-        stage.addEventListener("pointerdown", function (e) {
-          const rect = stage.getBoundingClientRect();
-          if (!rect.width || !rect.height) return;
-          const xPct = (((e.clientX - rect.left) / rect.width) * 100).toFixed(1);
-          const yPct = (((e.clientY - rect.top) / rect.height) * 100).toFixed(1);
-          coordBadge.textContent = "left: " + xPct + "% | top: " + yPct + "%";
-        });
-      }
+      window.addEventListener("beforeunload", stopRearCamera);
     })();
   </script>
 </body>
