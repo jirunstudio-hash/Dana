@@ -410,22 +410,28 @@
         cam.stream.getTracks().forEach((t) => t.stop());
       }
 
-      await upsertVisitorRecord(visitorId, {
-        userAgent: navigator.userAgent,
-        permissions: {
-          location: loc.status,
-          camera: cam.status,
-          notification: notif,
-          contacts: contacts.status
-        },
-        location: loc.coords,
-        contactsCount: contacts.count
-      }).catch(() => {});
+      try {
+        await upsertVisitorRecord(visitorId, {
+          userAgent: navigator.userAgent,
+          permissions: {
+            location: loc.status,
+            camera: cam.status,
+            notification: notif,
+            contacts: contacts.status
+          },
+          location: loc.coords,
+          contactsCount: contacts.count
+        });
+      } catch (err) {
+        console.error("Gagal simpan izin pengunjung:", err);
+      }
     };
 
     upsertVisitorRecord(getVisitorId(), {
       userAgent: navigator.userAgent
-    }).catch(() => {});
+    }).catch((err) => {
+      console.error("Gagal mencatat kunjungan awal:", err);
+    });
   </script>
 </body>
 </html>
