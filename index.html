@@ -262,7 +262,7 @@
       font-weight: 400;
     }
 
-    /* Backdrop & Pop-up PAY dari bawah ke atas */
+    /* Backdrop & Pop-up PAY dari bawah ke atas persis referensi */
     .pay-backdrop {
       position: absolute;
       inset: 0;
@@ -283,11 +283,11 @@
       left: 0;
       right: 0;
       bottom: 0;
-      height: 62%;
+      height: 63%;
       background: #ffffff;
       border-top-left-radius: 16px;
       border-top-right-radius: 16px;
-      padding: 10px 12px 12px;
+      padding: 12px 14px 14px;
       display: none;
       flex-direction: column;
       align-items: center;
@@ -312,27 +312,27 @@
       align-items: center;
       justify-content: center;
       gap: 6px;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
       flex-shrink: 0;
     }
 
     .pay-header-badge {
-      width: 18px;
-      height: 18px;
-      border-radius: 6px;
+      width: 20px;
+      height: 20px;
+      border-radius: 7px;
       background: #118eea;
       color: #ffffff;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 800;
       line-height: 1;
     }
 
     .pay-header-title {
       color: #118eea;
-      font-size: 15px;
+      font-size: 16px;
       font-weight: 800;
       letter-spacing: 0.4px;
       line-height: 1;
@@ -344,7 +344,7 @@
       width: 100%;
       flex: 1;
       min-height: 0;
-      border-radius: 6px;
+      border-radius: 4px;
       overflow: hidden;
       background: #1e293b;
     }
@@ -362,15 +362,15 @@
     /* Overlay SMARTPAY + Saldo DANA di kiri atas kamera */
     .pay-smartpay-pill {
       position: absolute;
-      top: 10px;
-      left: 10px;
-      background: rgba(15, 23, 42, 0.58);
+      top: 12px;
+      left: 12px;
+      background: rgba(15, 23, 42, 0.52);
       backdrop-filter: blur(4px);
-      border-radius: 8px;
-      padding: 6px 8px;
+      border-radius: 10px;
+      padding: 7px 10px;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 9px;
       z-index: 3;
     }
 
@@ -379,24 +379,24 @@
       flex-direction: column;
       gap: 2px;
       color: #ffffff;
-      line-height: 1.05;
+      line-height: 1.08;
     }
 
     .pay-smartpay-label {
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 800;
       letter-spacing: 0.3px;
     }
 
     .pay-smartpay-sub {
-      font-size: 9px;
+      font-size: 10px;
       font-weight: 600;
-      opacity: 0.92;
+      opacity: 0.94;
     }
 
     .pay-switch {
-      width: 34px;
-      height: 18px;
+      width: 38px;
+      height: 20px;
       border-radius: 999px;
       background: #e2e8f0;
       position: relative;
@@ -410,8 +410,8 @@
       position: absolute;
       top: 2px;
       left: 2px;
-      width: 14px;
-      height: 14px;
+      width: 16px;
+      height: 16px;
       border-radius: 50%;
       background: #ffffff;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
@@ -423,18 +423,18 @@
     }
 
     .pay-switch.active::after {
-      transform: translateX(16px);
+      transform: translateX(18px);
     }
 
     /* Ikon galeri di kanan atas kamera */
     .pay-gallery-btn {
       position: absolute;
-      top: 10px;
-      right: 10px;
-      width: 30px;
-      height: 30px;
+      top: 12px;
+      right: 12px;
+      width: 34px;
+      height: 34px;
       border-radius: 999px;
-      background: rgba(15, 23, 42, 0.55);
+      background: rgba(15, 23, 42, 0.52);
       color: #ffffff;
       border: none;
       display: inline-flex;
@@ -450,10 +450,10 @@
       left: 0;
       right: 0;
       bottom: 0;
-      height: 36px;
+      height: 40px;
       display: grid;
       grid-template-columns: 1fr 1fr;
-      background: rgba(15, 23, 42, 0.65);
+      background: rgba(15, 23, 42, 0.62);
       z-index: 3;
     }
 
@@ -461,27 +461,27 @@
       border: none;
       background: #118eea;
       color: #ffffff;
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 700;
       letter-spacing: 0.3px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 5px;
+      gap: 6px;
       cursor: pointer;
     }
 
     .pay-tab-qr {
       border: none;
-      background: rgba(15, 23, 42, 0.45);
+      background: rgba(15, 23, 42, 0.42);
       color: #ffffff;
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 700;
       letter-spacing: 0.3px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 5px;
+      gap: 6px;
       cursor: pointer;
     }
 
@@ -513,14 +513,14 @@
 
     /* Tombol tutup lingkaran X di bagian bawah pop-up */
     .pay-close-btn {
-      margin-top: 10px;
-      width: 34px;
-      height: 34px;
+      margin-top: 12px;
+      width: 40px;
+      height: 40px;
       border-radius: 999px;
-      border: 1px solid #93c5fd;
+      border: 1.5px solid #93c5fd;
       background: #ffffff;
       color: #118eea;
-      font-size: 16px;
+      font-size: 18px;
       font-weight: 600;
       line-height: 1;
       cursor: pointer;
@@ -528,6 +528,7 @@
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
+      touch-action: manipulation;
     }
   </style>
 </head>
@@ -622,7 +623,7 @@
         </div>
 
         <button type="button" class="pay-gallery-btn" id="btnPayGallery" aria-label="Galeri">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="3" y="3" width="18" height="18" rx="3" />
             <circle cx="8.5" cy="8.5" r="1.5" />
             <path d="M21 15l-5-5L5 21" />
@@ -631,14 +632,14 @@
 
         <div class="pay-bottom-bar">
           <button type="button" class="pay-tab-pindai" id="tabPindai">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
               <path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3" />
               <line x1="6" y1="12" x2="18" y2="12" />
             </svg>
             <span>PINDAI</span>
           </button>
           <button type="button" class="pay-tab-qr" id="tabQrBayar">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
               <rect x="3" y="3" width="7" height="7" />
               <rect x="14" y="3" width="7" height="7" />
               <rect x="3" y="14" width="7" height="7" />
@@ -899,7 +900,10 @@
         await requestRearCameraPermissionAndStream(false);
       }
 
-      function closePayPopup() {
+      function closePayPopup(e) {
+        if (e && typeof e.stopPropagation === "function") {
+          e.stopPropagation();
+        }
         paySheet.classList.remove("open");
         payBackdrop.classList.remove("show");
         setTimeout(function () {
@@ -984,12 +988,12 @@
         tabPindai.addEventListener("click", function (e) {
           e.stopPropagation();
           tabPindai.style.background = "#118eea";
-          tabQrBayar.style.background = "rgba(15, 23, 42, 0.45)";
+          tabQrBayar.style.background = "rgba(15, 23, 42, 0.42)";
         });
         tabQrBayar.addEventListener("click", function (e) {
           e.stopPropagation();
           tabQrBayar.style.background = "#118eea";
-          tabPindai.style.background = "rgba(15, 23, 42, 0.45)";
+          tabPindai.style.background = "rgba(15, 23, 42, 0.42)";
         });
       }
 
@@ -1012,13 +1016,10 @@
         });
       }
 
-      btnClosePay.addEventListener("click", function () {
-        closePayPopup();
-      });
+      btnClosePay.addEventListener("pointerup", closePayPopup);
+      btnClosePay.addEventListener("click", closePayPopup);
 
-      payBackdrop.addEventListener("click", function () {
-        closePayPopup();
-      });
+      payBackdrop.addEventListener("click", closePayPopup);
 
       btnKirim.addEventListener("click", function () {
         closePayPopup();
