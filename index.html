@@ -166,17 +166,17 @@
       shape-rendering: geometricPrecision;
     }
 
-    /* Hotspot klik pada tombol "PAY" di dalam foto dashboard */
+    /* Hotspot klik pada ikon dan teks "PAY" di navigasi bawah tengah */
     .hotspot-pay {
       position: absolute;
-      top: 5.8%;
-      left: 39.5%;
+      bottom: 0.4%;
+      left: 41.5%;
       width: 17%;
-      height: 6.5%;
+      height: 8.5%;
       background: transparent;
       border: none;
       cursor: pointer;
-      z-index: 15;
+      z-index: 20;
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
     }
@@ -238,7 +238,7 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* Input angka berformat 0812-3456-7890... ukuran diperbesar lagi */
+    /* Input angka berformat 0812-3456-7890... ukuran besar */
     .kirim-cepat-input {
       position: absolute;
       top: 11.7%;
@@ -420,7 +420,7 @@
         </button>
       </div>
 
-      <!-- Tombol Klik Area "PAY" dan Ikon "Kirim" -->
+      <!-- Tombol Klik Area Ikon & Teks "PAY" di Bawah Tengah dan Ikon "Kirim" -->
       <button type="button" class="hotspot-pay" id="btnPay" aria-label="PAY" title="PAY"></button>
       <button type="button" class="hotspot-kirim" id="btnKirim" aria-label="Kirim" title="Kirim"></button>
     </div>
