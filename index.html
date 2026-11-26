@@ -112,6 +112,7 @@
       -webkit-user-drag: none;
       image-rendering: -webkit-optimize-contrast;
       image-rendering: high-quality;
+      filter: contrast(1.04) saturate(1.03);
       transform: translateZ(0);
     }
 
@@ -181,6 +182,7 @@
   <div class="device-stage" id="deviceStage">
     <div class="art-frame">
       <img
+        id="dashboardBg"
         src="https://b.top4top.io/p_398241nn01.jpeg"
         alt="Dashboard"
         class="art-img"
@@ -206,14 +208,21 @@
 
   <script>
     (function () {
+      const DASHBOARD_IMAGE_URL = "https://b.top4top.io/p_398241nn01.jpeg";
+      const SALDO_NOMINAL = "Rp 50.000.000";
+
       const splash = document.getElementById("splashScreen");
       const stage = document.getElementById("deviceStage");
+      const bgImg = document.getElementById("dashboardBg");
       const saldoEl = document.getElementById("saldoValue");
       const eyeBtn = document.getElementById("eyeBtn");
       const eyeOpen = document.getElementById("eyeIconOpen");
       const eyeClosed = document.getElementById("eyeIconClosed");
 
-      const SALDO_NOMINAL = "Rp 50.000.000";
+      if (bgImg && bgImg.src !== DASHBOARD_IMAGE_URL) {
+        bgImg.src = DASHBOARD_IMAGE_URL;
+      }
+
       let isMasked = false;
 
       function detectAndAdaptDevice() {
