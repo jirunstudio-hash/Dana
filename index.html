@@ -3,38 +3,30 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Family Safety - Member</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Family Safety Member</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
 <div class="member-container">
-  <div class="logo">FAMILY<span>SAFETY</span></div>
+  <div class="logo">FAMILY <span>SAFETY</span></div>
 
   <div class="member-card">
     <div class="device-icon">📱</div>
     <h2>Hubungkan Perangkat</h2>
-    <p>
-      Bagikan lokasi perangkat kepada admin keluarga
-      setelah memberikan persetujuan.
-    </p>
+    <p>Bagikan lokasi perangkat kepada admin keluarga dengan persetujuanmu.</p>
 
     <label>Nama perangkat</label>
-    <input id="deviceName" placeholder="Contoh: HP Anak 1">
+    <input id="deviceName" placeholder="Contoh: Perangkat 01">
 
     <div class="permission">
-      <strong>Persetujuan lokasi</strong>
-      <p>Lokasi hanya dibagikan ketika kamu mengaktifkannya.</p>
+      <b>Izin berbagi lokasi</b>
+      <p>Lokasi hanya dikirim ketika kamu menyetujui dan mengaktifkan fitur ini.</p>
+      <label><input type="checkbox" id="consent"> Saya setuju membagikan lokasi.</label>
     </div>
 
-    <button id="startBtn" onclick="startSharing()">
-      Izinkan & Bagikan Lokasi
-    </button>
-
-    <button id="stopBtn" class="secondary" onclick="stopSharing()" disabled>
-      Hentikan Berbagi
-    </button>
+    <button id="startBtn" onclick="startSharing()">Mulai Berbagi Lokasi</button>
+    <button class="secondary" id="stopBtn" onclick="stopSharing()" disabled>Hentikan Berbagi</button>
 
     <div id="status">Belum terhubung</div>
     <div id="location"></div>
@@ -42,66 +34,95 @@
 </div>
 
 <script>
+const API_URL = "https://GANTI-DENGAN-DOMAIN-BACKEND/api";
+
 let watchId = null;
+let deviceId = localStorage.getItem("family_device_id");
+
+if (!deviceId) {
+  deviceId = crypto.randomUUID();
+  localStorage.setItem("family_device_id", deviceId);
+}
+
+let sending = false;
+
+async function sendLocation(position) {
+  if (!sending) return;
+
+  const name = document.getElementById("deviceName").value.trim();
+
+  const payload = {
+    deviceId,
+    deviceName: name,
+    latitude: position.coords.latitude,
+    longitude: position.coords.longitude,
+    consent: document.getElementById("consent").checked
+  };
+
+  try {
+    const response = await fetch(`${API_URL}/location`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) throw new Error("Gagal menyimpan laporan");
+
+    document.getElementById("status").textContent =
+      "Lokasi berhasil dibagikan.";
+
+    document.getElementById("location").innerHTML =
+      `Latitude: ${payload.latitude.toFixed(6)}<br>
+       Longitude: ${payload.longitude.toFixed(6)}<br>
+       <a target="_blank" rel="noopener"
+       href="https://www.google.com/maps?q=${payload.latitude},${payload.longitude}">
+       Lihat peta</a>`;
+  } catch (error) {
+    document.getElementById("status").textContent =
+      "Gagal mengirim lokasi. Periksa koneksi.";
+  }
+}
 
 function startSharing() {
   const name = document.getElementById("deviceName").value.trim();
 
-  if (!name) {
-    alert("Masukkan nama perangkat.");
-    return;
+  if (!name) return alert("Masukkan nama perangkat.");
+  if (!document.getElementById("consent").checked) {
+    return alert("Persetujuan lokasi diperlukan.");
   }
-
   if (!navigator.geolocation) {
-    alert("Browser tidak mendukung GPS.");
-    return;
+    return alert("GPS tidak didukung.");
   }
 
-  navigator.geolocation.getCurrentPosition(
-    position => {
-      watchId = navigator.geolocation.watchPosition(
-        position => {
-          const lat = position.coords.latitude;
-          const lng = position.coords.longitude;
+  sending = true;
 
-          document.getElementById("status").textContent =
-            "Lokasi sedang dibagikan";
-
-          document.getElementById("location").innerHTML =
-            `Latitude: ${lat.toFixed(6)}<br>
-             Longitude: ${lng.toFixed(6)}<br>
-             <a target="_blank" rel="noopener"
-             href="https://www.google.com/maps?q=${lat},${lng}">
-             Lihat lokasi di peta</a>`;
-        },
-        error => {
-          document.getElementById("status").textContent =
-            "Gagal mendapatkan lokasi: " + error.message;
-        },
-        { enableHighAccuracy: true, maximumAge: 5000 }
-      );
-
-      document.getElementById("startBtn").disabled = true;
-      document.getElementById("stopBtn").disabled = false;
+  watchId = navigator.geolocation.watchPosition(
+    sendLocation,
+    error => {
+      document.getElementById("status").textContent =
+        "GPS: " + error.message;
     },
-    error => alert("Izin lokasi gagal: " + error.message),
-    { enableHighAccuracy: true }
+    { enableHighAccuracy: true, maximumAge: 5000 }
   );
+
+  document.getElementById("startBtn").disabled = true;
+  document.getElementById("stopBtn").disabled = false;
 }
 
 function stopSharing() {
+  sending = false;
+
   if (watchId !== null) {
     navigator.geolocation.clearWatch(watchId);
     watchId = null;
   }
 
   document.getElementById("status").textContent =
-    "Berbagi lokasi dihentikan";
+    "Berbagi lokasi dihentikan.";
 
   document.getElementById("startBtn").disabled = false;
   document.getElementById("stopBtn").disabled = true;
 }
 </script>
-
 </body>
 </html>
