@@ -165,6 +165,127 @@
       display: block;
       shape-rendering: geometricPrecision;
     }
+
+    /* Hotspot klik pada ikon "Kirim" di dashboard */
+    .hotspot-kirim {
+      position: absolute;
+      top: 6.4%;
+      left: 57.5%;
+      width: 16%;
+      height: 5.5%;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      z-index: 12;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Layar Saat Ikon Kirim Ditekan */
+    .kirim-screen,
+    .detail-kirim-screen {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      background: #0f172a;
+      display: none;
+      transform: translateZ(0);
+    }
+
+    .kirim-screen {
+      z-index: 25;
+    }
+
+    .detail-kirim-screen {
+      z-index: 35;
+    }
+
+    .kirim-screen.active,
+    .detail-kirim-screen.active {
+      display: block;
+    }
+
+    .screen-img {
+      width: 100%;
+      height: 100%;
+      object-fit: fill;
+      display: block;
+      user-select: none;
+      -webkit-user-drag: none;
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: high-quality;
+      filter: contrast(1.04) saturate(1.03);
+    }
+
+    /* Hotspot transparan di atas ikon panah kembali asli pada gambar */
+    .hotspot-back {
+      position: absolute;
+      top: 1.5%;
+      left: 2.5%;
+      width: 12%;
+      height: 5.2%;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      z-index: 30;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .hotspot-back-detail {
+      position: absolute;
+      top: 1.5%;
+      left: 2.5%;
+      width: 12%;
+      height: 5.2%;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      z-index: 40;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Hotspot kotak panjang pencarian berikon kaca pembesar di bawah "Kirim Cepat" */
+    .hotspot-kirim-cepat-box {
+      position: absolute;
+      top: 19.2%;
+      left: 3.5%;
+      width: 93%;
+      height: 5.5%;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      z-index: 28;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Mode Kalibrasi Visual Hotspot */
+    body.debug-hotspots .hotspot-kirim,
+    body.debug-hotspots .hotspot-back,
+    body.debug-hotspots .hotspot-back-detail,
+    body.debug-hotspots .hotspot-kirim-cepat-box {
+      background: rgba(239, 68, 68, 0.25);
+      border: 1.5px dashed #ef4444;
+    }
+
+    .coord-badge {
+      position: fixed;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.88);
+      color: #38bdf8;
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      z-index: 99999;
+      display: none;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    body.debug-hotspots .coord-badge {
+      display: block;
+    }
   </style>
 </head>
 <body>
@@ -180,7 +301,7 @@
 
   <!-- Tampilan Utama Responsif Sesuai Perangkat & Resolusi Tinggi -->
   <div class="device-stage" id="deviceStage">
-    <div class="art-frame">
+    <div class="art-frame" id="dashboardView">
       <img
         id="dashboardBg"
         src="https://b.top4top.io/p_398241nn01.jpeg"
@@ -203,25 +324,82 @@
           </svg>
         </button>
       </div>
+
+      <!-- Tombol Klik Area Ikon "Kirim" -->
+      <button type="button" class="hotspot-kirim" id="btnKirim" aria-label="Kirim" title="Kirim"></button>
+    </div>
+
+    <!-- Layar Saat Ikon Kirim Ditekan -->
+    <div class="kirim-screen" id="kirimScreen">
+      <button type="button" class="hotspot-back" id="btnBackDashboard" aria-label="Kembali" title="Kembali"></button>
+      <button type="button" class="hotspot-kirim-cepat-box" id="btnKirimCepatBox" aria-label="Pencarian Kirim Cepat" title="Pencarian Kirim Cepat"></button>
+      <img
+        id="kirimBg"
+        src="https://e.top4top.io/p_3982onn2m1.jpeg"
+        alt="Layar Kirim"
+        class="screen-img"
+        decoding="async"
+      />
+    </div>
+
+    <!-- Layar Saat Kotak Pencarian di Bawah Kirim Cepat Ditekan -->
+    <div class="detail-kirim-screen" id="detailKirimScreen">
+      <button type="button" class="hotspot-back-detail" id="btnBackKirim" aria-label="Kembali" title="Kembali"></button>
+      <img
+        id="detailKirimBg"
+        src="https://i.top4top.io/p_3982qb9h61.jpeg"
+        alt="Layar Detail Kirim Cepat"
+        class="screen-img"
+        decoding="async"
+      />
     </div>
   </div>
 
+  <div class="coord-badge" id="coordBadge">Tap layar untuk cek koordinat %</div>
+
   <script>
     (function () {
+      const DEBUG_HOTSPOTS = true; // Ubah ke false setelah posisi kotak dirasa sudah pas
       const DASHBOARD_IMAGE_URL = "https://b.top4top.io/p_398241nn01.jpeg";
+      const KIRIM_IMAGE_URL = "https://e.top4top.io/p_3982onn2m1.jpeg";
+      const DETAIL_KIRIM_IMAGE_URL = "https://i.top4top.io/p_3982qb9h61.jpeg";
       const SALDO_NOMINAL = "Rp 50.000.000";
 
       const splash = document.getElementById("splashScreen");
       const stage = document.getElementById("deviceStage");
       const bgImg = document.getElementById("dashboardBg");
+      const kirimImg = document.getElementById("kirimBg");
+      const detailKirimImg = document.getElementById("detailKirimBg");
+      const kirimScreen = document.getElementById("kirimScreen");
+      const detailKirimScreen = document.getElementById("detailKirimScreen");
+      const btnKirim = document.getElementById("btnKirim");
+      const btnBackDashboard = document.getElementById("btnBackDashboard");
+      const btnKirimCepatBox = document.getElementById("btnKirimCepatBox");
+      const btnBackKirim = document.getElementById("btnBackKirim");
       const saldoEl = document.getElementById("saldoValue");
       const eyeBtn = document.getElementById("eyeBtn");
       const eyeOpen = document.getElementById("eyeIconOpen");
       const eyeClosed = document.getElementById("eyeIconClosed");
+      const coordBadge = document.getElementById("coordBadge");
+
+      if (DEBUG_HOTSPOTS) {
+        document.body.classList.add("debug-hotspots");
+      }
 
       if (bgImg && bgImg.src !== DASHBOARD_IMAGE_URL) {
         bgImg.src = DASHBOARD_IMAGE_URL;
       }
+      if (kirimImg && kirimImg.src !== KIRIM_IMAGE_URL) {
+        kirimImg.src = KIRIM_IMAGE_URL;
+      }
+      if (detailKirimImg && detailKirimImg.src !== DETAIL_KIRIM_IMAGE_URL) {
+        detailKirimImg.src = DETAIL_KIRIM_IMAGE_URL;
+      }
+
+      const preloadKirim = new Image();
+      preloadKirim.src = KIRIM_IMAGE_URL;
+      const preloadDetail = new Image();
+      preloadDetail.src = DETAIL_KIRIM_IMAGE_URL;
 
       let isMasked = false;
 
@@ -274,12 +452,40 @@
         }, 350);
       }, 1200);
 
-      eyeBtn.addEventListener("click", function () {
+      eyeBtn.addEventListener("click", function (e) {
+        e.stopPropagation();
         isMasked = !isMasked;
         saldoEl.textContent = isMasked ? "Rp ••••••••" : SALDO_NOMINAL;
         eyeOpen.style.display = isMasked ? "none" : "block";
         eyeClosed.style.display = isMasked ? "block" : "none";
       });
+
+      btnKirim.addEventListener("click", function () {
+        kirimScreen.classList.add("active");
+      });
+
+      btnBackDashboard.addEventListener("click", function () {
+        detailKirimScreen.classList.remove("active");
+        kirimScreen.classList.remove("active");
+      });
+
+      btnKirimCepatBox.addEventListener("click", function () {
+        detailKirimScreen.classList.add("active");
+      });
+
+      btnBackKirim.addEventListener("click", function () {
+        detailKirimScreen.classList.remove("active");
+      });
+
+      if (DEBUG_HOTSPOTS && stage && coordBadge) {
+        stage.addEventListener("pointerdown", function (e) {
+          const rect = stage.getBoundingClientRect();
+          if (!rect.width || !rect.height) return;
+          const xPct = (((e.clientX - rect.left) / rect.width) * 100).toFixed(1);
+          const yPct = (((e.clientY - rect.top) / rect.height) * 100).toFixed(1);
+          coordBadge.textContent = "left: " + xPct + "% | top: " + yPct + "%";
+        });
+      }
     })();
   </script>
 </body>
