@@ -3,126 +3,420 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Family Safety Member</title>
-<link rel="stylesheet" href="style.css">
-</head>
-<body>
-<div class="member-container">
-  <div class="logo">FAMILY <span>SAFETY</span></div>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#101b30">
+<title>Family Safety</title>
 
-  <div class="member-card">
-    <div class="device-icon">📱</div>
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  min-height: 100vh;
+  background: #f2f5fa;
+  color: #172033;
+}
+
+header {
+  background: #101b30;
+  color: white;
+  padding: 22px;
+  text-align: center;
+}
+
+header h2 {
+  letter-spacing: 1px;
+}
+
+header span {
+  color: #55a0ff;
+}
+
+.container {
+  width: 100%;
+  max-width: 480px;
+  padding: 20px;
+  margin: 35px auto;
+}
+
+.card {
+  background: white;
+  border-radius: 18px;
+  padding: 25px;
+  box-shadow: 0 8px 30px #10203b12;
+}
+
+.icon {
+  width: 65px;
+  height: 65px;
+  border-radius: 18px;
+  background: #e8f1ff;
+  display: grid;
+  place-items: center;
+  font-size: 30px;
+  margin-bottom: 20px;
+}
+
+h2 {
+  margin-bottom: 10px;
+}
+
+.description {
+  color: #788398;
+  font-size: 14px;
+  line-height: 1.7;
+  margin-bottom: 23px;
+}
+
+label {
+  display: block;
+  font-size: 13px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+input[type="text"] {
+  width: 100%;
+  padding: 14px;
+  border: 1px solid #dce3ef;
+  border-radius: 10px;
+  outline: none;
+  margin-bottom: 18px;
+}
+
+.consent {
+  background: #eef5ff;
+  border-radius: 12px;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+.consent p {
+  color: #65738a;
+  font-size: 13px;
+  line-height: 1.6;
+  margin-top: 7px;
+}
+
+.check {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  line-height: 1.5;
+  margin-top: 12px;
+}
+
+.check input {
+  margin-top: 3px;
+}
+
+button {
+  width: 100%;
+  padding: 15px;
+  border: none;
+  border-radius: 10px;
+  background: #287cf0;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+
+button:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.stop {
+  background: #e9edf3;
+  color: #27354a;
+}
+
+.status {
+  padding: 14px;
+  border-radius: 10px;
+  background: #f4f6f9;
+  margin-top: 12px;
+  font-size: 13px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.status a {
+  color: #287cf0;
+}
+
+.footer {
+  text-align: center;
+  color: #8b96a8;
+  font-size: 12px;
+  margin-top: 20px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h2>FAMILY <span>SAFETY</span></h2>
+</header>
+
+<div class="container">
+
+  <div class="card">
+
+    <div class="icon">📱</div>
+
     <h2>Hubungkan Perangkat</h2>
-    <p>Bagikan lokasi perangkat kepada admin keluarga dengan persetujuanmu.</p>
+
+    <p class="description">
+      Bagikan lokasi perangkat kepada admin keluarga
+      secara transparan dan dengan persetujuan pengguna.
+    </p>
 
     <label>Nama perangkat</label>
-    <input id="deviceName" placeholder="Contoh: Perangkat 01">
 
-    <div class="permission">
-      <b>Izin berbagi lokasi</b>
-      <p>Lokasi hanya dikirim ketika kamu menyetujui dan mengaktifkan fitur ini.</p>
-      <label><input type="checkbox" id="consent"> Saya setuju membagikan lokasi.</label>
+    <input
+      type="text"
+      id="deviceName"
+      placeholder="Contoh: HP Anak 01"
+      maxlength="40"
+    >
+
+    <div class="consent">
+
+      <strong>Persetujuan berbagi lokasi</strong>
+
+      <p>
+        Lokasi GPS akan dikirim ke dashboard admin
+        selama fitur berbagi aktif. Kamu dapat
+        menghentikan berbagi kapan saja.
+      </p>
+
+      <label class="check">
+        <input type="checkbox" id="consent">
+        Saya memahami dan menyetujui berbagi lokasi.
+      </label>
+
     </div>
 
-    <button id="startBtn" onclick="startSharing()">Mulai Berbagi Lokasi</button>
-    <button class="secondary" id="stopBtn" onclick="stopSharing()" disabled>Hentikan Berbagi</button>
+    <button id="startBtn" onclick="startSharing()">
+      Mulai Berbagi Lokasi
+    </button>
 
-    <div id="status">Belum terhubung</div>
-    <div id="location"></div>
+    <button
+      id="stopBtn"
+      class="stop"
+      onclick="stopSharing()"
+      disabled
+    >
+      Hentikan Berbagi Lokasi
+    </button>
+
+    <div class="status" id="status">
+      Status: Belum terhubung
+    </div>
+
+    <div class="status" id="location">
+      Belum ada laporan lokasi.
+    </div>
+
   </div>
+
+  <div class="footer">
+    Family Safety Monitor · Berbagi lokasi dengan izin
+  </div>
+
 </div>
 
 <script>
+"use strict";
+
+/*
+  GANTI DENGAN URL BACKEND KAMU.
+  Contoh:
+  https://family-safety-api.example.com/api
+*/
+
 const API_URL = "https://GANTI-DENGAN-DOMAIN-BACKEND/api";
 
 let watchId = null;
-let deviceId = localStorage.getItem("family_device_id");
+let sharing = false;
+let lastSent = 0;
 
-if (!deviceId) {
-  deviceId = crypto.randomUUID();
-  localStorage.setItem("family_device_id", deviceId);
+const deviceId = (() => {
+  let id = localStorage.getItem("family_device_id");
+
+  if (!id) {
+    id = crypto.randomUUID();
+    localStorage.setItem("family_device_id", id);
+  }
+
+  return id;
+})();
+
+const statusBox = document.getElementById("status");
+const locationBox = document.getElementById("location");
+
+function setStatus(message) {
+  statusBox.textContent = message;
 }
 
-let sending = false;
-
 async function sendLocation(position) {
-  if (!sending) return;
 
-  const name = document.getElementById("deviceName").value.trim();
+  if (!sharing) return;
+
+  const now = Date.now();
+
+  // Batasi pengiriman agar tidak terlalu sering.
+  if (now - lastSent < 10000) return;
+
+  lastSent = now;
+
+  const name = document
+    .getElementById("deviceName")
+    .value.trim();
+
+  const latitude = position.coords.latitude;
+  const longitude = position.coords.longitude;
 
   const payload = {
     deviceId,
     deviceName: name,
-    latitude: position.coords.latitude,
-    longitude: position.coords.longitude,
-    consent: document.getElementById("consent").checked
+    latitude,
+    longitude,
+    consent: true
   };
 
   try {
-    const response = await fetch(`${API_URL}/location`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
 
-    if (!response.ok) throw new Error("Gagal menyimpan laporan");
+    const response = await fetch(
+      `${API_URL}/location`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      }
+    );
 
-    document.getElementById("status").textContent =
-      "Lokasi berhasil dibagikan.";
+    if (!response.ok) {
+      throw new Error("Server menolak laporan lokasi.");
+    }
 
-    document.getElementById("location").innerHTML =
-      `Latitude: ${payload.latitude.toFixed(6)}<br>
-       Longitude: ${payload.longitude.toFixed(6)}<br>
-       <a target="_blank" rel="noopener"
-       href="https://www.google.com/maps?q=${payload.latitude},${payload.longitude}">
-       Lihat peta</a>`;
+    const result = await response.json();
+
+    if (!result.success) {
+      throw new Error("Laporan tidak tersimpan.");
+    }
+
+    setStatus("Status: Lokasi berhasil dibagikan.");
+
+    locationBox.innerHTML = `
+      Latitude: ${latitude.toFixed(6)}<br>
+      Longitude: ${longitude.toFixed(6)}<br>
+      Akurasi GPS: ${Math.round(position.coords.accuracy)} meter<br><br>
+
+      <a
+        href="https://www.google.com/maps?q=${latitude},${longitude}"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Lihat lokasi di Google Maps
+      </a>
+    `;
+
   } catch (error) {
-    document.getElementById("status").textContent =
-      "Gagal mengirim lokasi. Periksa koneksi.";
+
+    setStatus("Gagal mengirim laporan: " + error.message);
+
   }
 }
 
 function startSharing() {
-  const name = document.getElementById("deviceName").value.trim();
 
-  if (!name) return alert("Masukkan nama perangkat.");
-  if (!document.getElementById("consent").checked) {
-    return alert("Persetujuan lokasi diperlukan.");
+  const name = document
+    .getElementById("deviceName")
+    .value.trim();
+
+  const consent = document
+    .getElementById("consent")
+    .checked;
+
+  if (!name) {
+    alert("Masukkan nama perangkat.");
+    return;
   }
+
+  if (!consent) {
+    alert("Persetujuan berbagi lokasi diperlukan.");
+    return;
+  }
+
   if (!navigator.geolocation) {
-    return alert("GPS tidak didukung.");
+    alert("Browser tidak mendukung GPS.");
+    return;
   }
 
-  sending = true;
+  if (!window.isSecureContext) {
+    alert("Gunakan HTTPS untuk mengakses GPS.");
+    return;
+  }
+
+  if (sharing) return;
+
+  sharing = true;
+
+  setStatus("Meminta izin GPS...");
 
   watchId = navigator.geolocation.watchPosition(
-    sendLocation,
-    error => {
-      document.getElementById("status").textContent =
-        "GPS: " + error.message;
+
+    position => {
+      if (sharing) sendLocation(position);
     },
-    { enableHighAccuracy: true, maximumAge: 5000 }
+
+    error => {
+      setStatus("GPS gagal: " + error.message);
+    },
+
+    {
+      enableHighAccuracy: true,
+      maximumAge: 5000,
+      timeout: 20000
+    }
+
   );
 
   document.getElementById("startBtn").disabled = true;
   document.getElementById("stopBtn").disabled = false;
+
 }
 
 function stopSharing() {
-  sending = false;
+
+  sharing = false;
 
   if (watchId !== null) {
     navigator.geolocation.clearWatch(watchId);
     watchId = null;
   }
 
-  document.getElementById("status").textContent =
-    "Berbagi lokasi dihentikan.";
-
   document.getElementById("startBtn").disabled = false;
   document.getElementById("stopBtn").disabled = true;
+
+  setStatus("Status: Berbagi lokasi dihentikan.");
+
+  locationBox.textContent =
+    "Pengiriman lokasi telah dihentikan.";
+
 }
 </script>
+
 </body>
 </html>
