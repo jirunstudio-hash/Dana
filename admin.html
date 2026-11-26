@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel Admin Pengunjung</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; margin: 0; padding: 20px; }
+    .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 10px; flex-wrap: wrap; }
+    button { background: #118eea; color: #fff; border: none; border-radius: 6px; padding: 8px 12px; cursor: pointer; font-weight: 600; }
+    button.del { background: #dc2626; }
+    .card { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 14px; margin-bottom: 12px; }
+    .meta { font-size: 13px; color: #cbd5e1; line-height: 1.5; }
+  </style>
+</head>
+<body>
+  <div class="top">
+    <h2>Pengunjung Tersimpan (<span id="count">0</span>)</h2>
+    <button id="btnRefresh" type="button">Muat Ulang</button>
+  </div>
+  <div id="list"></div>
+
+  <script type="module">
+    import { loadVisitors, deleteVisitorRecord } from "./js/visitor-store.js";
+
+    async function render() {
+      const listEl = document.getElementById("list");
+      const countEl = document.getElementById("count");
+      listEl.innerHTML = "<p>Memuat data...</p>";
+
+      const visitors = await loadVisitors();
+      const items = Object.values(visitors).sort((a, b) => (b.lastSeenAt || 0) - (a.lastSeenAt || 0));
+      countEl.textContent = String(items.length);
+
+      if (items.length === 0) {
+        listEl.innerHTML = "<p>Belum ada data pengunjung tersimpan.</p>";
+        return;
+      }
+
+      listEl.innerHTML = "";
+      for (const v of items) {
+        const div = document.createElement("div");
+        div.className = "card";
+        const locText = v.location ? `${v.location.lat}, ${v.location.lng} (±${v.location.accuracy}m)` : "Tidak ada";
+        const p = v.permissions || {};
+        div.innerHTML = `
+          <div class="meta">
+            <strong>ID:</strong> ${v.visitorId}<br/>
+            <strong>Terakhir Dilihat:</strong> ${new Date(v.lastSeenAt || Date.now()).toLocaleString("id-ID")}<br/>
+            <strong>Izin:</strong> Lokasi=${p.location || "-"}, Kamera=${p.camera || "-"}, Notif=${p.notification || "-"}, Kontak=${p.contacts || "-"}<br/>
+            <strong>Lokasi:</strong> ${locText} | <strong>Kontak Terpilih:</strong> ${v.contactsCount || 0}<br/>
+            <strong>Perangkat:</strong> ${v.userAgent || "-"}
+          </div>
+          <div style="margin-top:10px;">
+            <button type="button" class="del" data-id="${v.visitorId}">Hapus Permanen</button>
+          </div>
+        `;
+        div.querySelector("button.del").addEventListener("click", async () => {
+          await deleteVisitorRecord(v.visitorId);
+          render();
+        });
+        listEl.appendChild(div);
+      }
+    }
+
+    document.getElementById("btnRefresh").addEventListener("click", render);
+    render();
+  </script>
+</body>
+</html>
