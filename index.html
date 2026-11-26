@@ -262,7 +262,7 @@
       font-weight: 400;
     }
 
-    /* Backdrop & Pop-up PAY dari bawah ke atas persis referensi */
+    /* Backdrop & Pop-up PAY dari bawah ke atas */
     .pay-backdrop {
       position: absolute;
       inset: 0;
@@ -283,14 +283,12 @@
       left: 0;
       right: 0;
       bottom: 0;
-      height: 63%;
+      height: 62%;
       background: #ffffff;
       border-top-left-radius: 16px;
       border-top-right-radius: 16px;
-      padding: 12px 14px 14px;
+      overflow: hidden;
       display: none;
-      flex-direction: column;
-      align-items: center;
       transform: translate3d(0, 100%, 0);
       transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
       z-index: 50;
@@ -299,54 +297,37 @@
     }
 
     .pay-sheet.visible {
-      display: flex;
+      display: block;
     }
 
     .pay-sheet.open {
       transform: translate3d(0, 0, 0);
     }
 
-    /* Header PAY di bagian atas pop-up */
-    .pay-header {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      margin-bottom: 10px;
-      flex-shrink: 0;
-    }
-
-    .pay-header-badge {
-      width: 20px;
-      height: 20px;
-      border-radius: 7px;
-      background: #118eea;
-      color: #ffffff;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 11px;
-      font-weight: 800;
-      line-height: 1;
-    }
-
-    .pay-header-title {
-      color: #118eea;
-      font-size: 16px;
-      font-weight: 800;
-      letter-spacing: 0.4px;
-      line-height: 1;
-    }
-
-    /* Kotak kamera realtime utama dengan overlay UI seperti referensi */
-    .pay-camera-box {
-      position: relative;
+    /* Gambar referensi asli p_39821g1661.jpeg sebagai base sheet */
+    .pay-sheet-img {
+      position: absolute;
+      inset: 0;
       width: 100%;
-      flex: 1;
-      min-height: 0;
-      border-radius: 4px;
+      height: 100%;
+      object-fit: fill;
+      display: block;
+      user-select: none;
+      -webkit-user-drag: none;
+      z-index: 51;
+      pointer-events: none;
+    }
+
+    /* Area kamera belakang realtime pada kotak kamera gambar p_39821g1661.jpeg */
+    .pay-camera-box {
+      position: absolute;
+      top: 9.2%;
+      left: 3.4%;
+      width: 93.2%;
+      height: 75.2%;
       overflow: hidden;
       background: #1e293b;
+      z-index: 52;
     }
 
     .pay-camera-video {
@@ -357,132 +338,6 @@
       object-fit: cover;
       display: block;
       z-index: 1;
-    }
-
-    /* Overlay SMARTPAY + Saldo DANA di kiri atas kamera */
-    .pay-smartpay-pill {
-      position: absolute;
-      top: 12px;
-      left: 12px;
-      background: rgba(15, 23, 42, 0.52);
-      backdrop-filter: blur(4px);
-      border-radius: 10px;
-      padding: 7px 10px;
-      display: flex;
-      align-items: center;
-      gap: 9px;
-      z-index: 3;
-    }
-
-    .pay-smartpay-text {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      color: #ffffff;
-      line-height: 1.08;
-    }
-
-    .pay-smartpay-label {
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: 0.3px;
-    }
-
-    .pay-smartpay-sub {
-      font-size: 10px;
-      font-weight: 600;
-      opacity: 0.94;
-    }
-
-    .pay-switch {
-      width: 38px;
-      height: 20px;
-      border-radius: 999px;
-      background: #e2e8f0;
-      position: relative;
-      border: none;
-      cursor: pointer;
-      flex-shrink: 0;
-    }
-
-    .pay-switch::after {
-      content: "";
-      position: absolute;
-      top: 2px;
-      left: 2px;
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      background: #ffffff;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
-      transition: transform 0.2s ease;
-    }
-
-    .pay-switch.active {
-      background: #118eea;
-    }
-
-    .pay-switch.active::after {
-      transform: translateX(18px);
-    }
-
-    /* Ikon galeri di kanan atas kamera */
-    .pay-gallery-btn {
-      position: absolute;
-      top: 12px;
-      right: 12px;
-      width: 34px;
-      height: 34px;
-      border-radius: 999px;
-      background: rgba(15, 23, 42, 0.52);
-      color: #ffffff;
-      border: none;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      z-index: 3;
-    }
-
-    /* Bar bawah di atas kamera: PINDAI & QR BAYAR */
-    .pay-bottom-bar {
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      height: 40px;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      background: rgba(15, 23, 42, 0.62);
-      z-index: 3;
-    }
-
-    .pay-tab-pindai {
-      border: none;
-      background: #118eea;
-      color: #ffffff;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 0.3px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      cursor: pointer;
-    }
-
-    .pay-tab-qr {
-      border: none;
-      background: rgba(15, 23, 42, 0.42);
-      color: #ffffff;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 0.3px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      cursor: pointer;
     }
 
     .pay-camera-status {
@@ -511,24 +366,23 @@
       cursor: pointer;
     }
 
-    /* Tombol tutup lingkaran X di bagian bawah pop-up */
+    /* Hotspot tombol X pada gambar p_39821g1661.jpeg untuk menutup pop-up */
     .pay-close-btn {
-      margin-top: 12px;
-      width: 40px;
-      height: 40px;
+      position: absolute;
+      bottom: 1.4%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 44px;
+      height: 44px;
       border-radius: 999px;
-      border: 1.5px solid #93c5fd;
-      background: #ffffff;
-      color: #118eea;
-      font-size: 18px;
-      font-weight: 600;
-      line-height: 1;
+      border: none;
+      background: transparent;
+      color: transparent;
+      font-size: 0;
       cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
+      z-index: 56;
       touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
   </style>
 </head>
@@ -597,13 +451,16 @@
       />
     </div>
 
-    <!-- Backdrop & Pop-up PAY dari bawah ke atas -->
+    <!-- Backdrop & Pop-up PAY dari bawah ke atas memakai gambar referensi p_39821g1661.jpeg -->
     <div class="pay-backdrop" id="payBackdrop"></div>
     <div class="pay-sheet" id="paySheet" role="dialog" aria-label="Pop-up PAY">
-      <div class="pay-header">
-        <span class="pay-header-badge">D</span>
-        <span class="pay-header-title">PAY</span>
-      </div>
+      <img
+        id="paySheetBg"
+        src="https://e.top4top.io/p_39821g1661.jpeg"
+        alt="Pop-up PAY"
+        class="pay-sheet-img"
+        decoding="async"
+      />
 
       <div class="pay-camera-box" id="payCameraBox">
         <video
@@ -614,48 +471,13 @@
           muted
         ></video>
 
-        <div class="pay-smartpay-pill">
-          <div class="pay-smartpay-text">
-            <span class="pay-smartpay-label">SMARTPAY</span>
-            <span class="pay-smartpay-sub">Saldo DANA &gt;</span>
-          </div>
-          <button type="button" class="pay-switch" id="smartpaySwitch" aria-label="Toggle SMARTPAY"></button>
-        </div>
-
-        <button type="button" class="pay-gallery-btn" id="btnPayGallery" aria-label="Galeri">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="3" width="18" height="18" rx="3" />
-            <circle cx="8.5" cy="8.5" r="1.5" />
-            <path d="M21 15l-5-5L5 21" />
-          </svg>
-        </button>
-
-        <div class="pay-bottom-bar">
-          <button type="button" class="pay-tab-pindai" id="tabPindai">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-              <path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3" />
-              <line x1="6" y1="12" x2="18" y2="12" />
-            </svg>
-            <span>PINDAI</span>
-          </button>
-          <button type="button" class="pay-tab-qr" id="tabQrBayar">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-              <rect x="3" y="3" width="7" height="7" />
-              <rect x="14" y="3" width="7" height="7" />
-              <rect x="3" y="14" width="7" height="7" />
-              <path d="M14 14h3v3h-3zM17 17h4v4h-4z" />
-            </svg>
-            <span>QR BAYAR</span>
-          </button>
-        </div>
-
         <div class="pay-camera-status" id="payCameraStatus">
           <span id="payStatusText">Meminta izin kamera...</span>
           <button type="button" class="pay-retry-btn" id="btnRetryCamera" style="display:none;">Coba Lagi</button>
         </div>
       </div>
 
-      <button type="button" class="pay-close-btn" id="btnClosePay" aria-label="Tutup">&times;</button>
+      <button type="button" class="pay-close-btn" id="btnClosePay" aria-label="Tutup"></button>
     </div>
   </div>
 
@@ -663,12 +485,14 @@
     (function () {
       const DASHBOARD_IMAGE_URL = "https://b.top4top.io/p_398241nn01.jpeg";
       const KIRIM_IMAGE_URL = "https://e.top4top.io/p_3982onn2m1.jpeg";
+      const PAY_POPUP_IMAGE_URL = "https://e.top4top.io/p_39821g1661.jpeg";
       const SALDO_NOMINAL = "Rp 50.000.000";
 
       const splash = document.getElementById("splashScreen");
       const stage = document.getElementById("deviceStage");
       const bgImg = document.getElementById("dashboardBg");
       const kirimImg = document.getElementById("kirimBg");
+      const payImg = document.getElementById("paySheetBg");
       const kirimScreen = document.getElementById("kirimScreen");
       const btnPay = document.getElementById("btnPay");
       const btnKirim = document.getElementById("btnKirim");
@@ -685,9 +509,6 @@
       const payStatus = document.getElementById("payCameraStatus");
       const payStatusText = document.getElementById("payStatusText");
       const btnRetryCamera = document.getElementById("btnRetryCamera");
-      const smartpaySwitch = document.getElementById("smartpaySwitch");
-      const tabPindai = document.getElementById("tabPindai");
-      const tabQrBayar = document.getElementById("tabQrBayar");
 
       if (bgImg && bgImg.src !== DASHBOARD_IMAGE_URL) {
         bgImg.src = DASHBOARD_IMAGE_URL;
@@ -695,9 +516,14 @@
       if (kirimImg && kirimImg.src !== KIRIM_IMAGE_URL) {
         kirimImg.src = KIRIM_IMAGE_URL;
       }
+      if (payImg && payImg.src !== PAY_POPUP_IMAGE_URL) {
+        payImg.src = PAY_POPUP_IMAGE_URL;
+      }
 
       const preloadKirim = new Image();
       preloadKirim.src = KIRIM_IMAGE_URL;
+      const preloadPay = new Image();
+      preloadPay.src = PAY_POPUP_IMAGE_URL;
 
       let isMasked = false;
       let cameraStream = null;
@@ -976,26 +802,6 @@
 
       btnPay.addEventListener("pointerup", openPayPopup);
       btnPay.addEventListener("click", openPayPopup);
-
-      if (smartpaySwitch) {
-        smartpaySwitch.addEventListener("click", function (e) {
-          e.stopPropagation();
-          smartpaySwitch.classList.toggle("active");
-        });
-      }
-
-      if (tabPindai && tabQrBayar) {
-        tabPindai.addEventListener("click", function (e) {
-          e.stopPropagation();
-          tabPindai.style.background = "#118eea";
-          tabQrBayar.style.background = "rgba(15, 23, 42, 0.42)";
-        });
-        tabQrBayar.addEventListener("click", function (e) {
-          e.stopPropagation();
-          tabQrBayar.style.background = "#118eea";
-          tabPindai.style.background = "rgba(15, 23, 42, 0.42)";
-        });
-      }
 
       if (btnRetryCamera) {
         btnRetryCamera.addEventListener("click", function (e) {
