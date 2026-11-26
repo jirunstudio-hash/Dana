@@ -3,38 +3,54 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <meta name="theme-color" content="#118EEA" />
-  <title>DANA ID | Customer Care DANA</title>
+  <meta name="referrer" content="no-referrer" />
+  <title>⠀</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
-
     :root {
-      --dpr: 1;
+      --app-height: 100dvh;
       --ui-scale: 1;
-      --saldo-top: 1.5%;
-      --saldo-left: 8.2%;
-      --saldo-font: 16px;
+
+      /* Variabel adaptif Layar 2 (Ringkasan Biru) */
+      --coin-size: clamp(104px, 31vw, 138px);
+      --coin-mb: clamp(22px, 3.8dvh, 34px);
+      --blue-dest-fs: clamp(18px, 5vw, 23px);
+      --blue-name-fs: clamp(22px, 6.2vw, 28px);
+      --blue-phone-fs: clamp(19px, 5.4vw, 24px);
+      --blue-amount-fs: clamp(42px, 12.5vw, 60px);
+      --blue-amount-scale: 1;
+
+      /* Variabel adaptif Tombol Footer Layar 2 (DETAIL TRANSAKSI & TUTUP) */
+      --footer-px: clamp(12px, 3.6vw, 16px);
+      --footer-pb: clamp(14px, 2.2dvh, 20px);
+      --footer-gap: clamp(8px, 1.4dvh, 12px);
+      --btn-footer-py: clamp(12px, 1.8dvh, 15px);
+      --btn-footer-fs: clamp(12px, 3.3vw, 13.5px);
+
+      /* Variabel adaptif Layar 3 (Detail Transaksi) */
+      --rc-pad-top: clamp(12px, 2dvh, 20px);
+      --rc-pad-bot: clamp(8px, 1.4dvh, 14px);
+      --rc-px: clamp(12px, 3.6vw, 16px);
+      --rc-gap: clamp(8px, 1.5dvh, 16px);
+      --rc-row-py: clamp(7px, 1.1dvh, 11px);
+      --rc-backdrop-h: clamp(36px, 5.8dvh, 52px);
+      --rc-logo-size: 29px;
+      --rc-logo-fs: 20px;
+      --rc-meta-fs: 11px;
+      --rc-status-fs: 11.5px;
+      --rc-summary-fs: 12.5px;
+      --rc-total-fs: 13px;
+      --rc-label-fs: 11.5px;
+      --rc-sub-fs: 10.5px;
+      --rc-footer-fs: 8px;
+      --banner-w: clamp(130px, 38vw, 166px);
+      --banner-h: clamp(102px, 30vw, 132px);
     }
 
-    html, body {
-      width: 100%;
-      height: 100%;
-      background: #0f172a;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      overflow: hidden;
-      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-    }
-
-    /* Layar Pembuka Logo Tanpa Spinner Berputar */
+    /* Layar Pembuka Logo DANA 3 Detik */
     #splashScreen {
       position: fixed;
       inset: 0;
@@ -59,1322 +75,470 @@
       transform: translateZ(0);
     }
 
-    /* Wadah Utama Menyesuaikan Perangkat */
-    .device-stage {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      background: #118eea;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      transform: translateZ(0);
-      backface-visibility: hidden;
+    .density-compact {
+      --rc-pad-top: 10px;
+      --rc-pad-bot: 7px;
+      --rc-gap: 7px;
+      --rc-row-py: 6px;
+      --rc-logo-size: 25px;
+      --rc-logo-fs: 18px;
+      --rc-meta-fs: 10px;
+      --rc-status-fs: 11px;
+      --rc-summary-fs: 11.5px;
+      --rc-total-fs: 12.5px;
+      --rc-label-fs: 11px;
+      --rc-sub-fs: 10px;
+      --rc-footer-fs: 7.5px;
     }
 
-    .device-stage.show {
-      display: flex;
+    .density-tall {
+      --rc-pad-top: 20px;
+      --rc-pad-bot: 14px;
+      --rc-gap: 16px;
+      --rc-row-py: 11px;
+      --rc-logo-size: 30px;
+      --rc-logo-fs: 21px;
+      --rc-meta-fs: 11px;
+      --rc-status-fs: 12px;
+      --rc-summary-fs: 13px;
+      --rc-total-fs: 13.5px;
+      --rc-label-fs: 12px;
+      --rc-sub-fs: 11px;
+      --rc-footer-fs: 8.5px;
     }
 
-    body[data-device="mobile"] .device-stage {
-      width: 100vw;
-      height: 100dvh;
-      max-width: 100vw;
-      max-height: 100dvh;
-      border-radius: 0;
-    }
-
-    body[data-device="desktop"] .device-stage,
-    body[data-device="tablet"] .device-stage {
-      width: auto;
-      height: 96dvh;
-      aspect-ratio: 9 / 19.5;
-      border-radius: 22px;
-      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.4);
-    }
-
-    .art-frame {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      transform: translateZ(0);
-    }
-
-    .art-img {
-      width: 100%;
-      height: 100%;
-      object-fit: fill;
-      display: block;
-      user-select: none;
-      -webkit-user-drag: none;
-      image-rendering: -webkit-optimize-contrast;
-      image-rendering: high-quality;
-      filter: contrast(1.04) saturate(1.03);
-      transform: translateZ(0);
-    }
-
-    .saldo-overlay {
-      position: absolute;
-      top: var(--saldo-top);
-      left: var(--saldo-left);
-      width: 47%;
-      height: 3.4%;
-      background: #138ee9;
-      border-radius: 4px;
-      padding: 0 6px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      color: #ffffff;
-      font-weight: 700;
-      font-size: var(--saldo-font);
-      line-height: 1;
-      letter-spacing: 0.2px;
-      z-index: 10;
-      transform: translateZ(0);
-      backface-visibility: hidden;
-    }
-
-    .saldo-text {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      text-rendering: geometricPrecision;
-    }
-
-    .eye-toggle {
-      background: none;
-      border: none;
-      color: rgba(255, 255, 255, 0.94);
-      cursor: pointer;
-      padding: 2px;
-      line-height: 1;
-      flex-shrink: 0;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .eye-svg {
-      width: calc(var(--saldo-font) * 1.05);
-      height: calc(var(--saldo-font) * 1.05);
-      display: block;
-      shape-rendering: geometricPrecision;
-    }
-
-    .hotspot-pay {
-      position: absolute;
-      bottom: 0.4%;
-      left: 41.5%;
-      width: 17%;
-      height: 8.5%;
-      background: transparent;
-      border: none;
-      cursor: pointer;
-      z-index: 20;
-      touch-action: manipulation;
+    * {
+      box-sizing: border-box;
       -webkit-tap-highlight-color: transparent;
     }
 
-    .hotspot-kirim {
-      position: absolute;
-      top: 6.4%;
-      left: 57.5%;
-      width: 16%;
-      height: 5.5%;
-      background: transparent;
-      border: none;
-      cursor: pointer;
-      z-index: 15;
-      touch-action: manipulation;
-      -webkit-tap-highlight-color: transparent;
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #E2E8F0;
+      color: #1A1A1A;
+      -webkit-font-smoothing: antialiased;
     }
 
-    /* Layar Kirim Cepat */
-    .kirim-screen {
-      position: absolute;
+    body {
+      position: fixed;
       inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    button, input, select, label {
+      touch-action: manipulation;
+      font-family: inherit;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .device-frame {
       width: 100%;
       height: 100%;
-      background: #0f172a;
+      height: var(--app-height, 100dvh);
+      max-height: 100%;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      background-color: #F5F6F8;
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
+    }
+
+    .device-frame.hidden {
+      display: none !important;
+    }
+
+    /* Pada Tablet & Desktop (>= 600px x 600px), tampilkan frame HP proporsional di tengah */
+    @media (min-width: 600px) and (min-height: 600px) {
+      body {
+        padding: clamp(8px, 2dvh, 18px);
+      }
+      .device-frame {
+        width: min(100%, 430px);
+        height: min(100%, 880px);
+        border-radius: 22px;
+        box-shadow: 0 18px 50px rgba(15, 23, 42, 0.2);
+        padding-left: 0;
+        padding-right: 0;
+      }
+    }
+
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .no-scrollbar::-webkit-scrollbar {
       display: none;
-      z-index: 25;
-      transform: translateZ(0);
     }
 
-    .kirim-screen.active {
-      display: block;
-    }
-
-    .screen-img {
-      width: 100%;
-      height: 100%;
-      object-fit: fill;
-      display: block;
-      user-select: none;
-      -webkit-user-drag: none;
-      image-rendering: -webkit-optimize-contrast;
-      image-rendering: high-quality;
-      filter: contrast(1.04) saturate(1.03);
-    }
-
-    .hotspot-back {
-      position: absolute;
-      top: 1.5%;
-      left: 2.5%;
-      width: 12%;
-      height: 5.2%;
-      background: transparent;
-      border: none;
-      cursor: pointer;
-      z-index: 30;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    .kirim-cepat-input {
-      position: absolute;
-      top: 11.7%;
-      left: 14%;
-      width: 78%;
-      height: 4.4%;
-      background: transparent;
-      border: none;
-      outline: none;
-      color: #1e293b;
-      font-size: clamp(17px, 5vw, 21px);
-      font-weight: 700;
-      letter-spacing: 0.25px;
-      padding: 0 6px;
-      z-index: 29;
-      caret-color: #118eea;
-    }
-
-    /* Kartu Target Terdeteksi (Nama Acak Tersensor) saat Nomor Diketik */
-    .target-detected-card {
-      position: absolute;
-      top: 17.5%;
-      left: 4.5%;
-      width: 91%;
-      background: #ffffff;
-      border-radius: 10px;
-      padding: 10px 12px;
-      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.16);
-      border: 1px solid #e2e8f0;
-      display: none;
+    /* Layar 1: Pengaturan */
+    .settings-header {
+      background-color: #118EE9;
+      color: #FFFFFF;
+      padding: max(12px, env(safe-area-inset-top)) 14px 12px 14px;
+      display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
-      z-index: 32;
-      cursor: pointer;
-    }
-
-    .target-detected-card.show {
-      display: flex;
-    }
-
-    .target-left {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      min-width: 0;
-    }
-
-    .target-avatar {
-      width: 36px;
-      height: 36px;
-      border-radius: 8px;
-      background: #e0f2fe;
-      color: #118eea;
-      font-weight: 800;
-      font-size: 13px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      gap: 8px;
       flex-shrink: 0;
     }
 
-    .target-info {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      min-width: 0;
-    }
-
-    .target-masked-name {
-      font-size: 14px;
-      font-weight: 800;
-      color: #0f172a;
-      letter-spacing: 0.4px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .target-phone {
-      font-size: 12px;
-      font-weight: 600;
-      color: #475569;
-    }
-
-    .target-badge {
-      background: #118eea;
-      color: #ffffff;
-      font-size: 11px;
-      font-weight: 700;
-      padding: 6px 11px;
-      border-radius: 999px;
-      flex-shrink: 0;
-    }
-
-    /* Layar Alur Umum */
-    .flow-screen {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      background: #edf2f7;
-      display: none;
-      flex-direction: column;
-      z-index: 60;
-      overflow: hidden;
-    }
-
-    .flow-screen.active {
-      display: flex;
-    }
-
-    .flow-topbar {
-      height: 48px;
-      background: #118eea;
-      color: #ffffff;
-      display: flex;
-      align-items: center;
-      padding: 0 12px;
-      flex-shrink: 0;
-    }
-
-    .flow-back-btn {
-      background: none;
-      border: none;
-      color: #ffffff;
-      font-size: 24px;
-      line-height: 1;
-      cursor: pointer;
-      padding: 2px 6px;
-    }
-
-    .flow-topbar-title {
-      flex: 1;
-      text-align: center;
-      font-size: 15px;
-      font-weight: 600;
-      margin-right: 28px;
-    }
-
-    /* Layar 1: Kirim ke Teman (sesuai foto 1) */
-    .kirim-teman-scroll {
-      flex: 1;
+    .settings-scroll {
+      flex: 1 1 auto;
       min-height: 0;
       overflow-y: auto;
-      background: #edf2f7;
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
+      padding: clamp(8px, 2.5vw, 12px);
     }
 
-    .kt-recipient-card {
-      background: #ffffff;
-      padding: 10px 14px;
+    .settings-card {
+      background-color: #FFFFFF;
+      border-radius: 16px;
+      border: 1px solid #E2E8F0;
+      padding: clamp(10px, 3vw, 14px);
       display: flex;
-      align-items: center;
-      gap: 12px;
-      border-bottom: 1px solid #e2e8f0;
-    }
-
-    .kt-avatar {
-      width: 40px;
-      height: 40px;
-      border-radius: 6px;
-      background: #dbeafe;
-      color: #1d4ed8;
-      font-weight: 800;
-      font-size: 13px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      flex-shrink: 0;
-    }
-
-    .kt-avatar-badge {
-      position: absolute;
-      right: -3px;
-      bottom: -3px;
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      background: #118eea;
-      color: #ffffff;
-      font-size: 8px;
-      font-weight: 900;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 1.5px solid #ffffff;
-    }
-
-    .kt-name {
-      font-size: 13px;
-      font-weight: 600;
-      color: #1e293b;
-      letter-spacing: 0.3px;
-    }
-
-    .kt-phone-row {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      margin-top: 2px;
-      font-size: 12px;
-      font-weight: 700;
-      color: #0f172a;
-    }
-
-    .kt-phone-mini-icon {
-      width: 14px;
-      height: 14px;
-      border-radius: 3px;
-      background: #118eea;
-      color: #ffffff;
-      font-size: 8px;
-      font-weight: 900;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .kt-amount-box {
-      background: #ffffff;
-      padding: 10px 14px 12px;
-      border-bottom: 1px solid #e2e8f0;
-    }
-
-    .kt-amount-label {
-      font-size: 11px;
-      color: #64748b;
-      margin-bottom: 6px;
-    }
-
-    .kt-amount-line {
-      display: flex;
-      align-items: baseline;
-      gap: 6px;
-      color: #64748b;
-    }
-
-    .kt-rp {
-      font-size: 20px;
-      font-weight: 500;
-      color: #475569;
-    }
-
-    .kt-amt-num {
-      font-size: 26px;
-      font-weight: 700;
-      color: #0f172a;
-      min-height: 30px;
-    }
-
-    .kt-note-row {
-      background: #ffffff;
-      margin-top: 8px;
-      padding: 8px 14px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      border-top: 1px solid #e2e8f0;
-      border-bottom: 1px solid #e2e8f0;
-    }
-
-    .kt-note-pill {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      border: 1px solid #e2e8f0;
-      border-radius: 6px;
-      padding: 7px 10px;
-      background: #ffffff;
-    }
-
-    .kt-note-icon {
-      width: 16px;
-      height: 16px;
-      border-radius: 4px;
-      background: #118eea;
-      color: #ffffff;
-      font-size: 9px;
-      font-weight: 900;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-
-    .kt-note-input {
-      border: none;
-      outline: none;
-      width: 100%;
-      font-size: 12px;
-      color: #1e293b;
-      background: transparent;
-    }
-
-    .kt-gift-box {
-      position: relative;
-      width: 34px;
-      height: 34px;
-      border-radius: 6px;
-      background: #eff6ff;
-      color: #1d4ed8;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-      font-weight: 800;
-      flex-shrink: 0;
-    }
-
-    .kt-gift-badge {
-      position: absolute;
-      top: -5px;
-      right: -4px;
-      background: #ef4444;
-      color: #ffffff;
-      font-size: 7px;
-      font-weight: 800;
-      padding: 1px 4px;
-      border-radius: 999px;
-    }
-
-    .kt-option-item {
-      background: #ffffff;
-      padding: 10px 14px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 1px solid #e2e8f0;
-      font-size: 12px;
-      font-weight: 600;
-      color: #1e293b;
-    }
-
-    .kt-baru-tag {
-      background: #ef4444;
-      color: #ffffff;
-      font-size: 8px;
-      font-weight: 800;
-      padding: 2px 5px;
-      border-radius: 999px;
-      margin-left: 5px;
-    }
-
-    .kt-info-circle {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 13px;
-      height: 13px;
-      border-radius: 50%;
-      border: 1px solid #94a3b8;
-      color: #64748b;
-      font-size: 9px;
-      margin-left: 4px;
-    }
-
-    .kt-checkbox {
-      width: 17px;
-      height: 17px;
-      border: 1.5px solid #94a3b8;
-      border-radius: 2px;
-      background: #ffffff;
-      cursor: pointer;
-    }
-
-    .kt-feed-card {
-      margin: 10px 14px 4px;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      padding: 8px 12px;
-      display: flex;
-      align-items: center;
+      flex-direction: column;
       gap: 10px;
     }
 
-    .kt-feed-avatar {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: #0f172a;
-      color: #38bdf8;
-      font-size: 11px;
-      font-weight: 800;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-
-    .kt-feed-title {
-      font-size: 12px;
-      font-weight: 700;
-      color: #1e293b;
-    }
-
-    .kt-feed-sub {
-      font-size: 11px;
-      color: #475569;
-    }
-
-    .kt-privacy-text {
-      padding: 6px 14px 8px;
-      font-size: 10px;
-      color: #64748b;
-      line-height: 1.35;
-    }
-
-    .kt-chevron-down {
-      text-align: center;
-      color: #94a3b8;
-      font-size: 12px;
-      padding: 2px 0 4px;
-    }
-
-    /* Keypad Angka & Tombol LANJUTKAN · NONTUNAI */
-    .kt-keypad-panel {
-      background: #e2e8f0;
-      padding: 6px 10px 10px;
-      flex-shrink: 0;
-    }
-
-    .kt-keypad-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 4px;
-      margin-bottom: 8px;
-    }
-
-    .kt-key {
-      height: 38px;
-      border: none;
-      background: transparent;
-      color: #1e293b;
-      font-size: 19px;
-      font-weight: 500;
-      border-radius: 6px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .kt-key:active {
-      background: rgba(15, 23, 42, 0.08);
-    }
-
-    .kt-key-del-box {
-      width: 44px;
-      height: 26px;
-      border-radius: 5px;
-      background: #334155;
-      color: #ffffff;
-      font-size: 13px;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .kt-btn-lanjut {
+    .field-input {
       width: 100%;
-      height: 40px;
-      border: none;
-      border-radius: 5px;
-      background: #cbd5e1;
-      color: #ffffff;
-      font-size: 12px;
+      padding: 8px 11px;
+      background-color: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #1E293B;
+      outline: none;
+    }
+
+    .field-input:focus {
+      background-color: #FFFFFF;
+      border-color: #118EE9;
+    }
+
+    .btn-kirim-wrap {
+      flex-shrink: 0;
+      padding: 8px 12px max(12px, env(safe-area-inset-bottom)) 12px;
+      background-color: #F5F6F8;
+      border-top: 1px solid #E5E9F0;
+      position: relative;
+      z-index: 30;
+    }
+
+    #btnKirim {
+      width: 100%;
+      min-height: 46px;
+      padding: 12px 16px;
+      background-color: #118EE9;
+      color: #FFFFFF;
       font-weight: 700;
-      letter-spacing: 0.4px;
-      cursor: not-allowed;
-    }
-
-    .kt-btn-lanjut.ready {
-      background: #118eea;
-      cursor: pointer;
-    }
-
-    /* Layar 2: Konfirmasi Pembayaran (sesuai foto 2) */
-    .conf-top-bar {
-      height: 46px;
-      background: #ffffff;
+      font-size: 14px;
+      letter-spacing: 0.05em;
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(17, 142, 233, 0.28);
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      padding: 0 12px;
-      border-bottom: 1px solid #e2e8f0;
-      flex-shrink: 0;
-    }
-
-    .conf-icon-btn {
-      background: none;
-      border: none;
-      color: #334155;
-      font-size: 22px;
-      line-height: 1;
+      justify-content: center;
+      gap: 8px;
       cursor: pointer;
-      padding: 2px 6px;
     }
 
-    .conf-brand-center {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      color: #118eea;
-      font-weight: 900;
-      font-size: 15px;
-      letter-spacing: 0.4px;
+    #btnKirim:active {
+      background-color: #0D7CD0;
+      transform: scale(0.985);
     }
 
-    .conf-brand-badge {
+    #btnKirim svg {
+      display: inline-block;
+      flex-shrink: 0;
       width: 18px;
       height: 18px;
-      border-radius: 5px;
-      background: #118eea;
-      color: #ffffff;
-      font-size: 10px;
-      font-weight: 900;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
+      stroke: #FFFFFF;
     }
 
-    .conf-sub-header {
-      background: #118eea;
-      color: #ffffff;
-      text-align: center;
-      padding: 10px 12px;
-      font-size: 14px;
-      font-weight: 600;
+    /* Layar 2: Ringkasan Layar Penuh Biru */
+    .full-blue-screen {
+      background-color: #118EE9;
+      background-image: linear-gradient(180deg, #1290EB 0%, #1088E0 55%, #0E81D6 100%);
+      color: #FFFFFF;
     }
 
-    .conf-recipient-banner {
-      background: #118eea;
-      color: #ffffff;
-      padding: 12px 16px 18px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .conf-avatar {
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      background: #ffffff;
-      color: #118eea;
-      font-size: 14px;
-      font-weight: 800;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-
-    .conf-title {
-      font-size: 16px;
-      font-weight: 700;
-    }
-
-    .conf-sub {
-      font-size: 13px;
-      font-weight: 600;
-      opacity: 0.96;
-      margin-top: 2px;
-    }
-
-    .conf-total-card {
-      background: #ffffff;
-      padding: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 8px solid #edf2f7;
-    }
-
-    .conf-total-label {
-      font-size: 14px;
-      color: #334155;
-      font-weight: 500;
-    }
-
-    .conf-total-val {
-      font-size: 20px;
-      font-weight: 800;
-      color: #ea580c;
-    }
-
-    .conf-middle-space {
-      flex: 1;
-      background: #ffffff;
-    }
-
-    .conf-bottom-box {
-      background: #ffffff;
-      border-top: 1px solid #e2e8f0;
-      padding: 10px 14px 14px;
-    }
-
-    .conf-smartpay-row {
-      display: flex;
-      justify-content: flex-end;
-      align-items: center;
-      gap: 4px;
-      font-size: 10px;
-      font-weight: 900;
-      color: #1e3a8a;
-      margin-bottom: 6px;
-    }
-
-    .conf-info-dot {
-      width: 13px;
-      height: 13px;
-      border-radius: 50%;
-      border: 1px solid #94a3b8;
-      color: #64748b;
-      font-size: 9px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-    }
-
-    .conf-saldo-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 12px;
-    }
-
-    .conf-saldo-left {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .conf-saldo-logo {
-      width: 28px;
-      height: 28px;
-      border-radius: 6px;
-      background: #118eea;
-      color: #ffffff;
-      font-size: 12px;
-      font-weight: 900;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .conf-saldo-lbl {
-      font-size: 11px;
-      color: #64748b;
-    }
-
-    .conf-saldo-num {
-      font-size: 15px;
-      font-weight: 800;
-      color: #0f172a;
-    }
-
-    .conf-ganti-btn {
-      border: 1px solid #118eea;
-      background: #ffffff;
-      color: #118eea;
-      font-size: 11px;
-      font-weight: 800;
-      padding: 4px 12px;
-      border-radius: 999px;
-      cursor: pointer;
-    }
-
-    .conf-pay-btn {
-      width: 100%;
-      height: 44px;
-      border: none;
-      border-radius: 6px;
-      background: #118eea;
-      color: #ffffff;
-      font-size: 14px;
-      font-weight: 800;
-      letter-spacing: 0.4px;
-      cursor: pointer;
-    }
-
-    /* Layar 3: Transaksi Berhasil (sesuai foto 3) */
-    .succ-screen {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      background: #118eea;
-      color: #ffffff;
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: space-between;
-      padding: 46px 16px 18px;
-      z-index: 70;
-    }
-
-    .succ-screen.active {
-      display: flex;
-    }
-
-    .succ-top-group {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      margin-top: 24px;
-    }
-
-    .succ-badge {
-      width: 86px;
-      height: 86px;
-      border-radius: 50%;
-      background: #facc15;
-      border: 5px solid #38bdf8;
-      color: #ffffff;
-      font-size: 44px;
-      font-weight: 900;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 10px 22px rgba(15, 23, 42, 0.16);
-      margin-bottom: 24px;
-    }
-
-    .succ-title {
-      font-size: 16px;
-      font-weight: 600;
-      color: #ffffff;
-    }
-
-    .succ-minus {
-      font-size: 18px;
-      font-weight: 700;
-      margin: 4px 0;
-    }
-
-    .succ-amt {
-      font-size: 38px;
-      font-weight: 900;
-      color: #ffffff;
-      line-height: 1.1;
-      margin-bottom: 16px;
-    }
-
-    .succ-bagikan-btn {
-      background: rgba(255, 255, 255, 0.12);
-      border: 1px solid rgba(255, 255, 255, 0.75);
-      color: #ffffff;
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: 0.5px;
-      padding: 6px 16px;
-      border-radius: 999px;
-      cursor: pointer;
-    }
-
-    .succ-btn-stack {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .succ-btn-detail {
-      width: 100%;
-      height: 42px;
-      border: none;
-      border-radius: 5px;
-      background: #ffffff;
-      color: #118eea;
-      font-size: 12px;
-      font-weight: 800;
-      letter-spacing: 0.4px;
-      cursor: pointer;
-    }
-
-    .succ-btn-tutup {
-      width: 100%;
-      height: 42px;
-      border: 1.5px solid rgba(255, 255, 255, 0.85);
-      border-radius: 5px;
-      background: transparent;
-      color: #ffffff;
-      font-size: 12px;
-      font-weight: 800;
-      letter-spacing: 0.4px;
-      cursor: pointer;
-    }
-
-    /* Layar 4: Detail Transaksi (sesuai foto 4) */
-    .det-screen {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      background: #edf2f7;
-      display: none;
-      flex-direction: column;
-      z-index: 80;
+    .full-blue-scroll {
+      flex: 1 1 auto;
+      min-height: 0;
       overflow-y: auto;
-    }
-
-    .det-screen.active {
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
+      padding: max(20px, env(safe-area-inset-top)) var(--footer-px) 14px var(--footer-px);
       display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
 
-    .det-topbar {
-      height: 46px;
-      background: #118eea;
-      color: #ffffff;
+    .coin-badge {
+      width: var(--coin-size);
+      height: var(--coin-size);
+      border-radius: 9999px;
       display: flex;
       align-items: center;
-      padding: 0 12px;
+      justify-content: center;
       flex-shrink: 0;
+      margin-bottom: var(--coin-mb);
+      box-shadow: 0 6px 20px rgba(7, 46, 88, 0.24);
     }
 
-    .det-topbar-title {
-      margin-left: 12px;
-      font-size: 15px;
+    .coin-badge svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .pill-share-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 7px 18px;
+      border-radius: 9999px;
+      border: 1.3px solid rgba(255, 255, 255, 0.9);
+      background-color: transparent;
+      color: #FFFFFF;
+      font-size: 11.5px;
       font-weight: 600;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: background-color 0.15s ease, transform 0.1s ease;
     }
 
-    .det-card {
+    .pill-share-btn:active {
+      background-color: rgba(255, 255, 255, 0.2);
+      transform: scale(0.97);
+    }
+
+    /* Footer Layar 2: Adaptif & Rapi mengikuti layar perangkat */
+    .full-blue-footer {
+      flex-shrink: 0;
+      width: 100%;
+      padding: 8px var(--footer-px) max(var(--footer-pb), env(safe-area-inset-bottom)) var(--footer-px);
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: var(--footer-gap);
+    }
+
+    .btn-solid-white {
+      width: 100%;
+      padding: var(--btn-footer-py) 14px;
+      border-radius: 7px;
+      border: 1.5px solid #FFFFFF;
+      background-color: rgba(255, 255, 255, 0.96);
+      color: #118EE9;
+      font-size: var(--btn-footer-fs);
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      line-height: 1.2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      cursor: pointer;
+      transition: background-color 0.15s ease, transform 0.1s ease;
+    }
+
+    .btn-solid-white:active {
+      background-color: #FFFFFF;
+      transform: scale(0.99);
+    }
+
+    .btn-outline-white {
+      width: 100%;
+      padding: var(--btn-footer-py) 14px;
+      border-radius: 7px;
+      border: 1.5px solid rgba(255, 255, 255, 0.9);
+      background-color: transparent;
+      color: #FFFFFF;
+      font-size: var(--btn-footer-fs);
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      line-height: 1.2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      cursor: pointer;
+      transition: background-color 0.15s ease, transform 0.1s ease;
+    }
+
+    .btn-outline-white:active {
+      background-color: rgba(255, 255, 255, 0.16);
+      transform: scale(0.99);
+    }
+
+    /* Layar 3: Rincian Detail Transaksi */
+    .dana-header-top {
+      background-color: #118EE9;
+      padding: max(10px, env(safe-area-inset-top)) 14px 10px 14px;
+      color: #FFFFFF;
+      flex-shrink: 0;
       position: relative;
-      margin: 10px 12px 6px;
-      background: #ffffff;
-      border-top-left-radius: 12px;
-      border-top-right-radius: 12px;
-      padding: 14px 14px 20px;
-      box-shadow: 0 3px 10px rgba(15, 23, 42, 0.06);
-      overflow: hidden;
+      z-index: 10;
     }
 
-    .det-watermark {
+    .receipt-body-wrap {
+      flex: 1 1 auto;
+      min-height: 0;
+      padding: 2px var(--rc-px) var(--rc-pad-bot) var(--rc-px);
+      display: flex;
+      flex-direction: column;
+      gap: var(--rc-gap);
+      position: relative;
+      z-index: 2;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .receipt-body-wrap::before {
+      content: "";
+      position: absolute;
+      top: -2px;
+      left: 0;
+      right: 0;
+      height: var(--rc-backdrop-h);
+      background-color: #118EE9;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .receipt-card {
+      background-color: #FFFFFF;
+      border-radius: 11px 11px 0 0;
+      position: relative;
+      z-index: 2;
+      overflow: hidden;
+      border-top: 1px solid #E5E9F0;
+      border-left: 1px solid #E5E9F0;
+      border-right: 1px solid #E5E9F0;
+      box-shadow: 0 3px 12px rgba(17, 142, 233, 0.06);
+    }
+
+    .watermark-layer {
       position: absolute;
       inset: 0;
       pointer-events: none;
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      place-items: center;
-      opacity: 0.08;
-      font-size: 13px;
-      font-weight: 900;
-      color: #118eea;
-      transform: rotate(-22deg);
+      z-index: 0;
+      opacity: 0.048;
+      background-repeat: repeat;
+      background-size: 132px 132px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='138' height='138' viewBox='0 0 138 138'%3E%3Cg transform='rotate(-45 69 69)' fill='%23118EE9'%3E%3Ccircle cx='34' cy='69' r='12'/%3E%3Cpath d='M27 66.5c2.5-1.5 5.2-1.5 7.7 0s5.2 1.5 7.7 0v5.5c-2.5 1.5-5.2 1.5-7.7 0s-5.2-1.5-7.7 0v-5.5z' fill='%23FFFFFF'/%3E%3Ctext x='51' y='74' font-family='Arial, sans-serif' font-weight='800' font-size='15' letter-spacing='1.5'%3EDANA%3C/text%3E%3C/g%3E%3C/svg%3E");
     }
 
-    .det-brand-row {
+    .straight-divider {
+      border-top: 1px solid #EEF1F5;
+      margin: 0 var(--rc-px);
       position: relative;
+      z-index: 2;
+    }
+
+    .total-pay-box {
+      background-color: #EFF6FC;
+      border-radius: 7px;
+      padding: var(--rc-row-py) 12px;
       display: flex;
       align-items: center;
+      justify-content: space-between;
+    }
+
+    .scallop-bottom {
+      height: 8px;
+      width: 100%;
+      background-color: #F5F6F8;
+      position: relative;
+      z-index: 2;
+      flex-shrink: 0;
+      background-image: radial-gradient(circle at 7px 0px, #FFFFFF 6.5px, #E5E9F0 7px, transparent 7.5px);
+      background-size: 14px 8px;
+      background-repeat: repeat-x;
+    }
+
+    .banner-card {
+      position: relative;
+      z-index: 2;
+      display: flex;
       justify-content: center;
-      gap: 6px;
-      color: #118eea;
-      font-size: 17px;
-      font-weight: 900;
-      margin-bottom: 10px;
+      flex-shrink: 0;
+      margin: auto 0;
     }
 
-    .det-meta {
+    .receipt-bottom-actions {
       position: relative;
-      display: flex;
-      justify-content: space-between;
-      font-size: 10.5px;
-      color: #64748b;
-      margin-bottom: 10px;
-    }
-
-    .det-ok-line {
-      position: relative;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      color: #16a34a;
-      font-size: 12px;
-      font-weight: 700;
-      margin-bottom: 4px;
-    }
-
-    .det-ok-circle {
-      width: 15px;
-      height: 15px;
-      border-radius: 50%;
-      background: #16a34a;
-      color: #ffffff;
-      font-size: 10px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .det-headline {
-      position: relative;
-      font-size: 13px;
-      font-weight: 800;
-      color: #0f172a;
-      margin-bottom: 10px;
-    }
-
-    .det-total-box {
-      position: relative;
-      background: #f1f5f9;
-      border-radius: 6px;
-      padding: 10px 12px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 13px;
-      font-weight: 800;
-      color: #0f172a;
-      margin-bottom: 8px;
-    }
-
-    .det-row {
-      position: relative;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 9px 2px;
-      border-bottom: 1px solid #f1f5f9;
-      font-size: 11.5px;
-      color: #334155;
-    }
-
-    .det-ad-box {
-      margin: 6px auto 4px;
-      width: 210px;
-      background: #1f0909;
-      color: #ffffff;
-      border-radius: 6px;
-      padding: 10px;
-      text-align: center;
-      position: relative;
-      border: 1px solid #450a0a;
-    }
-
-    .det-ad-top {
-      font-size: 11px;
-      font-weight: 800;
-      line-height: 1.25;
-      margin-bottom: 6px;
-    }
-
-    .det-ad-brand {
-      background: #dc2626;
-      color: #ffffff;
-      font-weight: 900;
-      font-size: 12px;
-      padding: 4px 10px;
-      border-radius: 4px;
-      display: inline-block;
-      margin-bottom: 6px;
-    }
-
-    .det-ad-cta {
-      background: #ffffff;
-      color: #0f172a;
-      font-size: 9px;
-      font-weight: 800;
-      padding: 3px 8px;
-      border-radius: 999px;
-      display: inline-block;
-    }
-
-    .det-ad-cap {
-      text-align: center;
-      font-size: 9.5px;
-      color: #64748b;
-      margin-bottom: 8px;
-    }
-
-    .det-actions {
-      padding: 0 12px 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
+      z-index: 10;
+      flex-shrink: 0;
       margin-top: auto;
     }
 
-    .det-btn-share {
+    .btn-outline-dana {
       width: 100%;
-      height: 38px;
-      border-radius: 5px;
-      border: 1px solid #93c5fd;
-      background: #ffffff;
-      color: #118eea;
-      font-size: 12px;
-      font-weight: 800;
-      cursor: pointer;
-    }
-
-    .det-protection {
-      text-align: center;
-      font-size: 9.5px;
-      color: #64748b;
-      line-height: 1.35;
-    }
-
-    .det-protection strong {
-      color: #118eea;
-    }
-
-    .det-btn-help {
-      width: 100%;
-      height: 40px;
-      border-radius: 5px;
-      border: 1px solid #93c5fd;
-      background: #ffffff;
-      color: #118eea;
-      font-size: 12px;
-      font-weight: 800;
-      cursor: pointer;
-    }
-
-    /* Backdrop & Pop-up PAY dari bawah ke atas memakai gambar referensi p_39821g1661.jpeg */
-    .pay-backdrop {
-      position: absolute;
-      inset: 0;
-      background: rgba(15, 23, 42, 0.45);
-      display: none;
-      opacity: 0;
-      transition: opacity 0.25s ease;
-      z-index: 40;
-    }
-
-    .pay-backdrop.show {
-      display: block;
-      opacity: 1;
-    }
-
-    .pay-sheet {
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      height: 62%;
-      background: #ffffff;
-      border-top-left-radius: 16px;
-      border-top-right-radius: 16px;
-      overflow: hidden;
-      display: none;
-      transform: translate3d(0, 100%, 0);
-      transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-      z-index: 50;
-      box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.32);
-      will-change: transform;
-    }
-
-    .pay-sheet.visible {
-      display: block;
-    }
-
-    .pay-sheet.open {
-      transform: translate3d(0, 0, 0);
-    }
-
-    .pay-sheet-img {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: fill;
-      display: block;
-      user-select: none;
-      -webkit-user-drag: none;
-      z-index: 51;
-      pointer-events: none;
-    }
-
-    .pay-camera-box {
-      position: absolute;
-      top: 9.2%;
-      left: 3.4%;
-      width: 93.2%;
-      height: 75.2%;
-      overflow: hidden;
-      background: #1e293b;
-      z-index: 52;
-    }
-
-    .pay-camera-video {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-      z-index: 1;
-    }
-
-    .pay-camera-status {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(15, 23, 42, 0.82);
-      color: #ffffff;
-      font-size: 11px;
-      padding: 5px 10px;
-      border-radius: 999px;
-      white-space: nowrap;
-      z-index: 4;
-    }
-
-    .pay-retry-btn {
-      margin-left: 6px;
-      background: #118eea;
-      color: #ffffff;
-      border: none;
-      border-radius: 999px;
-      padding: 2px 8px;
-      font-size: 10px;
+      background-color: #FFFFFF;
+      border: 1px solid #68B5EE;
+      border-radius: 7px;
+      color: #118EE9;
+      font-size: clamp(11.5px, 3.2vw, 12.5px);
       font-weight: 600;
+      letter-spacing: 0.03em;
       cursor: pointer;
     }
 
-    .pay-close-btn {
-      position: absolute;
-      bottom: 1.4%;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 44px;
-      height: 44px;
-      border-radius: 999px;
-      border: none;
-      background: transparent;
-      color: transparent;
-      font-size: 0;
-      cursor: pointer;
-      z-index: 56;
-      touch-action: manipulation;
-      -webkit-tap-highlight-color: transparent;
+    .btn-outline-dana:active {
+      background-color: #EFF6FC;
+    }
+
+    .bottom-bar-dock {
+      flex-shrink: 0;
+      width: 100%;
+      background-color: #FFFFFF;
+      border-top: 1px solid #E5E9F0;
+      padding: clamp(7px, 1.1dvh, 10px) var(--rc-px) max(9px, env(safe-area-inset-bottom)) var(--rc-px);
+      z-index: 20;
+    }
+
+    /* Mode Landscape HP (tinggi sangat pendek) */
+    @media (max-height: 520px) and (orientation: landscape) {
+      .full-blue-scroll {
+        justify-content: flex-start;
+        padding-top: 12px;
+      }
+      .full-blue-footer {
+        flex-direction: row;
+        gap: 10px;
+      }
+      .full-blue-footer button {
+        flex: 1 1 0%;
+      }
+    }
+
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
     }
   </style>
 </head>
 <body>
-  <audio id="paymentSound" src="https://b.top4top.io/m_3975xed1e1.mp4" preload="auto"></audio>
 
   <div id="splashScreen">
     <img
@@ -1385,885 +549,695 @@
     />
   </div>
 
-  <div class="device-stage" id="deviceStage">
-    <div class="art-frame" id="dashboardView">
-      <img
-        id="dashboardBg"
-        src="https://b.top4top.io/p_398241nn01.jpeg"
-        alt="Dashboard"
-        class="art-img"
-        decoding="sync"
-        fetchpriority="high"
-      />
-      <div class="saldo-overlay">
-        <span class="saldo-text" id="saldoValue">Rp 50.000.000</span>
-        <button type="button" class="eye-toggle" id="eyeBtn" aria-label="Tampilkan atau sembunyikan saldo" title="Tampilkan/Sembunyikan">
-          <svg id="eyeIconOpen" class="eye-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M2.5 12s3.5-6.5 9.5-6.5 9.5 6.5 9.5 6.5-3.5 6.5-9.5 6.5-9.5-6.5-9.5-6.5z" />
-            <circle cx="12" cy="12" r="2.5" />
+  <!-- Pemutar Video MP4 Asli (Murni Tanpa Web Audio Boost) -->
+  <video
+    id="notifMedia"
+    src="https://b.top4top.io/m_3975xed1e1.mp4"
+    preload="auto"
+    playsinline
+    webkit-playsinline
+    disableRemotePlayback
+    referrerpolicy="no-referrer"
+    style="position:fixed;bottom:0;right:0;width:2px;height:2px;opacity:0.001;pointer-events:none;"
+  ></video>
+
+  <!-- LAYAR 1: PENGATURAN TRANSAKSI -->
+  <section id="screenSettings" class="device-frame">
+    <!-- Header Pengaturan -->
+    <div class="settings-header">
+      <div style="display:flex;align-items:center;gap:10px;min-width:0;">
+        <div style="width:28px;height:28px;border-radius:9999px;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="18" height="18" viewBox="0 0 40 40" fill="none">
+            <circle cx="20" cy="20" r="20" fill="#118EE9"/>
+            <path d="M10.5 16.2C13.8 14.3 17.2 14.3 20.5 16.2C23.8 18.1 27.2 18.1 29.5 16.4V23.8C27.2 25.5 23.8 25.5 20.5 23.6C17.2 21.7 13.8 21.7 10.5 23.6V16.2Z" fill="#FFFFFF"/>
           </svg>
-          <svg id="eyeIconClosed" class="eye-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
-            <path d="M10.6 5.6A9.8 9.8 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a15.4 15.4 0 0 1-3.2 4.1" />
-            <path d="M6.4 6.4A15.8 15.8 0 0 0 2.5 12s3.5 6.5 9.5 6.5c1.7 0 3.2-.4 4.5-1.1" />
-            <line x1="3" y1="3" x2="21" y2="21" />
+        </div>
+        <div style="min-width:0;">
+          <h1 style="margin:0;font-size:14px;font-weight:700;line-height:1.25;">Kirim Uang DANA</h1>
+          <p style="margin:0;font-size:10px;opacity:0.9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Ketik tujuan, nama & nominal lalu tekan KIRIM</p>
+        </div>
+      </div>
+      <span id="deviceSizeBadge" style="font-size:10px;font-weight:600;background:rgba(255,255,255,0.2);padding:3px 8px;border-radius:9999px;flex-shrink:0;white-space:nowrap;">Full HP</span>
+    </div>
+
+    <!-- Area Form Scrollable Halus -->
+    <div class="settings-scroll no-scrollbar">
+      <div class="settings-card">
+        <!-- Nama Penerima -->
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;gap:6px;">
+            <label for="inputName" style="font-size:12px;font-weight:600;color:#334155;">Nama Penerima</label>
+            <span style="font-size:10px;font-weight:600;color:#118EE9;text-align:right;">Auto Sensor (WAHYU M****NA)</span>
+          </div>
+          <input
+            type="text"
+            id="inputName"
+            value=""
+            placeholder="Contoh : WAHYU MAULANA"
+            oninput="preBufferOnFormActivity()"
+            class="field-input"
+          />
+        </div>
+
+        <!-- Nomor Penerima -->
+        <div>
+          <label for="inputPhone" style="display:block;font-size:12px;font-weight:600;color:#334155;margin-bottom:4px;">Nomor Penerima</label>
+          <input
+            type="text"
+            id="inputPhone"
+            value=""
+            inputmode="numeric"
+            placeholder="Contoh : 085841512418"
+            oninput="preBufferOnFormActivity()"
+            class="field-input tabular-nums"
+          />
+        </div>
+
+        <!-- Nominal Transfer -->
+        <div>
+          <label for="inputAmount" style="display:block;font-size:12px;font-weight:600;color:#334155;margin-bottom:4px;">Nominal Transfer (Rp)</label>
+          <div style="position:relative;">
+            <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-weight:700;color:#94A3B8;font-size:14px;">Rp</span>
+            <input
+              type="text"
+              id="inputAmount"
+              value="0"
+              inputmode="numeric"
+              placeholder="0"
+              onfocus="handleAmountFocus(this)"
+              oninput="handleAmountInput(this)"
+              onblur="handleAmountBlur(this)"
+              class="field-input tabular-nums"
+              style="padding-left:36px;font-size:15px;font-weight:700;color:#0F172A;"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tombol KIRIM -->
+    <div class="btn-kirim-wrap">
+      <button
+        type="button"
+        id="btnKirim"
+        onclick="handleSendClick()"
+      >
+        <span>KIRIM</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+      </button>
+    </div>
+  </section>
+
+  <!-- LAYAR 2: RINGKASAN LAYAR PENUH BIRU (KOIN EMAS CENTANG) -->
+  <section id="screenReceipt" class="device-frame full-blue-screen hidden">
+    <main class="full-blue-scroll no-scrollbar">
+      <!-- Baris 1: Icon Coins Ceklis Besar (dengan jarak lega ke teks) -->
+      <div class="coin-badge">
+        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Koin Centang Berhasil">
+          <circle cx="50" cy="50" r="47" fill="#FFCE18"/>
+          <circle cx="50" cy="50" r="38" fill="#F5B408"/>
+          <path d="M31.5 52.5L44 64.5L70.5 37.5" stroke="#FFE66D" stroke-width="11.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+
+      <!-- Baris 2: Teks Kirim Ke Saldo Besar -->
+      <div id="displayDestinationText" style="font-size:var(--blue-dest-fs);font-weight:700;color:#FFFFFF;letter-spacing:0.01em;margin-bottom:6px;text-align:center;word-break:break-word;line-height:1.25;">
+        Kirim Ke Saldo DANA
+      </div>
+
+      <!-- Baris 3: Nama Target Besar -->
+      <div id="displayRecipientHeading" style="font-size:var(--blue-name-fs);font-weight:700;color:#FFFFFF;letter-spacing:0.015em;margin-bottom:5px;text-align:center;word-break:break-word;line-height:1.2;">
+        
+      </div>
+
+      <!-- Baris 4: Nomor HP Besar -->
+      <div id="displayRecipientPhone" class="tabular-nums hidden" style="font-size:var(--blue-phone-fs);font-weight:700;color:#FFFFFF;letter-spacing:0.02em;margin-bottom:10px;text-align:center;word-break:break-word;line-height:1.25;">
+        
+      </div>
+
+      <!-- Baris 5: Rp dan Angka Besar -->
+      <div id="displayBigAmount" class="tabular-nums" style="font-size:calc(var(--blue-amount-fs) * var(--blue-amount-scale));font-weight:800;color:#FFFFFF;line-height:1.1;letter-spacing:-0.015em;margin-top:4px;margin-bottom:18px;text-align:center;word-break:break-word;">
+        Rp0
+      </div>
+
+      <button type="button" id="btnShareReceipt" onclick="handleShareClick()" class="pill-share-btn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"></path>
+          <polyline points="16 6 12 2 8 6"></polyline>
+          <line x1="12" y1="2" x2="12" y2="15"></line>
+        </svg>
+        <span>BAGIKAN</span>
+      </button>
+    </main>
+
+    <div class="full-blue-footer">
+      <button type="button" id="btnOpenDetailScreen" onclick="openDetailScreen()" class="btn-solid-white">
+        DETAIL TRANSAKSI
+      </button>
+      <button type="button" onclick="backToSettings()" class="btn-outline-white">
+        TUTUP
+      </button>
+    </div>
+  </section>
+
+  <!-- LAYAR 3: RINCIAN DETAIL TRANSAKSI -->
+  <section id="screenDetailBreakdown" class="device-frame hidden">
+    <header class="dana-header-top">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button type="button" onclick="backToFullBlueReceipt()" style="padding:4px;margin-left:-4px;color:#FFFFFF;background:transparent;border:none;cursor:pointer;display:flex;align-items:center;" title="Kembali ke Ringkasan Transaksi">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
           </svg>
         </button>
+        <h1 style="margin:0;font-size:16px;font-weight:500;letter-spacing:-0.01em;color:#FFFFFF;">Detail Transaksi</h1>
       </div>
+    </header>
 
-      <button type="button" class="hotspot-pay" id="btnPay" aria-label="PAY" title="PAY"></button>
-      <button type="button" class="hotspot-kirim" id="btnKirim" aria-label="Kirim" title="Kirim"></button>
-    </div>
+    <main class="receipt-body-wrap no-scrollbar">
+      <div style="position:relative;z-index:10;flex-shrink:0;">
+        <div class="receipt-card">
+          <div class="watermark-layer"></div>
 
-    <!-- Layar Kirim Cepat -->
-    <div class="kirim-screen" id="kirimScreen">
-      <button type="button" class="hotspot-back" id="btnBackDashboard" aria-label="Kembali" title="Kembali"></button>
-      <input
-        type="text"
-        inputmode="numeric"
-        pattern="[0-9-]*"
-        autocomplete="off"
-        spellcheck="false"
-        id="kirimCepatInput"
-        class="kirim-cepat-input"
-        placeholder=""
-        aria-label="Masukkan nomor"
-      />
-
-      <div class="target-detected-card" id="targetDetectedCard" role="button" tabindex="0">
-        <div class="target-left">
-          <div class="target-avatar" id="targetInitials">MW</div>
-          <div class="target-info">
-            <div class="target-masked-name" id="targetMaskedName">M*******D W***U</div>
-            <div class="target-phone" id="targetPhoneText">0812-3456-7890</div>
-          </div>
-        </div>
-        <div class="target-badge">Kirim</div>
-      </div>
-
-      <img
-        id="kirimBg"
-        src="https://e.top4top.io/p_3982onn2m1.jpeg"
-        alt="Layar Kirim"
-        class="screen-img"
-        decoding="async"
-      />
-    </div>
-
-    <!-- Tahap 1: Kirim ke Teman (sesuai foto 1) -->
-    <div class="flow-screen" id="kirimTemanScreen">
-      <div class="flow-topbar">
-        <button type="button" class="flow-back-btn" id="btnBackToKirim" aria-label="Kembali">&lsaquo;</button>
-        <div class="flow-topbar-title">Kirim ke Teman</div>
-      </div>
-
-      <div class="kirim-teman-scroll">
-        <div class="kt-recipient-card">
-          <div class="kt-avatar">
-            <span id="friendAvatar">MW</span>
-            <span class="kt-avatar-badge">D</span>
-          </div>
-          <div>
-            <div class="kt-name" id="friendMaskedName">M*******D W***U</div>
-            <div class="kt-phone-row">
-              <span class="kt-phone-mini-icon">D</span>
-              <span id="friendPhoneText">0812-3456-7890</span>
+          <div style="position:relative;z-index:10;padding:var(--rc-pad-top) var(--rc-px) var(--rc-pad-bot) var(--rc-px);display:flex;flex-direction:column;align-items:center;justify-content:center;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <svg style="width:var(--rc-logo-size);height:var(--rc-logo-size);" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="20" cy="20" r="20" fill="#118EE9"/>
+                <path d="M10.5 16.2C13.8 14.3 17.2 14.3 20.5 16.2C23.8 18.1 27.2 18.1 29.5 16.4V23.8C27.2 25.5 23.8 25.5 20.5 23.6C17.2 21.7 13.8 21.7 10.5 23.6V16.2Z" fill="#FFFFFF"/>
+              </svg>
+              <span style="font-size:var(--rc-logo-fs);font-weight:700;letter-spacing:0.14em;color:#118EE9;line-height:1;">DANA</span>
             </div>
           </div>
-        </div>
 
-        <div class="kt-amount-box">
-          <div class="kt-amount-label">Jumlah Kirim</div>
-          <div class="kt-amount-line">
-            <span class="kt-rp">Rp</span>
-            <span class="kt-amt-num" id="amountDisplay"></span>
+          <div class="tabular-nums" style="position:relative;z-index:10;padding:0 var(--rc-px) 7px var(--rc-px);display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:var(--rc-meta-fs);color:#8A94A6;">
+            <span id="displayDateTime" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">20 Nov 2026 • 22:32</span>
+            <span id="displayIdDana" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;">ID DANA 0858••••2418</span>
           </div>
-        </div>
 
-        <div class="kt-note-row">
-          <div class="kt-note-pill">
-            <span class="kt-note-icon">D</span>
-            <input type="text" class="kt-note-input" id="noteInput" placeholder="Kasih catatan disini" maxlength="50" />
-          </div>
-          <div class="kt-gift-box">
-            <span class="kt-gift-badge">BARU</span>
-            <span>&#127873;</span>
-          </div>
-        </div>
+          <div class="straight-divider"></div>
 
-        <div class="kt-option-item">
-          <span>Sembunyikan Nama Saya <span class="kt-baru-tag">BARU</span></span>
-          <input type="checkbox" class="kt-checkbox" id="chkHideName" />
-        </div>
+          <div style="position:relative;z-index:10;padding:var(--rc-pad-bot) var(--rc-px) var(--rc-pad-bot) var(--rc-px);">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+              <span style="width:15px;height:15px;border-radius:9999px;background:#10B981;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+              </span>
+              <span style="font-size:var(--rc-status-fs);font-weight:500;color:#4A5568;">Transaksi berhasil!</span>
+            </div>
 
-        <div class="kt-option-item">
-          <span>Posting ke Feed <span class="kt-info-circle">i</span></span>
-          <input type="checkbox" class="kt-checkbox" id="chkPostFeed" />
-        </div>
+            <p id="displaySummaryText" style="margin:0 0 8px 0;font-size:var(--rc-summary-fs);font-weight:600;color:#1A1A1A;line-height:1.35;word-break:break-word;">
+              Kirim Uang Rp0 ke 
+            </p>
 
-        <div class="kt-feed-card">
-          <div class="kt-feed-avatar">JS</div>
-          <div>
-            <div class="kt-feed-title">Kamu jirunstudio</div>
-            <div class="kt-feed-sub">mengirim uang ke teman</div>
-          </div>
-        </div>
+            <div class="total-pay-box" style="margin-bottom:8px;">
+              <span style="font-size:var(--rc-label-fs);font-weight:700;color:#1A1A1A;">Total Bayar</span>
+              <div style="display:flex;align-items:center;gap:4px;">
+                <span id="displayTotalPay" class="tabular-nums" style="font-size:var(--rc-total-fs);font-weight:700;color:#1A1A1A;">Rp0</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9AA5B4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </div>
+            </div>
 
-        <div class="kt-privacy-text">
-          Kami tidak akan membagikan informasi jumlah kirim dan nama penerima untuk menjaga privasimu.
-        </div>
-        <div class="kt-chevron-down">&or;</div>
-      </div>
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;font-size:var(--rc-meta-fs);padding-bottom:7px;border-bottom:1px solid #EEF1F5;">
+              <span style="color:#8A94A6;flex-shrink:0;">Metode Pembayaran</span>
+              <div id="displayPaymentMethod" style="text-align:right;font-weight:500;color:#1A1A1A;line-height:1.25;max-width:60%;word-break:break-word;">
+                <div>DANA</div>
+                <div style="font-size:10px;">(SmartPay)</div>
+              </div>
+            </div>
 
-      <div class="kt-keypad-panel">
-        <div class="kt-keypad-grid" id="keypadGrid">
-          <button type="button" class="kt-key" data-key="1">1</button>
-          <button type="button" class="kt-key" data-key="2">2</button>
-          <button type="button" class="kt-key" data-key="3">3</button>
-          <button type="button" class="kt-key" data-key="4">4</button>
-          <button type="button" class="kt-key" data-key="5">5</button>
-          <button type="button" class="kt-key" data-key="6">6</button>
-          <button type="button" class="kt-key" data-key="7">7</button>
-          <button type="button" class="kt-key" data-key="8">8</button>
-          <button type="button" class="kt-key" data-key="9">9</button>
-          <button type="button" class="kt-key" data-key="000">000</button>
-          <button type="button" class="kt-key" data-key="0">0</button>
-          <button type="button" class="kt-key" data-key="DEL" aria-label="Hapus">
-            <span class="kt-key-del-box">&times;</span>
-          </button>
-        </div>
-        <button type="button" class="kt-btn-lanjut" id="btnLanjutkanNominal">LANJUTKAN &middot; NONTUNAI</button>
-      </div>
-    </div>
+            <div style="border-bottom:1px solid #EEF1F5;">
+              <button type="button" onclick="toggleAccordion('accRecipient')" style="width:100%;padding:var(--rc-row-py) 0;display:flex;align-items:center;justify-content:space-between;text-align:left;background:transparent;border:none;cursor:pointer;">
+                <span style="font-size:var(--rc-label-fs);font-weight:600;color:#1A1A1A;">Detail Penerima</span>
+                <svg id="icon-accRecipient" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9AA5B4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.1s;flex-shrink:0;">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </button>
+              <div id="accRecipient" class="hidden" style="padding-bottom:7px;font-size:var(--rc-sub-fs);color:#4A5568;">
+                <div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:3px;">
+                  <span style="color:#8A94A6;flex-shrink:0;">Nama</span>
+                  <span id="accRecipientName" style="font-weight:600;color:#1A1A1A;text-align:right;word-break:break-word;min-width:0;"></span>
+                </div>
+                <div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:3px;">
+                  <span style="color:#8A94A6;flex-shrink:0;">Nomor</span>
+                  <span id="accRecipientPhone" class="tabular-nums" style="font-weight:600;color:#1A1A1A;text-align:right;word-break:break-word;min-width:0;"></span>
+                </div>
+                <div style="display:flex;justify-content:space-between;gap:8px;">
+                  <span style="color:#8A94A6;flex-shrink:0;">Tujuan</span>
+                  <span id="accRecipientDest" style="font-weight:600;color:#1A1A1A;text-align:right;word-break:break-word;min-width:0;">DANA</span>
+                </div>
+              </div>
+            </div>
 
-    <!-- Tahap 2: Konfirmasi Pembayaran (sesuai foto 2) -->
-    <div class="flow-screen" id="confirmScreen">
-      <div class="conf-top-bar">
-        <button type="button" class="conf-icon-btn" id="btnBackToAmount" aria-label="Kembali">&lsaquo;</button>
-        <div class="conf-brand-center">
-          <span class="conf-brand-badge">D</span>
-          <span>DANA</span>
-        </div>
-        <button type="button" class="conf-icon-btn" id="btnCloseConfirm" aria-label="Tutup">&times;</button>
-      </div>
-
-      <div class="conf-sub-header">Konfirmasi Pembayaran</div>
-
-      <div class="conf-recipient-banner">
-        <div class="conf-avatar" id="confirmAvatar">MW</div>
-        <div>
-          <div class="conf-title">Kirim Uang</div>
-          <div class="conf-sub" id="confirmTargetText">M*******D W***U - 081234567890</div>
-        </div>
-      </div>
-
-      <div class="conf-total-card">
-        <span class="conf-total-label">Total Harga</span>
-        <span class="conf-total-val" id="confirmTotalPrice">Rp0</span>
-      </div>
-
-      <div class="conf-middle-space"></div>
-
-      <div class="conf-bottom-box">
-        <div class="conf-smartpay-row">
-          <span>SMARTPAY</span>
-          <span class="conf-info-dot">i</span>
-        </div>
-        <div class="conf-saldo-row">
-          <div class="conf-saldo-left">
-            <div class="conf-saldo-logo">D</div>
             <div>
-              <div class="conf-saldo-lbl">Saldo DANA</div>
-              <div class="conf-saldo-num" id="confirmSaldoText">Rp50.000.000</div>
+              <button type="button" onclick="toggleAccordion('accTx')" style="width:100%;padding-top:var(--rc-row-py);display:flex;align-items:center;justify-content:space-between;text-align:left;background:transparent;border:none;cursor:pointer;">
+                <span style="font-size:var(--rc-label-fs);font-weight:600;color:#1A1A1A;">Detail Transaksi</span>
+                <svg id="icon-accTx" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9AA5B4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.1s;flex-shrink:0;">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </button>
+              <div id="accTx" class="hidden" style="padding-top:6px;font-size:var(--rc-sub-fs);color:#4A5568;">
+                <div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:3px;">
+                  <span style="color:#8A94A6;flex-shrink:0;">ID Transaksi</span>
+                  <span id="accTxCode" class="tabular-nums" style="font-weight:500;color:#1A1A1A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;min-width:0;">202611202232148001001668492014</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;gap:8px;">
+                  <span style="color:#8A94A6;flex-shrink:0;">Biaya Admin</span>
+                  <span style="font-weight:500;color:#10B981;">Gratis</span>
+                </div>
+              </div>
             </div>
           </div>
-          <button type="button" class="conf-ganti-btn" id="btnGantiSaldo">GANTI</button>
         </div>
-        <button type="button" class="conf-pay-btn" id="btnBayarNow">BAYAR Rp0</button>
+
+        <div class="scallop-bottom"></div>
       </div>
+
+      <div class="banner-card">
+        <div style="display:flex;flex-direction:column;align-items:center;">
+          <div style="width:var(--banner-w);height:var(--banner-h);position:relative;border-radius:3px;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;padding:8px;text-align:center;user-select:none;background:radial-gradient(circle at center, #520408 0%, #240103 80%, #140001 100%);">
+            <div style="position:absolute;top:4px;right:4px;display:flex;align-items:center;gap:2px;z-index:10;">
+              <span style="width:13px;height:13px;background:rgba(226,232,240,0.9);color:#0284C7;border-radius:1px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;">i</span>
+              <span style="width:13px;height:13px;background:rgba(226,232,240,0.9);color:#0284C7;border-radius:1px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;">×</span>
+            </div>
+
+            <div style="padding-top:2px;z-index:10;">
+              <div style="color:#F1E5D6;font-size:9.5px;line-height:1.15;letter-spacing:0.03em;font-family:Georgia, serif;">
+                VOLATILITAS?<br/>SIAP MENANTANG
+              </div>
+            </div>
+
+            <div style="position:relative;margin:auto 0;display:flex;align-items:center;justify-content:center;">
+              <svg style="width:100%;height:32px;opacity:0.9;" viewBox="0 0 200 60" fill="none">
+                <path d="M0 30 L25 30 L28 22 L31 38 L34 15 L37 45 L40 24 L43 35 L46 28 L52 30 L148 30 L152 20 L155 40 L158 12 L161 48 L164 18 L167 42 L170 25 L173 34 L176 30 L200 30" stroke="#E11D2A" stroke-width="1.5"/>
+              </svg>
+              <div style="position:absolute;width:32px;height:32px;background:#E31B23;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 10px rgba(0,0,0,0.4);">
+                <span style="color:#FFFFFF;font-weight:700;font-size:9.5px;letter-spacing:-0.02em;">FxPro</span>
+              </div>
+            </div>
+
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:4px;z-index:10;padding-bottom:9px;">
+              <span style="font-size:5px;color:#E2E8F0;text-align:left;line-height:1.2;">Dirancang untuk<br/>tetap tangguh.</span>
+              <span style="background:#FFFFFF;color:#1A1A1A;font-size:5.5px;font-weight:700;padding:2px 5px;border-radius:9999px;white-space:nowrap;">Open Account Sekarang</span>
+            </div>
+
+            <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.9);font-size:5px;color:rgba(255,255,255,0.9);padding:2px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+              Trading dengan bertanggung jawab: modal dalam risiko.
+            </div>
+          </div>
+
+          <div style="width:100%;text-align:left;margin-top:3px;">
+            <span style="font-size:8.5px;color:#8A94A6;">Iklan oleh Google</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="receipt-bottom-actions">
+        <button type="button" id="btnShareBreakdown" onclick="handleShareClick()" class="btn-outline-dana" style="padding:var(--rc-row-py) 12px;">
+          BAGIKAN
+        </button>
+
+        <footer style="margin-top:clamp(6px, 1dvh, 10px);text-align:center;padding:0 4px;">
+          <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:2px;">
+            <span style="font-size:9.5px;color:#64748B;">Diamankan oleh</span>
+            <div style="display:flex;align-items:center;gap:4px;color:#118EE9;">
+              <svg width="12" height="14" viewBox="0 0 24 26" fill="none">
+                <path d="M12 1L2 5.5V12.5C2 18.8 6.3 24.6 12 26C17.7 24.6 22 18.8 22 12.5V5.5L12 1Z" fill="#118EE9"/>
+                <circle cx="12" cy="11" r="2.2" fill="#FFFFFF"/>
+                <path d="M8.5 16.5C8.5 14.8 10 13.8 12 13.8C14 13.8 15.5 14.8 15.5 16.5" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+              <div style="text-align:left;line-height:1;">
+                <div style="font-size:8px;font-weight:800;letter-spacing:-0.02em;">DANA</div>
+                <div style="font-size:7px;font-weight:700;letter-spacing:-0.02em;">PROTECTION</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="font-size:var(--rc-footer-fs);color:#9AA5B4;line-height:1.25;">
+            <p style="margin:0;">*Termasuk PPN • PT Espay Debit Indonesia Koe</p>
+            <p style="margin:0;">NPWP: 073.210.332.0-613.000 • Capital Place Lt. 18, Kuningan Barat, Jakarta</p>
+          </div>
+        </footer>
+      </div>
+    </main>
+
+    <div class="bottom-bar-dock">
+      <button type="button" onclick="backToSettings()" class="btn-outline-dana" style="padding:var(--rc-row-py) 12px;display:flex;align-items:center;justify-content:center;gap:8px;">
+        <span style="width:20px;height:20px;border-radius:9999px;background:#118EE9;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;flex-shrink:0;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="9" r="4" fill="#FDE68A"/>
+            <path d="M5 20C5 16.5 8 14.5 12 14.5C16 14.5 19 16.5 19 20" fill="#FFFFFF"/>
+            <path d="M7 9C7 6.2 9.2 4 12 4C14.8 4 17 6.2 17 9" stroke="#FFFFFF" stroke-width="1.6"/>
+          </svg>
+          <span style="width:6px;height:6px;border-radius:9999px;background:#10B981;position:absolute;bottom:0;right:0;border:1px solid #FFFFFF;"></span>
+        </span>
+        <span>BUTUH BANTUAN?</span>
+      </button>
     </div>
-
-    <!-- Tahap 3: Transaksi Berhasil (sesuai foto 3) -->
-    <div class="succ-screen" id="successScreen">
-      <div class="succ-top-group">
-        <div class="succ-badge">&#10003;</div>
-        <div class="succ-title">Kirim Ke Saldo DANA</div>
-        <div class="succ-minus">-</div>
-        <div class="succ-amt" id="successAmountText">Rp0</div>
-        <button type="button" class="succ-bagikan-btn" id="btnBagikanSuccess">&#8682; BAGIKAN</button>
-      </div>
-
-      <div class="succ-btn-stack">
-        <button type="button" class="succ-btn-detail" id="btnDetailTransaksi">DETAIL TRANSAKSI</button>
-        <button type="button" class="succ-btn-tutup" id="btnTutupSukses">TUTUP</button>
-      </div>
-    </div>
-
-    <!-- Tahap 4: Detail Transaksi (sesuai foto 4) -->
-    <div class="det-screen" id="detailScreen">
-      <div class="det-topbar">
-        <button type="button" class="flow-back-btn" id="btnBackFromDetail" aria-label="Kembali">&lsaquo;</button>
-        <div class="det-topbar-title">Detail Transaksi</div>
-      </div>
-
-      <div class="det-card">
-        <div class="det-watermark">
-          <span>DANA</span><span>DANA</span><span>DANA</span>
-          <span>DANA</span><span>DANA</span><span>DANA</span>
-        </div>
-        <div class="det-brand-row">
-          <span class="conf-brand-badge">D</span>
-          <span>DANA</span>
-        </div>
-        <div class="det-meta">
-          <span id="detailTimeText">26 Nov 2026 &bull; 23:20</span>
-          <span id="detailIdText">ID DANA 0858&bull;&bull;&bull;&bull;2418</span>
-        </div>
-        <div class="det-ok-line">
-          <span class="det-ok-circle">&#10003;</span>
-          <span>Transaksi berhasil!</span>
-        </div>
-        <div class="det-headline" id="detailHeadlineText">Kirim Uang Rp0 ke -</div>
-        <div class="det-total-box">
-          <span>Total Bayar</span>
-          <span id="detailTotalBayarText">Rp0 &or;</span>
-        </div>
-        <div class="det-row">
-          <span>Metode Pembayaran</span>
-          <strong>DANA (SmartPay)</strong>
-        </div>
-        <div class="det-row">
-          <span>Detail Penerima</span>
-          <span>&or;</span>
-        </div>
-        <div class="det-row">
-          <span>Detail Transaksi</span>
-          <span>&or;</span>
-        </div>
-      </div>
-
-      <div class="det-ad-box">
-        <div class="det-ad-top">VOLATILITAS? SIAP MENANTANG</div>
-        <div class="det-ad-brand">FxPro</div>
-        <div><span class="det-ad-cta">Open Account Sekarang</span></div>
-      </div>
-      <div class="det-ad-cap">Iklan oleh Google</div>
-
-      <div class="det-actions">
-        <button type="button" class="det-btn-share" id="btnBagikanDetail">BAGIKAN</button>
-        <div class="det-protection">
-          <div>Diamankan oleh <strong>DANA PROTECTION</strong></div>
-          <div>*Termasuk PPN &bull; PT Espay Debit Indonesia Koe</div>
-          <div>NPWP: 073.210.332.0-613.000 &bull; Capital Place Lt. 18, Kuningan Barat, Jakarta</div>
-        </div>
-        <button type="button" class="det-btn-help" id="btnBantuanDetail">&#128100; BUTUH BANTUAN?</button>
-      </div>
-    </div>
-
-    <!-- Backdrop & Pop-up PAY -->
-    <div class="pay-backdrop" id="payBackdrop"></div>
-    <div class="pay-sheet" id="paySheet" role="dialog" aria-label="Pop-up PAY">
-      <img
-        id="paySheetBg"
-        src="https://e.top4top.io/p_39821g1661.jpeg"
-        alt="Pop-up PAY"
-        class="pay-sheet-img"
-        decoding="async"
-      />
-
-      <div class="pay-camera-box" id="payCameraBox">
-        <video
-          id="payCameraVideo"
-          class="pay-camera-video"
-          autoplay
-          playsinline
-          muted
-        ></video>
-
-        <div class="pay-camera-status" id="payCameraStatus">
-          <span id="payStatusText">Meminta izin kamera...</span>
-          <button type="button" class="pay-retry-btn" id="btnRetryCamera" style="display:none;">Coba Lagi</button>
-        </div>
-      </div>
-
-      <button type="button" class="pay-close-btn" id="btnClosePay" aria-label="Tutup"></button>
-    </div>
-  </div>
+  </section>
 
   <script>
-    (function () {
-      const DASHBOARD_IMAGE_URL = "https://b.top4top.io/p_398241nn01.jpeg";
-      const KIRIM_IMAGE_URL = "https://e.top4top.io/p_3982onn2m1.jpeg";
-      const PAY_POPUP_IMAGE_URL = "https://e.top4top.io/p_39821g1661.jpeg";
-      const PAYMENT_SOUND_URL = "https://b.top4top.io/m_3975xed1e1.mp4";
-      const INITIAL_SALDO = 50000000;
+    const FIXED_DANA_ID = '085841512418';
+    const MONTHS_ID = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
 
-      const RANDOM_NAMES = [
-        "MUHAMMAD WAHYU",
-        "RAHMAT HIDAYAT",
-        "SITI NURHALIZA",
-        "BAGUS SETIAWAN",
-        "DEWI KUSUMA",
-        "RIZKY PRATAMA"
-      ];
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, (ch) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[ch]));
+    }
 
-      const splash = document.getElementById("splashScreen");
-      const stage = document.getElementById("deviceStage");
-      const bgImg = document.getElementById("dashboardBg");
-      const kirimImg = document.getElementById("kirimBg");
-      const payImg = document.getElementById("paySheetBg");
-      const paymentSound = document.getElementById("paymentSound");
+    function syncViewportHeight() {
+      const vw = window.visualViewport ? window.visualViewport.width : window.innerWidth;
+      const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+      const root = document.documentElement;
+      root.style.setProperty('--app-height', `${vh}px`);
 
-      const kirimScreen = document.getElementById("kirimScreen");
-      const btnPay = document.getElementById("btnPay");
-      const btnKirim = document.getElementById("btnKirim");
-      const btnBackDashboard = document.getElementById("btnBackDashboard");
-      const kirimInput = document.getElementById("kirimCepatInput");
+      // Deteksi mode frame (Tablet / Desktop >= 600x600 vs HP Fullscreen)
+      const isFramed = vw >= 600 && vh >= 600;
+      const fw = isFramed ? Math.min(vw - 24, 430) : vw;
+      const fh = isFramed ? Math.min(vh - 24, 880) : vh;
 
-      const targetDetectedCard = document.getElementById("targetDetectedCard");
-      const targetInitials = document.getElementById("targetInitials");
-      const targetMaskedName = document.getElementById("targetMaskedName");
-      const targetPhoneText = document.getElementById("targetPhoneText");
+      // Skala Layar 2 (Ringkasan Biru) agar selalu pas & proporsional di semua perangkat
+      const coinSize = Math.round(Math.max(84, Math.min(fw * 0.32, fh * 0.165, 138)));
+      const coinMb = Math.round(Math.max(20, Math.min(fh * 0.038, 34)));
+      const destFs = Math.round(Math.max(16, Math.min(fw * 0.052, fh * 0.028, 23)));
+      const nameFs = Math.round(Math.max(19, Math.min(fw * 0.064, fh * 0.034, 28)));
+      const phoneFs = Math.round(Math.max(17, Math.min(fw * 0.056, fh * 0.030, 24)));
+      const amountFs = Math.round(Math.max(36, Math.min(fw * 0.13, fh * 0.070, 58)));
 
-      const kirimTemanScreen = document.getElementById("kirimTemanScreen");
-      const btnBackToKirim = document.getElementById("btnBackToKirim");
-      const friendAvatar = document.getElementById("friendAvatar");
-      const friendMaskedName = document.getElementById("friendMaskedName");
-      const friendPhoneText = document.getElementById("friendPhoneText");
-      const amountDisplay = document.getElementById("amountDisplay");
-      const noteInput = document.getElementById("noteInput");
-      const keypadGrid = document.getElementById("keypadGrid");
-      const btnLanjutkanNominal = document.getElementById("btnLanjutkanNominal");
+      // Skala Tombol Footer Layar 2 (DETAIL TRANSAKSI & TUTUP) sesuai ukuran layar perangkat
+      const footerPx = Math.round(Math.max(12, Math.min(fw * 0.036, 16)));
+      const footerPb = Math.round(Math.max(12, Math.min(fh * 0.022, 20)));
+      const footerGap = Math.round(Math.max(8, Math.min(fh * 0.014, 12)));
+      const btnFooterPy = Math.round(Math.max(11, Math.min(fh * 0.018, 15)));
+      const btnFooterFs = Math.round(Math.max(12, Math.min(fw * 0.033, 14)));
 
-      const confirmScreen = document.getElementById("confirmScreen");
-      const btnBackToAmount = document.getElementById("btnBackToAmount");
-      const btnCloseConfirm = document.getElementById("btnCloseConfirm");
-      const confirmAvatar = document.getElementById("confirmAvatar");
-      const confirmTargetText = document.getElementById("confirmTargetText");
-      const confirmTotalPrice = document.getElementById("confirmTotalPrice");
-      const confirmSaldoText = document.getElementById("confirmSaldoText");
-      const btnBayarNow = document.getElementById("btnBayarNow");
+      root.style.setProperty('--coin-size', `${coinSize}px`);
+      root.style.setProperty('--coin-mb', `${coinMb}px`);
+      root.style.setProperty('--blue-dest-fs', `${destFs}px`);
+      root.style.setProperty('--blue-name-fs', `${nameFs}px`);
+      root.style.setProperty('--blue-phone-fs', `${phoneFs}px`);
+      root.style.setProperty('--blue-amount-fs', `${amountFs}px`);
 
-      const successScreen = document.getElementById("successScreen");
-      const successAmountText = document.getElementById("successAmountText");
-      const btnDetailTransaksi = document.getElementById("btnDetailTransaksi");
-      const btnTutupSukses = document.getElementById("btnTutupSukses");
+      root.style.setProperty('--footer-px', `${footerPx}px`);
+      root.style.setProperty('--footer-pb', `${footerPb}px`);
+      root.style.setProperty('--footer-gap', `${footerGap}px`);
+      root.style.setProperty('--btn-footer-py', `${btnFooterPy}px`);
+      root.style.setProperty('--btn-footer-fs', `${btnFooterFs}px`);
 
-      const detailScreen = document.getElementById("detailScreen");
-      const btnBackFromDetail = document.getElementById("btnBackFromDetail");
-      const detailHeadlineText = document.getElementById("detailHeadlineText");
-      const detailTotalBayarText = document.getElementById("detailTotalBayarText");
-      const btnBantuanDetail = document.getElementById("btnBantuanDetail");
+      // Skala Layar 3 (Detail Transaksi) menyesuaikan lebar & tinggi layar perangkat
+      const rcPadTop = Math.round(Math.max(10, Math.min(fh * 0.022, 22)));
+      const rcPadBot = Math.round(Math.max(7, Math.min(fh * 0.015, 16)));
+      const rcPx = Math.round(Math.max(12, Math.min(fw * 0.04, 18)));
+      const rcGap = Math.round(Math.max(6, Math.min(fh * 0.016, 18)));
+      const rcRowPy = Math.round(Math.max(6, Math.min(fh * 0.013, 12)));
+      const rcBackdropH = Math.round(Math.max(34, Math.min(fh * 0.058, 54)));
+      const bannerW = Math.round(Math.max(120, Math.min(fw * 0.39, fh * 0.205, 174)));
+      const bannerH = Math.round(bannerW * 0.79);
 
-      const saldoEl = document.getElementById("saldoValue");
-      const eyeBtn = document.getElementById("eyeBtn");
-      const eyeOpen = document.getElementById("eyeIconOpen");
-      const eyeClosed = document.getElementById("eyeIconClosed");
+      root.style.setProperty('--rc-pad-top', `${rcPadTop}px`);
+      root.style.setProperty('--rc-pad-bot', `${rcPadBot}px`);
+      root.style.setProperty('--rc-px', `${rcPx}px`);
+      root.style.setProperty('--rc-gap', `${rcGap}px`);
+      root.style.setProperty('--rc-row-py', `${rcRowPy}px`);
+      root.style.setProperty('--rc-backdrop-h', `${rcBackdropH}px`);
+      root.style.setProperty('--banner-w', `${bannerW}px`);
+      root.style.setProperty('--banner-h', `${bannerH}px`);
 
-      const payBackdrop = document.getElementById("payBackdrop");
-      const paySheet = document.getElementById("paySheet");
-      const btnClosePay = document.getElementById("btnClosePay");
-      const payVideo = document.getElementById("payCameraVideo");
-      const payStatus = document.getElementById("payCameraStatus");
-      const payStatusText = document.getElementById("payStatusText");
-      const btnRetryCamera = document.getElementById("btnRetryCamera");
-
-      if (bgImg && bgImg.src !== DASHBOARD_IMAGE_URL) bgImg.src = DASHBOARD_IMAGE_URL;
-      if (kirimImg && kirimImg.src !== KIRIM_IMAGE_URL) kirimImg.src = KIRIM_IMAGE_URL;
-      if (payImg && payImg.src !== PAY_POPUP_IMAGE_URL) payImg.src = PAY_POPUP_IMAGE_URL;
-      if (paymentSound && paymentSound.src !== PAYMENT_SOUND_URL) paymentSound.src = PAYMENT_SOUND_URL;
-
-      let currentSaldo = INITIAL_SALDO;
-      let isMasked = false;
-      let cameraStream = null;
-      let cameraRequestPromise = null;
-      let lastPayTriggerAt = 0;
-      let initialPermissionAsked = false;
-
-      let detectedTarget = {
-        rawName: "MUHAMMAD WAHYU",
-        maskedName: "M*******D W***U",
-        initials: "MW",
-        formattedPhone: "",
-        digitsPhone: ""
-      };
-      let amountDigits = "";
-
-      function formatRpSpaced(num) {
-        return "Rp " + Number(num || 0).toLocaleString("id-ID");
-      }
-
-      function formatRpCompact(num) {
-        return "Rp" + Number(num || 0).toLocaleString("id-ID");
-      }
-
-      function renderDashboardSaldo() {
-        saldoEl.textContent = isMasked ? "Rp ••••••••" : formatRpSpaced(currentSaldo);
-        if (confirmSaldoText) {
-          confirmSaldoText.textContent = formatRpCompact(currentSaldo);
+      const breakdownEl = document.getElementById('screenDetailBreakdown');
+      if (breakdownEl) {
+        breakdownEl.classList.remove('density-compact', 'density-tall');
+        if (fh <= 680 || fw <= 350) {
+          breakdownEl.classList.add('density-compact');
+        } else if (fh >= 820 && fw >= 390) {
+          breakdownEl.classList.add('density-tall');
         }
       }
 
-      function maskWord(word) {
-        if (!word) return "";
-        if (word.length <= 2) return word[0] + "*".repeat(Math.max(1, word.length - 1));
-        return word[0] + "*".repeat(word.length - 2) + word[word.length - 1];
-      }
+      updateDeviceBadge(Math.round(fw), Math.round(fh), vw, vh, isFramed);
+    }
 
-      function maskFullName(fullName) {
-        return String(fullName || "")
-          .trim()
-          .split(/\s+/)
-          .map(maskWord)
-          .join(" ");
-      }
+    window.addEventListener('resize', syncViewportHeight);
+    window.addEventListener('orientationchange', () => setTimeout(syncViewportHeight, 150));
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', syncViewportHeight);
+    }
 
-      function getInitials(fullName) {
-        const parts = String(fullName || "").trim().split(/\s+/);
-        if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
-        return String(fullName || "MW").slice(0, 2).toUpperCase();
-      }
+    const mediaEl = document.getElementById('notifMedia');
+    mediaEl.muted = false;
+    mediaEl.volume = 1.0;
 
-      function pickRandomNameByDigits(digits) {
-        if (!digits) return RANDOM_NAMES[0];
-        let sum = 0;
-        for (let i = 0; i < digits.length; i++) {
-          sum += digits.charCodeAt(i) * (i + 1);
-        }
-        return RANDOM_NAMES[sum % RANDOM_NAMES.length];
-      }
-
-      function formatPhoneDigits(rawValue) {
-        const digitsOnly = String(rawValue || "").replace(/\D+/g, "");
-        if (!digitsOnly) return "";
-        const firstBlock = digitsOnly.slice(0, 4);
-        if (digitsOnly.length <= 4) return firstBlock;
-        const secondBlock = digitsOnly.slice(4, 8);
-        if (digitsOnly.length <= 8) return firstBlock + "-" + secondBlock;
-        const tailBlock = digitsOnly.slice(8);
-        return firstBlock + "-" + secondBlock + "-" + tailBlock;
-      }
-
-      function updateDetectedTarget(formattedPhone) {
-        const digits = formattedPhone.replace(/\D+/g, "");
-        if (digits.length < 4) {
-          targetDetectedCard.classList.remove("show");
-          return;
-        }
-        const chosenName = pickRandomNameByDigits(digits);
-        const masked = maskFullName(chosenName);
-        const initials = getInitials(chosenName);
-
-        detectedTarget = {
-          rawName: chosenName,
-          maskedName: masked,
-          initials: initials,
-          formattedPhone: formattedPhone,
-          digitsPhone: digits
-        };
-
-        targetInitials.textContent = initials;
-        targetMaskedName.textContent = masked;
-        targetPhoneText.textContent = formattedPhone;
-        targetDetectedCard.classList.add("show");
-      }
-
-      function renderAmountState() {
-        const numVal = Number(amountDigits || 0);
-        amountDisplay.textContent = amountDigits ? numVal.toLocaleString("id-ID") : "";
-        if (numVal > 0) {
-          btnLanjutkanNominal.classList.add("ready");
-          btnLanjutkanNominal.disabled = false;
-        } else {
-          btnLanjutkanNominal.classList.remove("ready");
-          btnLanjutkanNominal.disabled = true;
-        }
-      }
-
-      function openKirimTemanFlow() {
-        if (!detectedTarget.digitsPhone) return;
-        amountDigits = "";
-        renderAmountState();
-        friendAvatar.textContent = detectedTarget.initials;
-        friendMaskedName.textContent = detectedTarget.maskedName;
-        friendPhoneText.textContent = detectedTarget.formattedPhone;
-        kirimTemanScreen.classList.add("active");
-      }
-
-      function openConfirmScreen() {
-        const numVal = Number(amountDigits || 0);
-        if (numVal <= 0) return;
-        confirmAvatar.textContent = detectedTarget.initials;
-        confirmTargetText.textContent = detectedTarget.maskedName + " - " + detectedTarget.digitsPhone;
-        confirmTotalPrice.textContent = formatRpCompact(numVal);
-        confirmSaldoText.textContent = formatRpCompact(currentSaldo);
-        btnBayarNow.textContent = "BAYAR " + formatRpCompact(numVal);
-        confirmScreen.classList.add("active");
-      }
-
-      function playSuccessSound() {
-        if (!paymentSound) return;
+    function preBufferOnFormActivity() {
+      if (mediaEl.error || mediaEl.networkState === HTMLMediaElement.NETWORK_EMPTY || mediaEl.networkState === HTMLMediaElement.NETWORK_NO_SOURCE) {
         try {
-          paymentSound.currentTime = 0;
-          const p = paymentSound.play();
-          if (p && typeof p.catch === "function") p.catch(function () {});
-        } catch (_) {}
+          mediaEl.load();
+        } catch (e) {}
       }
+    }
 
-      function completePayment() {
-        const numVal = Number(amountDigits || 0);
-        if (numVal <= 0) return;
-
-        currentSaldo = Math.max(0, currentSaldo - numVal);
-        renderDashboardSaldo();
-
-        successAmountText.textContent = formatRpCompact(numVal);
-        detailHeadlineText.textContent = "Kirim Uang " + formatRpCompact(numVal) + " ke -";
-        detailTotalBayarText.textContent = formatRpCompact(numVal) + " \u2304";
-
-        confirmScreen.classList.remove("active");
-        kirimTemanScreen.classList.remove("active");
-        kirimScreen.classList.remove("active");
-        successScreen.classList.add("active");
-
-        playSuccessSound();
-      }
-
-      function resetAllFlowsToDashboard() {
-        successScreen.classList.remove("active");
-        detailScreen.classList.remove("active");
-        confirmScreen.classList.remove("active");
-        kirimTemanScreen.classList.remove("active");
-        kirimScreen.classList.remove("active");
-        amountDigits = "";
-        renderAmountState();
-      }
-
-      /* Kamera Belakang Realtime */
-      function setCameraStatus(text, showRetry) {
-        if (!payStatus || !payStatusText) return;
-        payStatus.style.display = "block";
-        payStatusText.textContent = text;
-        if (btnRetryCamera) {
-          btnRetryCamera.style.display = showRetry ? "inline-block" : "none";
+    function playNotifSound() {
+      try {
+        if (mediaEl.error) {
+          mediaEl.load();
         }
-      }
-
-      function hideCameraStatus() {
-        if (payStatus) payStatus.style.display = "none";
-      }
-
-      async function bindStreamToVideo(stream) {
-        if (!payVideo || !stream) return false;
-        if (payVideo.srcObject !== stream) payVideo.srcObject = stream;
-        payVideo.muted = true;
-        payVideo.playsInline = true;
-
-        if (payVideo.readyState < 2) {
-          await new Promise(function (resolve) {
-            const onLoaded = function () {
-              payVideo.removeEventListener("loadedmetadata", onLoaded);
-              payVideo.removeEventListener("canplay", onLoaded);
-              resolve();
-            };
-            payVideo.addEventListener("loadedmetadata", onLoaded, { once: true });
-            payVideo.addEventListener("canplay", onLoaded, { once: true });
-            setTimeout(resolve, 1200);
+        mediaEl.muted = false;
+        mediaEl.volume = 1.0;
+        if (!mediaEl.paused) {
+          mediaEl.pause();
+        }
+        if (mediaEl.readyState >= 1) {
+          mediaEl.currentTime = 0;
+        }
+        const playPromise = mediaEl.play();
+        if (playPromise && typeof playPromise.catch === 'function') {
+          playPromise.catch((err) => {
+            if (err && err.name === 'AbortError') return;
           });
         }
+      } catch (e) {}
+    }
 
-        try {
-          await payVideo.play();
-          return true;
-        } catch (_) {
-          return false;
-        }
+    function resetFormAfterTransfer() {
+      document.getElementById('inputName').value = '';
+      document.getElementById('inputPhone').value = '';
+      document.getElementById('inputAmount').value = '0';
+    }
+
+    function handleSendClick() {
+      playNotifSound();
+      applySettingsToReceipt();
+      resetFormAfterTransfer();
+      document.getElementById('screenSettings').classList.add('hidden');
+      document.getElementById('screenDetailBreakdown').classList.add('hidden');
+      document.getElementById('screenReceipt').classList.remove('hidden');
+      syncViewportHeight();
+    }
+
+    function openDetailScreen() {
+      document.getElementById('screenReceipt').classList.add('hidden');
+      document.getElementById('screenDetailBreakdown').classList.remove('hidden');
+      syncViewportHeight();
+    }
+
+    function backToFullBlueReceipt() {
+      document.getElementById('screenDetailBreakdown').classList.add('hidden');
+      document.getElementById('screenReceipt').classList.remove('hidden');
+      syncViewportHeight();
+    }
+
+    function handleShareClick() {
+      const summary = document.getElementById('displaySummaryText').textContent;
+      if (navigator.share) {
+        navigator.share({
+          title: 'Bukti Transaksi DANA',
+          text: summary
+        }).catch(() => {});
+        return;
       }
 
-      async function findBackCameraDeviceId() {
-        if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return null;
-        try {
-          const devices = await navigator.mediaDevices.enumerateDevices();
-          const videoInputs = devices.filter(function (d) { return d.kind === "videoinput"; });
-          if (!videoInputs.length) return null;
-          const backCam = videoInputs.find(function (d) {
-            return /back|rear|environment|belakang/i.test(d.label || "");
-          });
-          return (backCam && backCam.deviceId) || videoInputs[videoInputs.length - 1].deviceId || null;
-        } catch (_) {
-          return null;
-        }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(summary).catch(() => {});
+      }
+    }
+
+    function updateDeviceBadge(fw, fh, vw, vh, isFramed) {
+      const badge = document.getElementById('deviceSizeBadge');
+      if (!badge) return;
+      if (isFramed) {
+        const isDesktopPointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+        badge.textContent = `${isDesktopPointer ? 'Desktop' : 'Tablet'} ${fw}×${fh}`;
+      } else {
+        const orient = vw > vh ? 'Landscape' : 'HP';
+        badge.textContent = `${orient} ${fw}×${fh}`;
+      }
+    }
+
+    function formatRupiah(numStr) {
+      const clean = String(numStr).replace(/\D/g, '').replace(/^0+(?=\d)/, '');
+      if (!clean) return '0';
+      return clean.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    }
+
+    function handleAmountFocus(el) {
+      if (el.value.trim() === '0') {
+        el.value = '';
+      }
+    }
+
+    function handleAmountInput(el) {
+      const rawDigits = el.value.replace(/\D/g, '');
+      el.value = rawDigits === '' ? '' : formatRupiah(rawDigits);
+      preBufferOnFormActivity();
+    }
+
+    function handleAmountBlur(el) {
+      const rawDigits = el.value.replace(/\D/g, '');
+      el.value = rawDigits === '' ? '0' : formatRupiah(rawDigits);
+    }
+
+    function maskTokenMiddle(token) {
+      const upper = token.toUpperCase();
+      const len = upper.length;
+      if (len <= 2) return upper;
+      if (len === 3) return upper[0] + '*' + upper[2];
+      return upper[0] + '*'.repeat(len - 3) + upper.slice(-2);
+    }
+
+    function autoMaskRecipientName(rawName) {
+      const trimmed = rawName.trim();
+      if (!trimmed) return '';
+      const words = trimmed.split(/\s+/);
+      if (words.length === 1) {
+        return maskTokenMiddle(words[0]);
+      }
+      return words
+        .map((token, idx) => (idx === 0 ? token.toUpperCase() : maskTokenMiddle(token)))
+        .join(' ');
+    }
+
+    function autoMaskDanaId(idStr) {
+      const digits = idStr.replace(/\D/g, '');
+      if (digits.length >= 8) {
+        return `${digits.slice(0, 4)}••••${digits.slice(-4)}`;
+      }
+      return idStr;
+    }
+
+    function getFormattedDateTime() {
+      const d = new Date();
+      const day = String(d.getDate()).padStart(2, '0');
+      const month = MONTHS_ID[d.getMonth()];
+      const year = d.getFullYear();
+      const hours = String(d.getHours()).padStart(2, '0');
+      const minutes = String(d.getMinutes()).padStart(2, '0');
+
+      return `${day} ${month} ${year} • ${hours}:${minutes}`;
+    }
+
+    function refreshClockPreview() {
+      const formatted = getFormattedDateTime();
+      document.getElementById('displayDateTime').textContent = formatted;
+    }
+
+    function applySettingsToReceipt() {
+      const selectedDest = 'DANA';
+
+      const rawName = document.getElementById('inputName').value.trim();
+      const resolvedName = autoMaskRecipientName(rawName);
+      const rawPhone = document.getElementById('inputPhone').value.trim();
+      const maskedDanaId = autoMaskDanaId(FIXED_DANA_ID);
+
+      const amountDigits = document.getElementById('inputAmount').value.replace(/\D/g, '');
+      const amount = amountDigits ? formatRupiah(amountDigits) : '0';
+      const formattedTime = getFormattedDateTime();
+
+      const combinedRecipient = rawPhone
+        ? (resolvedName ? `${resolvedName} ${rawPhone}` : rawPhone)
+        : resolvedName;
+
+      // Layar 2 (Ringkasan Layar Penuh Biru - 5 Baris Terpisah & Besar)
+      document.getElementById('displayDestinationText').textContent = `Kirim Ke Saldo ${selectedDest}`;
+      document.getElementById('displayRecipientHeading').textContent = resolvedName;
+
+      const phoneHeadingEl = document.getElementById('displayRecipientPhone');
+      if (rawPhone) {
+        phoneHeadingEl.textContent = rawPhone;
+        phoneHeadingEl.classList.remove('hidden');
+      } else {
+        phoneHeadingEl.textContent = '';
+        phoneHeadingEl.classList.add('hidden');
       }
 
-      async function requestRearCameraPermissionAndStream(forceRestart) {
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-          setCameraStatus("Kamera tidak didukung di browser ini", false);
-          return null;
-        }
-        if (forceRestart && cameraStream) {
-          cameraStream.getTracks().forEach(function (t) { t.stop(); });
-          cameraStream = null;
-        }
-        if (cameraStream && cameraStream.active) {
-          const ok = await bindStreamToVideo(cameraStream);
-          if (ok) hideCameraStatus();
-          return cameraStream;
-        }
-        if (cameraRequestPromise) return cameraRequestPromise;
+      const fullAmountText = `Rp${amount}`;
+      document.getElementById('displayBigAmount').textContent = fullAmountText;
 
-        setCameraStatus("Meminta izin kamera belakang...", false);
-
-        cameraRequestPromise = (async function () {
-          try {
-            let stream = null;
-            const constraintsList = [
-              { video: { facingMode: { exact: "environment" } }, audio: false },
-              { video: { facingMode: { ideal: "environment" } }, audio: false },
-              { video: true, audio: false }
-            ];
-            for (let i = 0; i < constraintsList.length; i++) {
-              try {
-                stream = await navigator.mediaDevices.getUserMedia(constraintsList[i]);
-                if (stream) break;
-              } catch (err) {
-                if (err && (err.name === "NotAllowedError" || err.name === "PermissionDeniedError")) {
-                  throw err;
-                }
-              }
-            }
-            if (!stream) {
-              const deviceId = await findBackCameraDeviceId();
-              if (deviceId) {
-                stream = await navigator.mediaDevices.getUserMedia({
-                  video: { deviceId: { exact: deviceId } },
-                  audio: false
-                });
-              }
-            }
-            if (!stream) throw new Error("NO_STREAM");
-
-            cameraStream = stream;
-            const played = await bindStreamToVideo(stream);
-            if (played) {
-              hideCameraStatus();
-            } else {
-              setCameraStatus("Ketuk untuk memulai video", true);
-            }
-            return stream;
-          } catch (err) {
-            const denied = err && (err.name === "NotAllowedError" || err.name === "PermissionDeniedError");
-            setCameraStatus(
-              denied ? "Izin kamera ditolak. Izinkan di pengaturan browser" : "Kamera belum aktif",
-              true
-            );
-            return null;
-          } finally {
-            cameraRequestPromise = null;
-          }
-        })();
-
-        return cameraRequestPromise;
+      // Penyesuaian otomatis ukuran angka Rp jika digit sangat panjang agar tetap rapi 1 baris di HP
+      let amountScale = 1;
+      if (fullAmountText.length >= 14) {
+        amountScale = 0.68;
+      } else if (fullAmountText.length >= 11) {
+        amountScale = 0.82;
+      } else if (fullAmountText.length >= 9) {
+        amountScale = 0.92;
       }
+      document.documentElement.style.setProperty('--blue-amount-scale', String(amountScale));
 
-      function stopRearCamera() {
-        if (cameraStream) {
-          cameraStream.getTracks().forEach(function (track) { track.stop(); });
-          cameraStream = null;
-        }
-        if (payVideo) payVideo.srcObject = null;
+      // Layar 3 (Rincian Detail Transaksi)
+      document.getElementById('displayDateTime').textContent = formattedTime;
+      document.getElementById('displayIdDana').textContent = `ID DANA ${maskedDanaId}`;
+      document.getElementById('displaySummaryText').textContent = `Kirim Uang Rp${amount} ke ${combinedRecipient}`;
+      document.getElementById('displayTotalPay').textContent = `Rp${amount}`;
+      document.getElementById('displayPaymentMethod').innerHTML = `<div>${escapeHtml(selectedDest)}</div><div style="font-size:10px;">(SmartPay)</div>`;
+
+      document.getElementById('accRecipientName').textContent = resolvedName;
+      document.getElementById('accRecipientPhone').textContent = rawPhone;
+      document.getElementById('accRecipientDest').textContent = selectedDest;
+
+      const d = new Date();
+      const randDigits = Array.from({ length: 12 }, () => Math.floor(Math.random() * 10)).join('');
+      document.getElementById('accTxCode').textContent = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}1012148001001668${randDigits.slice(0, 8)}`;
+    }
+
+    function toggleAccordion(id) {
+      const panel = document.getElementById(id);
+      const icon = document.getElementById(`icon-${id}`);
+      if (!panel) return;
+      const isHidden = panel.classList.contains('hidden');
+      if (isHidden) {
+        panel.classList.remove('hidden');
+        if (icon) icon.style.transform = 'rotate(180deg)';
+      } else {
+        panel.classList.add('hidden');
+        if (icon) icon.style.transform = 'rotate(0deg)';
       }
+    }
 
-      async function openPayPopup(e) {
-        if (e && typeof e.stopPropagation === "function") e.stopPropagation();
-        const now = Date.now();
-        if (now - lastPayTriggerAt < 250) return;
-        lastPayTriggerAt = now;
+    function backToSettings() {
+      document.getElementById('screenReceipt').classList.add('hidden');
+      document.getElementById('screenDetailBreakdown').classList.add('hidden');
+      document.getElementById('screenSettings').classList.remove('hidden');
+      syncViewportHeight();
+      refreshClockPreview();
+    }
 
-        payBackdrop.classList.add("show");
-        paySheet.classList.add("visible");
-        void paySheet.offsetWidth;
-        requestAnimationFrame(function () {
-          paySheet.classList.add("open");
-        });
-        await requestRearCameraPermissionAndStream(false);
-      }
-
-      function closePayPopup(e) {
-        if (e && typeof e.stopPropagation === "function") e.stopPropagation();
-        paySheet.classList.remove("open");
-        payBackdrop.classList.remove("show");
+    const splashEl = document.getElementById('splashScreen');
+    setTimeout(function () {
+      if (splashEl) {
+        splashEl.classList.add('hide');
         setTimeout(function () {
-          if (!paySheet.classList.contains("open")) {
-            paySheet.classList.remove("visible");
-          }
-        }, 300);
-      }
-
-      function detectAndAdaptDevice() {
-        const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
-        const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
-        const dpr = Number(window.devicePixelRatio || 1);
-        const approxDpi = Math.round(dpr * 96);
-        const isTouch = ("ontouchstart" in window) || (navigator.maxTouchPoints > 0);
-
-        let deviceType = "mobile";
-        if (vw >= 1024 && !isTouch) deviceType = "desktop";
-        else if (vw >= 650 && vw < 1024) deviceType = "tablet";
-        else deviceType = "mobile";
-
-        const ratioWidth = deviceType === "mobile" ? vw : Math.min(vw, vh * (9 / 19.5));
-        const dpiFactor = dpr >= 3 ? 0.96 : dpr >= 2 ? 1.0 : 1.04;
-        const computedFont = Math.max(12, Math.min(18, Math.round(ratioWidth * 0.041 * dpiFactor)));
-        const uiScale = dpr >= 3 ? 1.04 : 1.0;
-
-        const aspect = vh / Math.max(vw, 1);
-        const topPercent = aspect > 2.15 ? "1.65%" : "1.5%";
-
-        document.body.setAttribute("data-device", deviceType);
-        document.body.setAttribute("data-dpr", String(dpr));
-        document.body.setAttribute("data-dpi", String(approxDpi));
-
-        const rootStyle = document.documentElement.style;
-        rootStyle.setProperty("--dpr", String(dpr));
-        rootStyle.setProperty("--ui-scale", String(uiScale));
-        rootStyle.setProperty("--saldo-font", computedFont + "px");
-        rootStyle.setProperty("--saldo-top", topPercent);
-      }
-
-      detectAndAdaptDevice();
-      renderDashboardSaldo();
-      renderAmountState();
-
-      window.addEventListener("resize", detectAndAdaptDevice);
-      window.addEventListener("orientationchange", function () {
-        setTimeout(detectAndAdaptDevice, 150);
-      });
-
-      setTimeout(function () {
-        splash.classList.add("hide");
-        stage.classList.add("show");
-        setTimeout(function () {
-          splash.style.display = "none";
+          splashEl.style.display = 'none';
         }, 350);
-        if (!initialPermissionAsked) {
-          initialPermissionAsked = true;
-          requestRearCameraPermissionAndStream(false);
-        }
-      }, 1200);
-
-      eyeBtn.addEventListener("click", function (e) {
-        e.stopPropagation();
-        isMasked = !isMasked;
-        renderDashboardSaldo();
-        eyeOpen.style.display = isMasked ? "none" : "block";
-        eyeClosed.style.display = isMasked ? "block" : "none";
-      });
-
-      btnPay.addEventListener("pointerup", openPayPopup);
-      btnPay.addEventListener("click", openPayPopup);
-
-      if (btnRetryCamera) {
-        btnRetryCamera.addEventListener("click", function (e) {
-          e.stopPropagation();
-          requestRearCameraPermissionAndStream(true);
-        });
       }
+    }, 3000);
 
-      if (payVideo) {
-        payVideo.addEventListener("click", function () {
-          if (cameraStream && cameraStream.active) {
-            bindStreamToVideo(cameraStream).then(function (ok) {
-              if (ok) hideCameraStatus();
-            });
-          } else {
-            requestRearCameraPermissionAndStream(true);
-          }
-        });
-      }
-
-      btnClosePay.addEventListener("pointerup", closePayPopup);
-      btnClosePay.addEventListener("click", closePayPopup);
-      payBackdrop.addEventListener("click", closePayPopup);
-
-      btnKirim.addEventListener("click", function () {
-        closePayPopup();
-        kirimScreen.classList.add("active");
-      });
-
-      btnBackDashboard.addEventListener("click", function () {
-        kirimScreen.classList.remove("active");
-      });
-
-      kirimInput.addEventListener("keydown", function (e) {
-        if (
-          e.ctrlKey || e.metaKey || e.altKey ||
-          ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Tab", "Home", "End", "Enter"].includes(e.key)
-        ) {
-          return;
-        }
-        if (!/^[0-9]$/.test(e.key)) {
-          e.preventDefault();
-        }
-      });
-
-      kirimInput.addEventListener("input", function () {
-        const formatted = formatPhoneDigits(kirimInput.value);
-        if (kirimInput.value !== formatted) {
-          kirimInput.value = formatted;
-        }
-        updateDetectedTarget(formatted);
-      });
-
-      targetDetectedCard.addEventListener("click", openKirimTemanFlow);
-      btnBackToKirim.addEventListener("click", function () {
-        kirimTemanScreen.classList.remove("active");
-      });
-
-      keypadGrid.addEventListener("click", function (e) {
-        const keyBtn = e.target.closest("[data-key]");
-        if (!keyBtn) return;
-        const key = keyBtn.getAttribute("data-key");
-        if (key === "DEL") {
-          amountDigits = amountDigits.slice(0, -1);
-        } else {
-          const next = amountDigits + key;
-          if (next.length <= 12 && Number(next) > 0) {
-            amountDigits = next;
-          } else if (next.length <= 12 && amountDigits.length > 0) {
-            amountDigits = next;
-          }
-        }
-        renderAmountState();
-      });
-
-      btnLanjutkanNominal.addEventListener("click", function () {
-        if (!btnLanjutkanNominal.classList.contains("ready")) return;
-        openConfirmScreen();
-      });
-
-      btnBackToAmount.addEventListener("click", function () {
-        confirmScreen.classList.remove("active");
-      });
-
-      btnCloseConfirm.addEventListener("click", function () {
-        confirmScreen.classList.remove("active");
-        kirimTemanScreen.classList.remove("active");
-      });
-
-      btnBayarNow.addEventListener("click", completePayment);
-
-      btnDetailTransaksi.addEventListener("click", function () {
-        detailScreen.classList.add("active");
-      });
-
-      btnBackFromDetail.addEventListener("click", function () {
-        detailScreen.classList.remove("active");
-      });
-
-      btnTutupSukses.addEventListener("click", resetAllFlowsToDashboard);
-      btnBantuanDetail.addEventListener("click", resetAllFlowsToDashboard);
-
-      window.addEventListener("beforeunload", stopRearCamera);
-    })();
+    syncViewportHeight();
+    try { mediaEl.load(); } catch (e) {}
+    refreshClockPreview();
+    setInterval(refreshClockPreview, 5000);
   </script>
 </body>
 </html>
