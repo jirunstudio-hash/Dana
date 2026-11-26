@@ -1,0 +1,164 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Family Safety - Admin</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="admin-layout">
+  <aside class="sidebar">
+    <h2>FAMILY<span>SAFETY</span></h2>
+    <p class="side-label">MENU UTAMA</p>
+    <a class="active" href="admin.html">▦ Dashboard</a>
+    <a href="#devices">▣ Perangkat</a>
+    <a href="#locations">⌖ Laporan Lokasi</a>
+    <a href="#notifications">♧ Notifikasi</a>
+    <div class="sidebar-bottom">Family Safety v1.0</div>
+  </aside>
+
+  <main class="main">
+    <header>
+      <div>
+        <h1>Dashboard Admin</h1>
+        <p>Monitoring perangkat keluarga</p>
+      </div>
+      <button onclick="loadDatabase()">↻ Refresh</button>
+    </header>
+
+    <div class="stats">
+      <div class="stat">
+        <small>Total Perangkat</small>
+        <h2 id="total">0</h2>
+      </div>
+      <div class="stat">
+        <small>Laporan Lokasi</small>
+        <h2 id="locationsCount">0</h2>
+      </div>
+      <div class="stat">
+        <small>Notifikasi</small>
+        <h2 id="notificationsCount">0</h2>
+      </div>
+    </div>
+
+    <section class="panel" id="devices">
+      <h3>Daftar Perangkat</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Nama</th>
+              <th>ID Perangkat</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="deviceRows">
+            <tr><td colspan="3">Memuat data...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel" id="locations">
+      <h3>Riwayat Lokasi yang Dibagikan</h3>
+      <div id="locationRows">Memuat data...</div>
+    </section>
+
+    <section class="panel" id="notifications">
+      <h3>Notifikasi Perangkat</h3>
+      <div id="notificationRows">Memuat data...</div>
+    </section>
+
+    <p id="dbStatus" class="db-status">Menghubungkan database...</p>
+  </main>
+</div>
+
+<script src="config.js"></script>
+<script>
+async function loadDatabase() {
+  const status = document.getElementById("dbStatus");
+
+  status.textContent = "Mengambil data database...";
+
+  try {
+    const response = await fetch(DATABASE_URL);
+
+    if (!response.ok) {
+      throw new Error("HTTP " + response.status);
+    }
+
+    const data = await response.json();
+
+    const devices = data.devices || [];
+    const locations = data.location_reports || [];
+    const notifications = data.notifications || [];
+
+    document.getElementById("total").textContent =
+      devices.length;
+
+    document.getElementById("locationsCount").textContent =
+      locations.length;
+
+    document.getElementById("notificationsCount").textContent =
+      notifications.length;
+
+    document.getElementById("deviceRows").innerHTML =
+      devices.length
+      ? devices.map(device => `
+        <tr>
+          <td>${escapeHTML(device.name || "Perangkat")}</td>
+          <td>${escapeHTML(device.id || "-")}</td>
+          <td><span class="status">${escapeHTML(device.status || "Terdaftar")}</span></td>
+        </tr>
+      `).join("")
+      : '<tr><td colspan="3">Belum ada perangkat.</td></tr>';
+
+    document.getElementById("locationRows").innerHTML =
+      locations.length
+      ? locations.slice().reverse().map(item => `
+        <div class="report">
+          <strong>${escapeHTML(item.device_name || "Perangkat")}</strong>
+          <p>${escapeHTML(String(item.latitude ?? "-"))},
+          ${escapeHTML(String(item.longitude ?? "-"))}</p>
+          <a target="_blank" rel="noopener"
+          href="https://www.google.com/maps?q=${Number(item.latitude)},${Number(item.longitude)}">
+          Lihat peta</a>
+        </div>
+      `).join("")
+      : "Belum ada laporan lokasi.";
+
+    document.getElementById("notificationRows").innerHTML =
+      notifications.length
+      ? notifications.slice().reverse().map(item => `
+        <div class="report">
+          <strong>${escapeHTML(item.title || "Notifikasi")}</strong>
+          <p>${escapeHTML(item.message || "")}</p>
+        </div>
+      `).join("")
+      : "Belum ada notifikasi.";
+
+    status.textContent = "Database berhasil dibaca.";
+  } catch (error) {
+    status.textContent = "Gagal membaca database: " + error.message;
+  }
+}
+
+function escapeHTML(value) {
+  return String(value).replace(/[&<>"']/g, char => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[char]);
+}
+
+loadDatabase();
+setInterval(loadDatabase, 15000);
+</script>
+
+</body>
+</html>
