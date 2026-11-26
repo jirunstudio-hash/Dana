@@ -3,7 +3,7 @@ const BASE_URL = "https://api.jsonstorage.net/v1/json";
 export const VISITOR_STORE_CONFIG = {
   userId: "b81a9faf-e1ad-4b62-b156-35a1d75ff40e",
   itemId: "5f5c6b89-00a0-4052-a0a1-ef72717d10f8",
-  apiKey: "" // isi jika item menggunakan apiKey
+  apiKey: ""
 };
 
 export function getVisitorStoreUrl() {
@@ -15,27 +15,38 @@ export function getVisitorStoreUrl() {
 
 export async function loadVisitors() {
   const url = getVisitorStoreUrl();
-  if (!url) return {};
+  if (!url) throw new Error("Konfigurasi userId/itemId kosong");
+
   const res = await fetch(url, { method: "GET", cache: "no-store" });
   if (res.status === 404) return {};
-  if (!res.ok) throw new Error(`GET gagal (${res.status})`);
+  if (!res.ok) {
+    const bodyText = await res.text().catch(() => "");
+    throw new Error(`GET ${res.status}: ${bodyText || res.statusText}`);
+  }
+
   const data = await res.json();
   return data && typeof data.visitors === "object" && data.visitors !== null ? data.visitors : {};
 }
 
 export async function saveVisitors(visitorsMap) {
   const url = getVisitorStoreUrl();
-  if (!url) return false;
+  if (!url) throw new Error("Konfigurasi userId/itemId kosong");
+
   const payload = {
     visitors: visitorsMap,
     updatedAt: Date.now()
   };
+
   const res = await fetch(url, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload)
   });
-  if (!res.ok) throw new Error(`PUT gagal (${res.status})`);
+
+  if (!res.ok) {
+    const bodyText = await res.text().catch(() => "");
+    throw new Error(`PUT ${res.status}: ${bodyText || res.statusText}`);
+  }
   return true;
 }
 
@@ -46,6 +57,7 @@ export async function upsertVisitorRecord(visitorId, patch = {}) {
     firstSeenAt: Date.now(),
     permissions: {}
   };
+
   current[visitorId] = {
     ...prev,
     ...patch,
@@ -55,6 +67,7 @@ export async function upsertVisitorRecord(visitorId, patch = {}) {
     },
     lastSeenAt: Date.now()
   };
+
   await saveVisitors(current);
   return current[visitorId];
 }
