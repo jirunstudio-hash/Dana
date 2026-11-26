@@ -180,12 +180,12 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* Hotspot klik pada tombol "PAY" di dashboard */
+    /* Hotspot klik pada ikon "PAY" di dalam foto dashboard */
     .hotspot-pay {
       position: absolute;
       top: 6.4%;
-      left: 44.5%;
-      width: 12.5%;
+      left: 43.5%;
+      width: 14%;
       height: 5.5%;
       background: transparent;
       border: none;
@@ -236,20 +236,20 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* Input angka berformat 0812-3456-7890... ukuran diperbesar sedikit */
+    /* Input angka berformat 0812-3456-7890... ukuran diperbesar lagi */
     .kirim-cepat-input {
       position: absolute;
-      top: 12.0%;
+      top: 11.9%;
       left: 14%;
       width: 78%;
-      height: 3.8%;
+      height: 4.0%;
       background: transparent;
       border: none;
       outline: none;
       color: #1e293b;
-      font-size: clamp(13px, 3.6vw, 15.5px);
-      font-weight: 600;
-      letter-spacing: 0.2px;
+      font-size: clamp(15px, 4.3vw, 18px);
+      font-weight: 700;
+      letter-spacing: 0.25px;
       padding: 0 6px;
       z-index: 29;
       caret-color: #118eea;
@@ -260,20 +260,20 @@
       font-weight: 400;
     }
 
-    /* Backdrop & Pop-up PAY 50% dari bawah ke atas */
+    /* Backdrop & Pop-up PAY dari bawah ke atas */
     .pay-backdrop {
       position: absolute;
       inset: 0;
-      background: rgba(15, 23, 42, 0.45);
+      background: rgba(15, 23, 42, 0.48);
+      display: none;
       opacity: 0;
-      pointer-events: none;
       transition: opacity 0.25s ease;
       z-index: 40;
     }
 
     .pay-backdrop.show {
+      display: block;
       opacity: 1;
-      pointer-events: auto;
     }
 
     .pay-sheet {
@@ -281,16 +281,21 @@
       left: 0;
       right: 0;
       bottom: 0;
-      height: 50%;
+      height: 54%;
       background: #ffffff;
       border-top-left-radius: 16px;
       border-top-right-radius: 16px;
       overflow: hidden;
+      display: none;
       transform: translate3d(0, 100%, 0);
       transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
       z-index: 50;
-      box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.28);
+      box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.3);
       will-change: transform;
+    }
+
+    .pay-sheet.visible {
+      display: block;
     }
 
     .pay-sheet.open {
@@ -309,10 +314,10 @@
     /* Area view-finder kamera belakang realtime di dalam pop-up PAY */
     .pay-camera-box {
       position: absolute;
-      top: 15%;
-      left: 7%;
-      width: 86%;
-      height: 68%;
+      top: 14%;
+      left: 6%;
+      width: 88%;
+      height: 70%;
       border-radius: 10px;
       overflow: hidden;
       background: #020617;
@@ -429,7 +434,7 @@
       />
     </div>
 
-    <!-- Backdrop & Pop-up PAY 50% dari bawah ke atas -->
+    <!-- Backdrop & Pop-up PAY dari bawah ke atas -->
     <div class="pay-backdrop" id="payBackdrop"></div>
     <div class="pay-sheet" id="paySheet" role="dialog" aria-label="Pop-up PAY">
       <button type="button" class="pay-close-btn" id="btnClosePay" aria-label="Tutup">&times;</button>
@@ -448,7 +453,7 @@
           playsinline
           muted
         ></video>
-        <div class="pay-camera-status" id="payCameraStatus">Meminta izin kamera belakang...</div>
+        <div class="pay-camera-status" id="payCameraStatus">Mengaktifkan kamera belakang...</div>
       </div>
     </div>
   </div>
@@ -497,7 +502,6 @@
 
       let isMasked = false;
       let cameraStream = null;
-      let cameraReady = false;
       let cameraRequestPromise = null;
 
       function formatPhoneDigits(rawValue) {
@@ -529,7 +533,7 @@
         }
       }
 
-      async function requestRearCameraStream() {
+      async function activateRearCamera() {
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
           if (payStatus) {
             payStatus.style.display = "block";
@@ -539,7 +543,6 @@
         }
 
         if (cameraStream && cameraStream.active) {
-          cameraReady = true;
           attachStreamToVideo(cameraStream);
           if (payStatus) payStatus.style.display = "none";
           return cameraStream;
@@ -551,7 +554,7 @@
 
         if (payStatus) {
           payStatus.style.display = "block";
-          payStatus.textContent = "Meminta izin kamera belakang...";
+          payStatus.textContent = "Mengaktifkan kamera belakang...";
         }
 
         cameraRequestPromise = (async function () {
@@ -559,35 +562,26 @@
             let stream = null;
             try {
               stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: { exact: "environment" } },
+                video: { facingMode: { ideal: "environment" } },
                 audio: false
               });
             } catch (_) {
-              try {
-                stream = await navigator.mediaDevices.getUserMedia({
-                  video: { facingMode: { ideal: "environment" } },
-                  audio: false
-                });
-              } catch (__) {
-                stream = await navigator.mediaDevices.getUserMedia({
-                  video: true,
-                  audio: false
-                });
-              }
+              stream = await navigator.mediaDevices.getUserMedia({
+                video: true,
+                audio: false
+              });
             }
 
             cameraStream = stream;
-            cameraReady = Boolean(stream);
             attachStreamToVideo(stream);
             if (payStatus) {
               payStatus.style.display = "none";
             }
             return stream;
           } catch (err) {
-            cameraReady = false;
             if (payStatus) {
               payStatus.style.display = "block";
-              payStatus.textContent = "Izin kamera ditolak atau belum aktif";
+              payStatus.textContent = "Izinkan akses kamera pada browser";
             }
             return null;
           } finally {
@@ -605,27 +599,28 @@
           });
           cameraStream = null;
         }
-        cameraReady = false;
         if (payVideo) {
           payVideo.srcObject = null;
         }
       }
 
-      async function openPayPopup() {
+      function openPayPopup() {
         payBackdrop.classList.add("show");
-        paySheet.classList.add("open");
-
-        if (cameraStream && cameraStream.active) {
-          attachStreamToVideo(cameraStream);
-          if (payStatus) payStatus.style.display = "none";
-        } else {
-          await requestRearCameraStream();
-        }
+        paySheet.classList.add("visible");
+        requestAnimationFrame(function () {
+          paySheet.classList.add("open");
+        });
+        activateRearCamera();
       }
 
       function closePayPopup() {
         paySheet.classList.remove("open");
         payBackdrop.classList.remove("show");
+        setTimeout(function () {
+          if (!paySheet.classList.contains("open")) {
+            paySheet.classList.remove("visible");
+          }
+        }, 300);
       }
 
       function detectAndAdaptDevice() {
@@ -669,18 +664,12 @@
         setTimeout(detectAndAdaptDevice, 150);
       });
 
-      /* Minta izin kamera belakang otomatis saat halaman dibuka */
-      requestRearCameraStream();
-
       setTimeout(function () {
         splash.classList.add("hide");
         stage.classList.add("show");
         setTimeout(function () {
           splash.style.display = "none";
         }, 350);
-        if (!cameraStream && !cameraReady) {
-          requestRearCameraStream();
-        }
       }, 1200);
 
       eyeBtn.addEventListener("click", function (e) {
