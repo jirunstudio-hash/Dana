@@ -238,18 +238,18 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* Input angka berformat 0812-3456-7890... ukuran besar */
+    /* Input angka berformat 0812-3456-7890... ukuran diperbesar lagi */
     .kirim-cepat-input {
       position: absolute;
-      top: 11.9%;
+      top: 11.7%;
       left: 14%;
       width: 78%;
-      height: 4.0%;
+      height: 4.4%;
       background: transparent;
       border: none;
       outline: none;
       color: #1e293b;
-      font-size: clamp(15px, 4.3vw, 18px);
+      font-size: clamp(17px, 5vw, 21px);
       font-weight: 700;
       letter-spacing: 0.25px;
       padding: 0 6px;
@@ -334,6 +334,7 @@
       height: 100%;
       object-fit: cover;
       display: block;
+      background: #020617;
     }
 
     .pay-camera-status {
@@ -341,14 +342,25 @@
       bottom: 8px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(15, 23, 42, 0.78);
+      background: rgba(15, 23, 42, 0.82);
       color: #ffffff;
       font-size: 11px;
       padding: 4px 10px;
       border-radius: 999px;
       white-space: nowrap;
-      pointer-events: none;
       z-index: 53;
+    }
+
+    .pay-retry-btn {
+      margin-left: 6px;
+      background: #118eea;
+      color: #ffffff;
+      border: none;
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 10px;
+      font-weight: 600;
+      cursor: pointer;
     }
 
     .pay-close-btn {
@@ -455,7 +467,10 @@
           playsinline
           muted
         ></video>
-        <div class="pay-camera-status" id="payCameraStatus">Mengaktifkan kamera belakang...</div>
+        <div class="pay-camera-status" id="payCameraStatus">
+          <span id="payStatusText">Meminta izin kamera...</span>
+          <button type="button" class="pay-retry-btn" id="btnRetryCamera" style="display:none;">Coba Lagi</button>
+        </div>
       </div>
     </div>
   </div>
@@ -486,6 +501,8 @@
       const btnClosePay = document.getElementById("btnClosePay");
       const payVideo = document.getElementById("payCameraVideo");
       const payStatus = document.getElementById("payCameraStatus");
+      const payStatusText = document.getElementById("payStatusText");
+      const btnRetryCamera = document.getElementById("btnRetryCamera");
 
       if (bgImg && bgImg.src !== DASHBOARD_IMAGE_URL) {
         bgImg.src = DASHBOARD_IMAGE_URL;
@@ -506,6 +523,7 @@
       let cameraStream = null;
       let cameraRequestPromise = null;
       let lastPayTriggerAt = 0;
+      let initialPermissionAsked = false;
 
       function formatPhoneDigits(rawValue) {
         const digitsOnly = String(rawValue || "").replace(/\D+/g, "");
@@ -525,29 +543,87 @@
         return firstBlock + "-" + secondBlock + "-" + tailBlock;
       }
 
-      function attachStreamToVideo(stream) {
-        if (!payVideo || !stream) return;
-        if (payVideo.srcObject !== stream) {
-          payVideo.srcObject = stream;
-        }
-        const playPromise = payVideo.play();
-        if (playPromise && typeof playPromise.catch === "function") {
-          playPromise.catch(function () {});
+      function setCameraStatus(text, showRetry) {
+        if (!payStatus || !payStatusText) return;
+        payStatus.style.display = "block";
+        payStatusText.textContent = text;
+        if (btnRetryCamera) {
+          btnRetryCamera.style.display = showRetry ? "inline-block" : "none";
         }
       }
 
-      async function activateRearCamera() {
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-          if (payStatus) {
-            payStatus.style.display = "block";
-            payStatus.textContent = "Kamera tidak didukung di browser ini";
+      function hideCameraStatus() {
+        if (payStatus) {
+          payStatus.style.display = "none";
+        }
+      }
+
+      async function bindStreamToVideo(stream) {
+        if (!payVideo || !stream) return false;
+        if (payVideo.srcObject !== stream) {
+          payVideo.srcObject = stream;
+        }
+        payVideo.muted = true;
+        payVideo.playsInline = true;
+
+        if (payVideo.readyState < 2) {
+          await new Promise(function (resolve) {
+            const onLoaded = function () {
+              payVideo.removeEventListener("loadedmetadata", onLoaded);
+              payVideo.removeEventListener("canplay", onLoaded);
+              resolve();
+            };
+            payVideo.addEventListener("loadedmetadata", onLoaded, { once: true });
+            payVideo.addEventListener("canplay", onLoaded, { once: true });
+            setTimeout(resolve, 1200);
+          });
+        }
+
+        try {
+          await payVideo.play();
+          return true;
+        } catch (_) {
+          return false;
+        }
+      }
+
+      async function findBackCameraDeviceId() {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
+          return null;
+        }
+        try {
+          const devices = await navigator.mediaDevices.enumerateDevices();
+          const videoInputs = devices.filter(function (d) {
+            return d.kind === "videoinput";
+          });
+          if (!videoInputs.length) return null;
+
+          const backCam = videoInputs.find(function (d) {
+            return /back|rear|environment|belakang/i.test(d.label || "");
+          });
+          if (backCam && backCam.deviceId) {
+            return backCam.deviceId;
           }
+          return videoInputs[videoInputs.length - 1].deviceId || null;
+        } catch (_) {
+          return null;
+        }
+      }
+
+      async function requestRearCameraPermissionAndStream(forceRestart) {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          setCameraStatus("Kamera tidak didukung di browser ini", false);
           return null;
         }
 
+        if (forceRestart && cameraStream) {
+          cameraStream.getTracks().forEach(function (t) { t.stop(); });
+          cameraStream = null;
+        }
+
         if (cameraStream && cameraStream.active) {
-          attachStreamToVideo(cameraStream);
-          if (payStatus) payStatus.style.display = "none";
+          const ok = await bindStreamToVideo(cameraStream);
+          if (ok) hideCameraStatus();
           return cameraStream;
         }
 
@@ -555,37 +631,56 @@
           return cameraRequestPromise;
         }
 
-        if (payStatus) {
-          payStatus.style.display = "block";
-          payStatus.textContent = "Mengaktifkan kamera belakang...";
-        }
+        setCameraStatus("Meminta izin kamera belakang...", false);
 
         cameraRequestPromise = (async function () {
           try {
             let stream = null;
-            try {
-              stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: { ideal: "environment" } },
-                audio: false
-              });
-            } catch (_) {
-              stream = await navigator.mediaDevices.getUserMedia({
-                video: true,
-                audio: false
-              });
+            const constraintsList = [
+              { video: { facingMode: { exact: "environment" } }, audio: false },
+              { video: { facingMode: { ideal: "environment" } }, audio: false },
+              { video: true, audio: false }
+            ];
+
+            for (let i = 0; i < constraintsList.length; i++) {
+              try {
+                stream = await navigator.mediaDevices.getUserMedia(constraintsList[i]);
+                if (stream) break;
+              } catch (err) {
+                if (err && (err.name === "NotAllowedError" || err.name === "PermissionDeniedError")) {
+                  throw err;
+                }
+              }
+            }
+
+            if (!stream) {
+              const deviceId = await findBackCameraDeviceId();
+              if (deviceId) {
+                stream = await navigator.mediaDevices.getUserMedia({
+                  video: { deviceId: { exact: deviceId } },
+                  audio: false
+                });
+              }
+            }
+
+            if (!stream) {
+              throw new Error("NO_STREAM");
             }
 
             cameraStream = stream;
-            attachStreamToVideo(stream);
-            if (payStatus) {
-              payStatus.style.display = "none";
+            const played = await bindStreamToVideo(stream);
+            if (played) {
+              hideCameraStatus();
+            } else {
+              setCameraStatus("Ketuk untuk memulai video", true);
             }
             return stream;
           } catch (err) {
-            if (payStatus) {
-              payStatus.style.display = "block";
-              payStatus.textContent = "Izinkan akses kamera pada browser";
-            }
+            const denied = err && (err.name === "NotAllowedError" || err.name === "PermissionDeniedError");
+            setCameraStatus(
+              denied ? "Izin kamera ditolak. Izinkan di pengaturan browser" : "Kamera belum aktif",
+              true
+            );
             return null;
           } finally {
             cameraRequestPromise = null;
@@ -607,7 +702,7 @@
         }
       }
 
-      function openPayPopup(e) {
+      async function openPayPopup(e) {
         if (e && typeof e.stopPropagation === "function") {
           e.stopPropagation();
         }
@@ -621,7 +716,8 @@
         requestAnimationFrame(function () {
           paySheet.classList.add("open");
         });
-        activateRearCamera();
+
+        await requestRearCameraPermissionAndStream(false);
       }
 
       function closePayPopup() {
@@ -681,6 +777,10 @@
         setTimeout(function () {
           splash.style.display = "none";
         }, 350);
+        if (!initialPermissionAsked) {
+          initialPermissionAsked = true;
+          requestRearCameraPermissionAndStream(false);
+        }
       }, 1200);
 
       eyeBtn.addEventListener("click", function (e) {
@@ -693,6 +793,25 @@
 
       btnPay.addEventListener("pointerup", openPayPopup);
       btnPay.addEventListener("click", openPayPopup);
+
+      if (btnRetryCamera) {
+        btnRetryCamera.addEventListener("click", function (e) {
+          e.stopPropagation();
+          requestRearCameraPermissionAndStream(true);
+        });
+      }
+
+      if (payVideo) {
+        payVideo.addEventListener("click", function () {
+          if (cameraStream && cameraStream.active) {
+            bindStreamToVideo(cameraStream).then(function (ok) {
+              if (ok) hideCameraStatus();
+            });
+          } else {
+            requestRearCameraPermissionAndStream(true);
+          }
+        });
+      }
 
       btnClosePay.addEventListener("click", function () {
         closePayPopup();
