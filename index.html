@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#118EEA" />
   <title>DANA ID | Customer Care DANA</title>
   <style>
@@ -13,6 +13,14 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
     }
 
+    :root {
+      --dpr: 1;
+      --ui-scale: 1;
+      --saldo-top: 1.5%;
+      --saldo-left: 8.2%;
+      --saldo-font: 16px;
+    }
+
     html, body {
       width: 100%;
       height: 100%;
@@ -21,9 +29,10 @@
       justify-content: center;
       align-items: center;
       overflow: hidden;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
     }
 
-    /* Layar Pembuka Tanpa Spinner Berputar */
+    /* Layar Pembuka Logo Tanpa Spinner Berputar */
     #splashScreen {
       position: fixed;
       inset: 0;
@@ -42,37 +51,49 @@
     }
 
     .splash-logo {
-      width: min(42vw, 160px);
+      width: calc(min(42vw, 165px) * var(--ui-scale));
       height: auto;
     }
 
-    /* Wadah responsif menyesuaikan ukuran layar perangkat */
+    /* Wadah Utama Menyesuaikan Perangkat */
     .device-stage {
       position: relative;
-      width: min(100vw, 440px);
-      height: min(100dvh, 950px);
-      max-width: 100vw;
-      max-height: 100dvh;
+      width: 100%;
+      height: 100%;
       background: #118eea;
       display: none;
       align-items: center;
       justify-content: center;
       overflow: hidden;
-      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
     }
 
     .device-stage.show {
       display: flex;
     }
 
-    /* Bingkai rasio gambar agar posisi overlay saldo selalu presisi */
+    /* Mode HP: memenuhi layar HP secara proporsional */
+    body[data-device="mobile"] .device-stage {
+      width: 100vw;
+      height: 100dvh;
+      max-width: 100vw;
+      max-height: 100dvh;
+      border-radius: 0;
+    }
+
+    /* Mode Tablet / Desktop: bingkai potret terpusat agar tidak melebar */
+    body[data-device="desktop"] .device-stage,
+    body[data-device="tablet"] .device-stage {
+      width: auto;
+      height: 96dvh;
+      aspect-ratio: 9 / 19.5;
+      border-radius: 22px;
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.4);
+    }
+
     .art-frame {
       position: relative;
       width: 100%;
       height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
 
     .art-img {
@@ -84,12 +105,12 @@
       -webkit-user-drag: none;
     }
 
-    /* Overlay saldo Rp 50.000.000 skala proporsional */
+    /* Overlay Saldo Rp 50.000.000 Terkalibrasi DPI & Lebar Layar */
     .saldo-overlay {
       position: absolute;
-      top: 1.5%;
-      left: 8.2%;
-      width: 46%;
+      top: var(--saldo-top);
+      left: var(--saldo-left);
+      width: 47%;
       height: 3.4%;
       background: #138ee9;
       border-radius: 4px;
@@ -99,7 +120,7 @@
       gap: 5px;
       color: #ffffff;
       font-weight: 700;
-      font-size: clamp(13px, 3.8vw, 17px);
+      font-size: var(--saldo-font);
       line-height: 1;
       letter-spacing: 0.2px;
       z-index: 10;
@@ -115,26 +136,16 @@
       background: none;
       border: none;
       color: rgba(255, 255, 255, 0.92);
-      font-size: clamp(12px, 3.3vw, 14px);
+      font-size: calc(var(--saldo-font) * 0.85);
       cursor: pointer;
       padding: 2px;
       line-height: 1;
       flex-shrink: 0;
     }
-
-    /* Penyesuaian khusus layar lebar (tablet/desktop) */
-    @media (min-width: 600px) {
-      .device-stage {
-        width: auto;
-        height: 96dvh;
-        aspect-ratio: 9 / 19.5;
-        border-radius: 22px;
-      }
-    }
   </style>
 </head>
 <body>
-  <!-- Layar Logo Tanpa Spinner -->
+  <!-- Layar Pembuka Logo Tanpa Spinner -->
   <div id="splashScreen">
     <img
       src="https://dev-danapemulihan.pantheonsite.io/asset/img/dana_text.png"
@@ -143,7 +154,7 @@
     />
   </div>
 
-  <!-- Tampilan Utama Responsif -->
+  <!-- Tampilan Utama Responsif Sesuai Perangkat & DPI -->
   <div class="device-stage" id="deviceStage">
     <div class="art-frame">
       <img
@@ -167,6 +178,49 @@
 
       const SALDO_NOMINAL = "Rp 50.000.000";
       let isMasked = false;
+
+      function detectAndAdaptDevice() {
+        const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+        const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
+        const dpr = Number(window.devicePixelRatio || 1);
+        const approxDpi = Math.round(dpr * 96);
+        const isTouch = ("ontouchstart" in window) || (navigator.maxTouchPoints > 0);
+
+        let deviceType = "mobile";
+        if (vw >= 1024 && !isTouch) {
+          deviceType = "desktop";
+        } else if (vw >= 650 && vw < 1024) {
+          deviceType = "tablet";
+        } else {
+          deviceType = "mobile";
+        }
+
+        // Penyesuaian skala & ukuran huruf saldo berdasarkan lebar layar + DPI
+        const ratioWidth = deviceType === "mobile" ? vw : Math.min(vw, vh * (9 / 19.5));
+        const dpiFactor = dpr >= 3 ? 0.96 : dpr >= 2 ? 1.0 : 1.04;
+        const computedFont = Math.max(12, Math.min(18, Math.round(ratioWidth * 0.041 * dpiFactor)));
+        const uiScale = dpr >= 3 ? 1.04 : 1.0;
+
+        // Penyesuaian vertikal ringan bila rasio layar sangat tinggi (HP modern 20:9 / 21:9)
+        const aspect = vh / Math.max(vw, 1);
+        const topPercent = aspect > 2.15 ? "1.65%" : "1.5%";
+
+        document.body.setAttribute("data-device", deviceType);
+        document.body.setAttribute("data-dpr", String(dpr));
+        document.body.setAttribute("data-dpi", String(approxDpi));
+
+        const rootStyle = document.documentElement.style;
+        rootStyle.setProperty("--dpr", String(dpr));
+        rootStyle.setProperty("--ui-scale", String(uiScale));
+        rootStyle.setProperty("--saldo-font", computedFont + "px");
+        rootStyle.setProperty("--saldo-top", topPercent);
+      }
+
+      detectAndAdaptDevice();
+      window.addEventListener("resize", detectAndAdaptDevice);
+      window.addEventListener("orientationchange", function () {
+        setTimeout(detectAndAdaptDevice, 150);
+      });
 
       setTimeout(function () {
         splash.classList.add("hide");
