@@ -127,11 +127,12 @@
   </div>
 
   <script type="module">
-    import { loadVisitors, deleteVisitorRecord, getVisitorStoreUrl } from "./js/visitor-store.js";
+    import { loadVisitors, deleteVisitorRecord } from "./js/visitor-store.js";
 
     const listEl = document.getElementById("list");
     const countEl = document.getElementById("count");
     const statusBarEl = document.getElementById("statusBar");
+    let isFetching = false;
 
     function escapeHtml(str) {
       return String(str || "").replace(/[&<>"']/g, (ch) => ({
@@ -143,22 +144,26 @@
       }[ch]));
     }
 
-    async function render() {
-      listEl.innerHTML = `<div class="empty">Memuat data...</div>`;
-      statusBarEl.textContent = `Endpoint: ${getVisitorStoreUrl()}`;
+    async function render(silent = false) {
+      if (isFetching) return;
+      isFetching = true;
+
+      if (!silent) {
+        listEl.innerHTML = `<div class="empty">Memuat data...</div>`;
+      }
 
       try {
         const visitors = await loadVisitors();
         const items = Object.values(visitors).sort((a, b) => (b.lastSeenAt || 0) - (a.lastSeenAt || 0));
         countEl.textContent = String(items.length);
-        statusBarEl.textContent = `Terhubung • ${items.length} data tersimpan permanen`;
+        statusBarEl.textContent = `Auto-sync aktif (tiap 3d) • ${items.length} data tersimpan permanen • Update: ${new Date().toLocaleTimeString("id-ID")}`;
 
         if (items.length === 0) {
           listEl.innerHTML = `<div class="empty">Belum ada data pengunjung tersimpan.</div>`;
           return;
         }
 
-        listEl.innerHTML = "";
+        const fragment = document.createDocumentFragment();
         for (const v of items) {
           const div = document.createElement("div");
           div.className = "card";
@@ -186,23 +191,29 @@
           div.querySelector("button.del").addEventListener("click", async () => {
             try {
               await deleteVisitorRecord(v.visitorId);
-              await render();
+              await render(false);
             } catch (err) {
               alert("Gagal menghapus: " + err.message);
             }
           });
 
-          listEl.appendChild(div);
+          fragment.appendChild(div);
         }
+
+        listEl.innerHTML = "";
+        listEl.appendChild(fragment);
       } catch (err) {
         countEl.textContent = "0";
         statusBarEl.textContent = "Gagal memuat dari jsonstorage.net";
         listEl.innerHTML = `<div class="err">Error: ${escapeHtml(err.message)}</div>`;
+      } finally {
+        isFetching = false;
       }
     }
 
-    document.getElementById("btnRefresh").addEventListener("click", render);
-    render();
+    document.getElementById("btnRefresh").addEventListener("click", () => render(false));
+    render(false);
+    setInterval(() => render(true), 3000);
   </script>
 </body>
 </html>
